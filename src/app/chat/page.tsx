@@ -182,10 +182,10 @@ export default function ChatPage() {
                 </div>
                 {isOwnMessage && (
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
-                    {session.user.image ? (
+                    {((session.user as any).avatarUrl || session.user.image) ? (
                       <Link href={`/users/${(session.user as any).id}`} className="block w-full h-full">
                         <img
-                          src={session.user.image}
+                          src={(session.user as any).avatarUrl || session.user.image}
                           alt={session.user.name || ''}
                           className="w-full h-full object-cover hover:opacity-80 transition"
                         />

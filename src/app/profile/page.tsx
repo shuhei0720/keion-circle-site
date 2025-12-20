@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import DashboardLayout from '@/components/DashboardLayout';
 import AvatarUpload from '@/components/AvatarUpload';
 
@@ -17,6 +18,7 @@ const instruments = [
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { update } = useSession();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState({
@@ -59,6 +61,10 @@ export default function ProfilePage() {
       });
 
       if (res.ok) {
+        // セッションを更新してavatarUrlを反映
+        await update({
+          avatarUrl: profile.avatarUrl,
+        });
         alert('プロフィールを更新しました');
       } else {
         alert('プロフィールの更新に失敗しました');
@@ -90,8 +96,12 @@ export default function ProfilePage() {
           {/* プロフィール画像アップロード */}
           <AvatarUpload
             currentAvatar={profile.avatarUrl}
-            onUploadComplete={(avatarUrl) => {
+            onUploadComplete={async (avatarUrl) => {
               setProfile({ ...profile, avatarUrl });
+              // セッションを更新してavatarUrlを反映
+              await update({
+                avatarUrl: avatarUrl,
+              });
               alert('プロフィール画像をアップロードしました');
             }}
           />

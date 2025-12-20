@@ -46,17 +46,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: '/auth/signin',
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id as string
         token.role = user.role || "member"
+        token.avatarUrl = user.avatarUrl || null
       }
+      
+      // プロフィール更新時にトークンを更新
+      if (trigger === "update" && session) {
+        token.avatarUrl = session.avatarUrl
+      }
+      
       return token
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string
         session.user.role = token.role as string
+        session.user.avatarUrl = token.avatarUrl as string | null
       }
       return session
     }

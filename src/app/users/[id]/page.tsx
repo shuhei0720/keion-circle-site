@@ -34,7 +34,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
         orderBy: { createdAt: 'desc' },
         take: 5,
       },
-      participants: {
+      postParticipants: {
         include: {
           post: true,
         },
@@ -132,9 +132,9 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-4">参加している投稿</h2>
-            {user.participants.length > 0 ? (
+            {user.postParticipants.length > 0 ? (
               <ul className="space-y-3">
-                {user.participants.map((participant) => (
+                {user.postParticipants.map((participant) => (
                   <li key={participant.id}>
                     <Link
                       href={`/posts`}
