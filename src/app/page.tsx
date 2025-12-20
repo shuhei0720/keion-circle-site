@@ -138,6 +138,40 @@ export default function Home() {
           )}
         </div>
 
+        {/* 機能カード（投稿、スケジュール、チャット） */}
+        <div ref={featuresRef} className={`max-w-6xl mx-auto mb-16 transition-all duration-700 ${isLoading ? '' : 'opacity-0 translate-y-10'}`}>
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">サービス</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Link href="/posts" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow group">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
+                  <FileText className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">投稿</h3>
+                <p className="text-gray-600">活動報告やYouTube動画を共有</p>
+              </div>
+            </Link>
+            <Link href="/schedules" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow group">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
+                  <Calendar className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">スケジュール</h3>
+                <p className="text-gray-600">練習や演奏会の日程調整</p>
+              </div>
+            </Link>
+            <Link href="/chat" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow group">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
+                  <MessageCircle className="w-8 h-8 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-bold mb-2">チャット</h3>
+                <p className="text-gray-600">メンバー同士でリアルタイム会話</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+
         {/* 最新の投稿 */}
         <div ref={postsRef} className={`max-w-4xl mx-auto mb-16 transition-all duration-700 ${isLoading ? '' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>

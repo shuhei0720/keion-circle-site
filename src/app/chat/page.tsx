@@ -85,13 +85,40 @@ export default function ChatPage() {
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if ((!inputMessage.trim() && !selectedFile) || !session?.user) return
+    
+    const messageContent = inputMessage || (selectedFile ? `${selectedFile.name}を送信しました` : '')
+    const tempId = `temp-${Date.now()}`
+    
+    // 楽観的UI更新: 即座にメッセージを表示
+    const optimisticMessage: Message = {
+      id: tempId,
+      content: messageContent,
+      createdAt: new Date().toISOString(),
+      userId: session.user.id,
+      fileUrl: null,
+      fileName: selectedFile?.name || null,
+      fileType: selectedFile?.type || null,
+      user: {
+        name: session.user.name || '',
+        email: session.user.email || '',
+        avatarUrl: session.user.avatarUrl || null
+      }
+    }
+    
+    setMessages((prev) => [...prev, optimisticMessage])
+    setInputMessage('')
+    const currentFile = selectedFile
+    setSelectedFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    scrollToBottom()
+    
     setUploading(true)
 
     try {
       let fileUrl = null, fileName = null, fileType = null
-      if (selectedFile) {
+      if (currentFile) {
         const formData = new FormData()
-        formData.append('file', selectedFile)
+        formData.append('file', currentFile)
         const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData
@@ -109,7 +136,7 @@ export default function ChatPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content: inputMessage || (selectedFile ? `${selectedFile.name}を送信しました` : ''),
+          content: messageContent,
           fileUrl,
           fileName,
           fileType
@@ -118,15 +145,15 @@ export default function ChatPage() {
 
       if (response.ok) {
         const newMessage = await response.json()
-        setMessages((prev) => [...prev, newMessage])
-        setInputMessage('')
-        setSelectedFile(null)
-        if (fileInputRef.current) fileInputRef.current.value = ''
+        // 楽観的メッセージを実際のメッセージに置き換え
+        setMessages((prev) => prev.map(msg => msg.id === tempId ? newMessage : msg))
         scrollToBottom()
       } else {
         throw new Error('メッセージの送信に失敗しました')
       }
     } catch (error) {
+      // エラー時は楽観的メッセージを削除
+      setMessages((prev) => prev.filter(msg => msg.id !== tempId))
       console.error('Failed to send message:', error)
       alert('メッセージの送信に失敗しました')
     } finally {

@@ -191,6 +191,41 @@ export default function PostsPage() {
     }
   }
   const handleParticipate = async (postId: string, status: string) => {
+    if (!session?.user?.id) return
+
+    // 楽観的UI更新: 即座にUIを更新
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id === postId) {
+        const existingParticipation = post.participants.find(p => p.user.id === session.user.id)
+        
+        if (existingParticipation) {
+          // 既存の参加状態を更新
+          return {
+            ...post,
+            participants: post.participants.map(p => 
+              p.user.id === session.user.id ? { ...p, status } : p
+            )
+          }
+        } else {
+          // 新規参加を追加
+          return {
+            ...post,
+            participants: [...post.participants, {
+              id: `temp-${Date.now()}`,
+              status,
+              user: {
+                id: session.user.id,
+                name: session.user.name || '',
+                email: session.user.email || '',
+                avatarUrl: session.user.avatarUrl || null
+              }
+            }]
+          }
+        }
+      }
+      return post
+    }))
+
     try {
       const res = await fetch(`/api/posts/${postId}/participate`, {
         method: 'POST',
@@ -199,12 +234,14 @@ export default function PostsPage() {
       })
 
       if (!res.ok) {
+        // エラー時は元に戻す
+        fetchPosts()
         alert('参加登録に失敗しました')
         return
       }
-
-      fetchPosts()
     } catch (error) {
+      // エラー時は元に戻す
+      fetchPosts()
       console.error('Failed to participate:', error)
       alert('参加登録に失敗しました')
     }
@@ -222,18 +259,31 @@ export default function PostsPage() {
   const handleLike = async (postId: string) => {
     if (!session?.user?.id) return
     
+    // 楽観的UI更新: 即座にUIを更新
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          likes: [...post.likes, { userId: session.user.id, createdAt: new Date().toISOString() }]
+        }
+      }
+      return post
+    }))
+
     try {
       const res = await fetch(`/api/posts/${postId}/like`, {
         method: 'POST',
       })
       
-      if (res.ok) {
+      if (!res.ok) {
+        // エラー時は元に戻す
         fetchPosts()
-      } else {
         const error = await res.json()
         alert(error.error || 'いいねに失敗しました')
       }
     } catch (error) {
+      // エラー時は元に戻す
+      fetchPosts()
       console.error('いいねエラー:', error)
       alert('いいねに失敗しました')
     }
@@ -242,18 +292,31 @@ export default function PostsPage() {
   const handleUnlike = async (postId: string) => {
     if (!session?.user?.id) return
     
+    // 楽観的UI更新: 即座にUIを更新
+    setPosts(prevPosts => prevPosts.map(post => {
+      if (post.id === postId) {
+        return {
+          ...post,
+          likes: post.likes.filter(like => like.userId !== session.user.id)
+        }
+      }
+      return post
+    }))
+
     try {
       const res = await fetch(`/api/posts/${postId}/like`, {
         method: 'DELETE',
       })
       
-      if (res.ok) {
+      if (!res.ok) {
+        // エラー時は元に戻す
         fetchPosts()
-      } else {
         const error = await res.json()
         alert(error.error || 'いいね解除に失敗しました')
       }
     } catch (error) {
+      // エラー時は元に戻す
+      fetchPosts()
       console.error('いいね解除エラー:', error)
       alert('いいね解除に失敗しました')
     }

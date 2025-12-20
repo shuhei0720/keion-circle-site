@@ -211,6 +211,25 @@ export default function DashboardLayout({
 
       {/* メインコンテンツ */}
       <main className="pb-8">{children}</main>
+      
+      {/* フッター */}
+      <footer className="bg-white border-t mt-auto">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+            <p className="text-center sm:text-left">
+              © 2025 BOLD 軽音サークル. All rights reserved.
+            </p>
+            <div className="flex gap-4 sm:gap-6">
+              <Link href="/privacy" className="hover:text-blue-600 transition-colors">
+                プライバシーポリシー
+              </Link>
+              <Link href="/terms" className="hover:text-blue-600 transition-colors">
+                利用規約
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
