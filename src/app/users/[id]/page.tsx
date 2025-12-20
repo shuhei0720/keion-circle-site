@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { prisma } from '@/lib/prisma';
 import DashboardLayout from '@/components/DashboardLayout';
 import { User } from 'lucide-react';
 import Link from 'next/link';
