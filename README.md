@@ -236,20 +236,38 @@ keion-circle-site/
 
 ## 本番デプロイ
 
-### 環境変数の設定
+詳細なデプロイ手順は [DEPLOY.md](DEPLOY.md) を参照してください。
 
-本番環境では以下の環境変数を設定してください：
+### 推奨環境
 
-- `NEXTAUTH_SECRET`: ランダムな秘密鍵に変更
-- `NEXTAUTH_URL`: 本番環境のURL
-- `DATABASE_URL`: 本番データベースのURL（PostgreSQLなど推奨）
+- **ホスティング**: Vercel（推奨）
+- **データベース**: Vercel Postgres または Neon
+- **ドメイン**: カスタムドメイン設定可能
 
-### ビルドと起動
+### クイックスタート
 
 ```bash
-npm run build
-npm start
+# Vercel CLIをインストール
+npm install -g vercel
+
+# デプロイ
+vercel
+
+# 本番環境にデプロイ
+vercel --prod
 ```
+
+### 必須環境変数
+
+Vercelダッシュボードで以下を設定：
+
+```
+DATABASE_URL=postgresql://...
+NEXTAUTH_URL=https://your-app.vercel.app
+NEXTAUTH_SECRET=（openssl rand -base64 32で生成）
+```
+
+詳細は [DEPLOY.md](DEPLOY.md) を確認してください。
 
 ---
 
