@@ -15,6 +15,7 @@ console.log('NextAuth Base URL:', baseUrl)
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   debug: true, // デバッグモードを有効化
+  trustHost: true, // Vercel環境でのホスト信頼を有効化
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
