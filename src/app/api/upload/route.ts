@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { join } from 'path'
 import { auth } from '@/lib/auth'
+
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,32 +17,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // ファイルサイズ制限 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File size exceeds 10MB' }, { status: 400 })
+    // ファイルサイズ制限 (2MB - Base64で保存するため)
+    if (file.size > 2 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File size exceeds 2MB' }, { status: 400 })
     }
 
-    // アップロードディレクトリの作成
-    const uploadDir = join(process.cwd(), 'public', 'uploads')
-    try {
-      await mkdir(uploadDir, { recursive: true })
-    } catch (error) {
-      // ディレクトリが既に存在する場合は無視
-    }
-
-    // ファイル名の生成（タイムスタンプ + オリジナル名）
-    const timestamp = Date.now()
-    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-    const fileName = `${timestamp}-${sanitizedFileName}`
-    const filePath = join(uploadDir, fileName)
-
-    // ファイルの保存
+    // ファイルをBase64に変換
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    await writeFile(filePath, buffer)
-
-    // URLを返す
-    const fileUrl = `/uploads/${fileName}`
+    const base64 = buffer.toString('base64')
+    const fileUrl = `data:${file.type};base64,${base64}`
     
     return NextResponse.json({
       fileUrl,
