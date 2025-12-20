@@ -35,6 +35,7 @@ export default function SchedulesPage() {
   const [description, setDescription] = useState('')
   const [dates, setDates] = useState<string[]>([''])
   const [loading, setLoading] = useState(false)
+  const [fetchingSchedules, setFetchingSchedules] = useState(true)
   const [selectedDateComments, setSelectedDateComments] = useState<{[key: string]: string}>({})
 
   const isAdmin = session?.user?.role === 'admin'
@@ -44,9 +45,16 @@ export default function SchedulesPage() {
   }, [])
 
   const fetchSchedules = async () => {
-    const res = await fetch('/api/schedules')
-    const data = await res.json()
-    setSchedules(data)
+    setFetchingSchedules(true)
+    try {
+      const res = await fetch('/api/schedules')
+      const data = await res.json()
+      setSchedules(data)
+    } catch (error) {
+      console.error('Failed to fetch schedules:', error)
+    } finally {
+      setFetchingSchedules(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -174,6 +182,12 @@ export default function SchedulesPage() {
       <div className="max-w-6xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-8">スケジュール調整</h1>
 
+        {fetchingSchedules ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <>
         {/* スケジュール一覧 */}
         <div className="space-y-6 mb-8">
           {schedules.map((schedule) => {
@@ -342,6 +356,8 @@ export default function SchedulesPage() {
               </button>
             </form>
           </div>
+        )}
+        </>
         )}
       </div>
     </DashboardLayout>

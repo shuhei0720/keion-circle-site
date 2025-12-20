@@ -302,6 +302,12 @@ export default function PostsPage() {
         <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-8">投稿一覧</h1>
 
+        {fetchingPosts ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <>
         {/* 投稿一覧 */}
         <div className="space-y-6 mb-8">
           {currentPosts.map((post) => {
@@ -586,6 +592,8 @@ export default function PostsPage() {
               </div>
             </form>
           </div>
+        )}
+        </>
         )}
         </div>
       </DashboardLayout>
