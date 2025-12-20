@@ -40,8 +40,8 @@ export default function ChatPage() {
 
   useEffect(() => {
     fetchMessages()
-    // 3秒ごとにメッセージを取得（ポーリング）
-    const interval = setInterval(fetchMessages, 3000)
+    // 5秒ごとにメッセージを取得（ポーリング）
+    const interval = setInterval(fetchMessages, 5000)
     return () => clearInterval(interval)
   }, [])
 

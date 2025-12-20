@@ -48,6 +48,7 @@ export default function PostsPage() {
   const [content, setContent] = useState('')
   const [youtubeUrl, setYoutubeUrl] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fetchingPosts, setFetchingPosts] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
@@ -59,9 +60,16 @@ export default function PostsPage() {
   }, [])
 
   const fetchPosts = async () => {
-    const res = await fetch('/api/posts')
-    const data = await res.json()
-    setPosts(data)
+    setFetchingPosts(true)
+    try {
+      const res = await fetch('/api/posts')
+      const data = await res.json()
+      setPosts(data)
+    } catch (error) {
+      console.error('Failed to fetch posts:', error)
+    } finally {
+      setFetchingPosts(false)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -609,6 +617,12 @@ export default function PostsPage() {
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-8">投稿一覧</h1>
 
+        {fetchingPosts ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <>
         {/* 投稿一覧（読み取り専用） */}
         <div className="space-y-6 mb-8">
           {currentPosts.map((post) => {
@@ -693,6 +707,8 @@ export default function PostsPage() {
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>
