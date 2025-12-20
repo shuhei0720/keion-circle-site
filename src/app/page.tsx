@@ -29,6 +29,7 @@ export default function Home() {
   const { data: session } = useSession()
   const [posts, setPosts] = useState<Post[]>([])
   const [popularPosts, setPopularPosts] = useState<Post[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const headerRef = useRef<HTMLDivElement>(null)
   const postsRef = useRef<HTMLDivElement>(null)
   const popularRef = useRef<HTMLDivElement>(null)
@@ -36,7 +37,12 @@ export default function Home() {
 
   useEffect(() => {
     fetchPosts()
-    
+  }, [])
+
+  useEffect(() => {
+    // データがロードされた後にアニメーションを設定
+    if (isLoading) return
+
     // スクロールアニメーションの設定
     const observerOptions = {
       threshold: 0.1,
@@ -58,7 +64,7 @@ export default function Home() {
     })
 
     return () => observer.disconnect()
-  }, [])
+  }, [isLoading])
 
   const fetchPosts = async () => {
     try {
@@ -71,6 +77,8 @@ export default function Home() {
       setPopularPosts(sorted.slice(0, 3).filter(p => p.likes.length > 0))
     } catch (error) {
       console.error('Failed to fetch posts:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -131,9 +139,13 @@ export default function Home() {
         </div>
 
         {/* 最新の投稿 */}
-        {posts.length > 0 && (
-          <div ref={postsRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>
+        <div ref={postsRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
+          <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>
+          {isLoading ? (
+            <div className="text-center text-white">
+              <p>読み込み中...</p>
+            </div>
+          ) : posts.length > 0 ? (
             <div className="space-y-6">
               {posts.map((post) => {
                 const videoId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
@@ -190,11 +202,15 @@ export default function Home() {
                 すべての投稿を見る
               </Link>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-center text-white">
+              <p>まだ投稿がありません</p>
+            </div>
+          )}
+        </div>
 
         {/* 人気の投稿 */}
-        {popularPosts.length > 0 && (
+        {!isLoading && popularPosts.length > 0 && (
           <div ref={popularRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
             <h2 className="text-3xl font-bold text-white mb-8 text-center">人気の投稿</h2>
             <div className="grid md:grid-cols-3 gap-6">
