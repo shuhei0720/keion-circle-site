@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Music, Calendar, MessageCircle, FileText, User } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
 
@@ -27,9 +27,35 @@ export default function Home() {
   const { data: session } = useSession()
   const [posts, setPosts] = useState<Post[]>([])
   const [popularPosts, setPopularPosts] = useState<Post[]>([])
+  const headerRef = useRef<HTMLDivElement>(null)
+  const postsRef = useRef<HTMLDivElement>(null)
+  const popularRef = useRef<HTMLDivElement>(null)
+  const featuresRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchPosts()
+    
+    // スクロールアニメーションの設定
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -100px 0px'
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate-fade-in')
+        }
+      })
+    }, observerOptions)
+
+    // 各セクションを監視
+    const sections = [postsRef.current, popularRef.current, featuresRef.current]
+    sections.forEach(section => {
+      if (section) observer.observe(section)
+    })
+
+    return () => observer.disconnect()
   }, [])
 
   const fetchPosts = async () => {
@@ -74,14 +100,14 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
       <div className="container mx-auto px-4 py-16">
         {/* ヘッダー */}
-        <div className="text-center mb-16">
-          <div className="flex items-center justify-center mb-4">
+        <div ref={headerRef} className="text-center mb-16 animate-slide-down">
+          <div className="flex items-center justify-center mb-4 animate-bounce-slow">
             <Music className="w-16 h-16 text-white" />
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4">
+          <h1 className="text-5xl font-bold text-white mb-4 animate-fade-in">
             <span className="font-extrabold">BOLD</span> 軽音サークル メンバーサイト
           </h1>
-          <p className="text-xl text-white/80">
+          <p className="text-xl text-white/80 animate-fade-in-delay">
             音楽を楽しむ仲間たちのコミュニティ
           </p>
           {!session && (
@@ -104,7 +130,7 @@ export default function Home() {
 
         {/* 最新の投稿 */}
         {posts.length > 0 && (
-          <div className="max-w-4xl mx-auto mb-16">
+          <div ref={postsRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
             <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>
             <div className="space-y-6">
               {posts.map((post) => {
@@ -167,7 +193,7 @@ export default function Home() {
 
         {/* 人気の投稿 */}
         {popularPosts.length > 0 && (
-          <div className="max-w-4xl mx-auto mb-16">
+          <div ref={popularRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
             <h2 className="text-3xl font-bold text-white mb-8 text-center">人気の投稿</h2>
             <div className="grid md:grid-cols-3 gap-6">
               {popularPosts.map((post) => (
@@ -204,7 +230,7 @@ export default function Home() {
         )}
 
         {/* 機能カード */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        <div ref={featuresRef} className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto opacity-0 translate-y-10 transition-all duration-700">
           <Link href="/posts">
             <div className="bg-white rounded-xl shadow-lg p-8 hover:shadow-2xl transition-shadow cursor-pointer transform hover:-translate-y-1 duration-200">
               <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">

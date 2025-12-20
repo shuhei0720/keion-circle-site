@@ -5,10 +5,13 @@ Next.jsとTailwind CSSで構築された軽音サークルのメンバー専用W
 ## 主な機能
 
 - 🔐 **パスワード認証**: メールアドレスとパスワードによる安全な認証システム
+- 🌐 **Google OAuth認証**: Googleアカウントでのログイン・新規登録が可能
 - 👤 **役割ベースのアクセス制御**: 管理者と通常ユーザーの2つの役割
 - 📝 **投稿機能（管理者専用）**: YouTubeと連携した動画投稿・編集・削除（公開アクセス可能）
 - 📅 **スケジュール調整機能（改良版）**: 複数候補日への投票、コメント機能、最有力候補の自動表示
 - 💬 **リアルタイムチャット（メンバー専用）**: Socket.ioによるリアルタイムメッセージング + ファイル送信機能
+- ✨ **アニメーション対応**: スクロールに応じた動的なUI演出
+- 👥 **充実したユーザープロフィール**: 自己紹介、担当楽器、参加回数の表示
 
 ## 技術スタック
 
@@ -33,6 +36,26 @@ npm install
 ### 2. 環境変数の設定
 
 `.env.local` ファイルはすでに作成されていますが、本番環境では必ず `NEXTAUTH_SECRET` を変更してください。
+
+#### Google OAuth認証の設定（オプション）
+
+Googleアカウントでのログイン機能を有効にする場合：
+
+1. [Google Cloud Console](https://console.cloud.google.com/)にアクセス
+2. 新しいプロジェクトを作成（または既存のプロジェクトを選択）
+3. 「APIとサービス」→「認証情報」に移動
+4. 「認証情報を作成」→「OAuth 2.0 クライアントID」を選択
+5. アプリケーションの種類で「ウェブアプリケーション」を選択
+6. 承認済みのリダイレクトURIに以下を追加：
+   - 開発環境: `http://localhost:3000/api/auth/callback/google`
+   - 本番環境: `https://your-domain.com/api/auth/callback/google`
+7. クライアントIDとクライアントシークレットを取得
+8. `.env.local` ファイルに追加：
+
+```bash
+GOOGLE_CLIENT_ID=your-google-client-id-here
+GOOGLE_CLIENT_SECRET=your-google-client-secret-here
+```
 
 ### 3. データベースの初期化
 

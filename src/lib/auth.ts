@@ -2,11 +2,16 @@ import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import CredentialsProvider from "next-auth/providers/credentials"
+import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    }),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -67,6 +72,35 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.avatarUrl = token.avatarUrl as string | null
       }
       return session
+    },
+    async signIn({ user, account, profile }) {
+      // Google OAuth経由の場合
+      if (account?.provider === "google") {
+        // メールアドレスが既に存在するか確認
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email || "" }
+        })
+        
+        // 既存ユーザーの場合はそのまま使用
+        if (existingUser) {
+          return true
+        }
+        
+        // 新規ユーザーの場合、デフォルト値を設定
+        if (user.email && user.name) {
+          await prisma.user.upsert({
+            where: { email: user.email },
+            update: {},
+            create: {
+              email: user.email,
+              name: user.name,
+              role: "member",
+              avatarUrl: user.image || null,
+            }
+          })
+        }
+      }
+      return true
     }
   }
 })

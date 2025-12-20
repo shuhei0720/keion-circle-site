@@ -62,6 +62,8 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   }
 
   const isOwnProfile = currentUser.id === user.id;
+  const totalParticipations = user.postParticipants.length;
+  const totalPosts = user.posts.length;
 
   return (
     <DashboardLayout>
@@ -84,15 +86,32 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">{user.name}</h1>
               <p className="text-gray-600 mb-4">{user.email}</p>
+              
+              {/* 統計情報 */}
+              <div className="flex gap-4 mb-4">
+                <div className="bg-blue-50 px-4 py-2 rounded-lg">
+                  <p className="text-sm text-gray-600">投稿数</p>
+                  <p className="text-2xl font-bold text-blue-600">{totalPosts}</p>
+                </div>
+                <div className="bg-green-50 px-4 py-2 rounded-lg">
+                  <p className="text-sm text-gray-600">参加回数</p>
+                  <p className="text-2xl font-bold text-green-600">{totalParticipations}</p>
+                </div>
+              </div>
+              
               {user.instrument && (
                 <div className="mb-4">
-                  <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-                    {user.instrument}
+                  <p className="text-sm text-gray-600 mb-1">担当楽器</p>
+                  <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                    🎸 {user.instrument}
                   </span>
                 </div>
               )}
               {user.bio && (
-                <p className="text-gray-700 whitespace-pre-wrap">{user.bio}</p>
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 mb-1">自己紹介</p>
+                  <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded">{user.bio}</p>
+                </div>
               )}
               {isOwnProfile && (
                 <Link
