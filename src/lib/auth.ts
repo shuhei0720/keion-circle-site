@@ -5,6 +5,13 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
 
+// 環境変数の確認とフォールバック
+const isDevelopment = process.env.NODE_ENV === 'development'
+const baseUrl = process.env.NEXTAUTH_URL || 
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
+
+console.log('NextAuth Base URL:', baseUrl)
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
