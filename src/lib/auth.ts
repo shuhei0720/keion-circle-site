@@ -7,15 +7,19 @@ import bcrypt from "bcryptjs"
 
 // 環境変数の確認とフォールバック
 const isDevelopment = process.env.NODE_ENV === 'development'
-const baseUrl = process.env.NEXTAUTH_URL || 
+const baseUrl = process.env.AUTH_URL || process.env.NEXTAUTH_URL || 
   (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000')
 
 console.log('NextAuth Base URL:', baseUrl)
+console.log('Environment:', process.env.NODE_ENV)
+console.log('AUTH_URL:', process.env.AUTH_URL)
+console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL)
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  debug: true, // デバッグモードを有効化
-  trustHost: true, // Vercel環境でのホスト信頼を有効化
+  debug: true,
+  trustHost: true,
+  basePath: '/api/auth',
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
