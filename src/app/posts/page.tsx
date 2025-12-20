@@ -435,7 +435,7 @@ export default function PostsPage() {
                         {participatingUsers.map((participant) => (
                           <Link
                             key={participant.id}
-                            href={`/users/${participant.userId}`}
+                            href={`/users/${participant.user.id}`}
                             className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full hover:bg-green-100 transition"
                           >
                             <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
