@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+export const runtime = 'nodejs'
+
 // メッセージ一覧取得
 export async function GET() {
   try {

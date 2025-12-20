@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
 
+export const runtime = 'nodejs'
+
 // 投稿一覧取得（参加情報といいね情報含む）
 export async function GET() {
   try {

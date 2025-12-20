@@ -1,4 +1,11 @@
-export { auth as middleware } from "@/lib/auth"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+export function middleware(request: NextRequest) {
+  // ミドルウェアはEdge Runtimeで動作するため、Prismaを使わない
+  // セッション確認はAPI RouteやServer Componentで行う
+  return NextResponse.next()
+}
 
 export const config = {
   matcher: [
@@ -7,8 +14,5 @@ export const config = {
     '/chat/:path*',
     '/dashboard/:path*',
     '/users/:path*',
-    '/api/schedules/:path*',
-    '/api/messages/:path*',
-    '/api/users/:path*',
   ]
 }

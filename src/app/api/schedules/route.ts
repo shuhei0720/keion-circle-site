@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
 
+export const runtime = 'nodejs'
+
 // スケジュール一覧取得
 export async function GET() {
   try {
