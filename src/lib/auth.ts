@@ -94,9 +94,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session
     },
     async signIn({ user, account, profile }) {
-      // PrismaAdapterがユーザー作成を自動的に処理するため、
-      // 特別な処理は不要
-      retGoogle OAuth経由の場合、ユーザーを手動でDBに保存
+      // Google OAuth経由の場合、ユーザーを手動でDBに保存
       if (account?.provider === "google" && user.email) {
         try {
           const existingUser = await prisma.user.findUnique({
@@ -119,5 +117,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return false
         }
       }
-  }
+      return true
+    }
 })
