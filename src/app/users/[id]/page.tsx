@@ -142,7 +142,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                     >
                       <h3 className="font-semibold">{participant.post.title}</h3>
                       <p className="text-sm text-gray-500">
-                        {new Date(participant.joinedAt).toLocaleDateString('ja-JP')}に参加
+                        {new Date(participant.createdAt).toLocaleDateString('ja-JP')}に参加
                       </p>
                     </Link>
                   </li>
