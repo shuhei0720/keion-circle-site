@@ -9,7 +9,7 @@ import { useState } from 'react'
 export default function DashboardLayout({
   children,
 }: {
-  children: React.NodeNode
+  children: React.ReactNode
 }) {
   const { data: session, status } = useSession()
   const pathname = usePathname()
