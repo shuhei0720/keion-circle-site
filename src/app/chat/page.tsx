@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useSession } from 'next-auth/react'
-import { io, Socket } from 'socket.io-client'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Paperclip, Send, FileIcon, X, User } from 'lucide-react'
 import Link from 'next/link'
@@ -26,7 +25,6 @@ export default function ChatPage() {
   const { data: session, status } = useSession()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
-  const [socket, setSocket] = useState<Socket | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -42,15 +40,9 @@ export default function ChatPage() {
 
   useEffect(() => {
     fetchMessages()
-    const newSocket = io('http://localhost:3000', {
-      transports: ['websocket', 'polling']
-    })
-    newSocket.on('connect', () => console.log('Connected'))
-    newSocket.on('new-message', (message: Message) => {
-      setMessages((prev) => [...prev, message])
-    })
-    setSocket(newSocket)
-    return () => { newSocket.disconnect() }
+    // 3秒ごとにメッセージを取得（ポーリング）
+    const interval = setInterval(fetchMessages, 3000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => { scrollToBottom() }, [messages])
@@ -82,7 +74,7 @@ export default function ChatPage() {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
-    if ((!inputMessage.trim() && !selectedFile) || !socket || !session?.user) return
+    if ((!inputMessage.trim() && !selectedFile) || !session?.user) return
     setUploading(true)
 
     try {
@@ -102,18 +94,28 @@ export default function ChatPage() {
         }
       }
 
-      socket.emit('send-message', {
-        content: inputMessage || (selectedFile ? `${selectedFile.name}を送信しました` : ''),
-        userId: (session.user as any).id,
-        userName: session.user.name || session.user.email,
-        fileUrl,
-        fileName,
-        fileType
+      // APIにメッセージを送信
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: inputMessage || (selectedFile ? `${selectedFile.name}を送信しました` : ''),
+          fileUrl,
+          fileName,
+          fileType
+        })
       })
 
-      setInputMessage('')
-      setSelectedFile(null)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+      if (response.ok) {
+        const newMessage = await response.json()
+        setMessages((prev) => [...prev, newMessage])
+        setInputMessage('')
+        setSelectedFile(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+        scrollToBottom()
+      } else {
+        throw new Error('メッセージの送信に失敗しました')
+      }
     } catch (error) {
       console.error('Failed to send message:', error)
       alert('メッセージの送信に失敗しました')
