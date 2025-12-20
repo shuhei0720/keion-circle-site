@@ -11,8 +11,10 @@ interface Post {
   title: string
   content: string
   youtubeUrl: string | null
+  userId: string
   createdAt: string
   user: {
+    id: string
     name: string
     email: string
     avatarUrl: string | null
