@@ -17,7 +17,6 @@ console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL)
 export const { handlers, signIn, signOut, auth } = NextAuth({
   debug: true,
   trustHost: true,
-  basePath: '/api/auth',
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
