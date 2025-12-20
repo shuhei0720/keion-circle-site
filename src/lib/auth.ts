@@ -71,11 +71,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: '/auth/error',
   },
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user, trigger, session, account }) {
+      // 初回ログイン時
       if (user) {
-        token.id = user.id as string
-        token.role = user.role || "member"
-        token.avatarUrl = user.avatarUrl || null
+        // Google OAuth経由の場合、メールアドレスでDBからユーザー情報を取得
+        if (account?.provider === "google" && user.email) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email }
+          })
+          if (dbUser) {
+            token.id = dbUser.id
+            token.role = dbUser.role
+            token.avatarUrl = dbUser.avatarUrl
+          }
+        } else {
+          // 通常のログイン
+          token.id = user.id as string
+          token.role = user.role || "member"
+          token.avatarUrl = user.avatarUrl || null
+        }
       }
       
       // プロフィール更新時にトークンを更新
