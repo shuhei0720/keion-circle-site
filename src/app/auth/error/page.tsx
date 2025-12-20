@@ -2,14 +2,23 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 
 function ErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
+  const [envDebug, setEnvDebug] = useState<any>(null)
+
+  useEffect(() => {
+    // 環境変数のデバッグ情報を取得
+    fetch('/api/debug/env')
+      .then(res => res.json())
+      .then(data => setEnvDebug(data))
+      .catch(err => console.error('Failed to fetch env debug:', err))
+  }, [])
 
   const errorMessages: Record<string, string> = {
-    Configuration: '認証設定エラーです。管理者に連絡してください。',
+    Configuration: '認証設定エラーです。NEXTAUTH_URLが正しく設定されていない可能性があります。',
     AccessDenied: 'アクセスが拒否されました。',
     Verification: '認証トークンが期限切れまたは既に使用されています。',
     OAuthSignin: 'OAuthプロバイダーとの接続開始に失敗しました。',
@@ -46,6 +55,15 @@ function ErrorContent() {
           </p>
         )}
       </div>
+
+      {envDebug && (
+        <div className="mb-6 p-4 bg-gray-100 rounded text-left text-xs">
+          <h3 className="font-bold mb-2">デバッグ情報:</h3>
+          <pre className="whitespace-pre-wrap break-words">
+            {JSON.stringify(envDebug, null, 2)}
+          </pre>
+        </div>
+      )}
       
       <div className="space-y-3">
         <Link
@@ -67,7 +85,7 @@ function ErrorContent() {
 
 export default function AuthError() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
       <Suspense fallback={
         <div className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full">
           <div className="text-center">読み込み中...</div>
