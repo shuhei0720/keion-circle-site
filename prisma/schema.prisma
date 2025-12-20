@@ -1,0 +1,137 @@
+// Prisma schema file
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth用のモデル
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  avatarUrl     String?   // プロフィール画像URL
+  bio           String?   // 自己紹介
+  instrument    String?   // 担当楽器
+  role          String    @default("member") // admin, member
+  accounts      Account[]
+  sessions      Session[]
+  posts         Post[]
+  messages      Message[]
+  schedules     ScheduleResponse[]
+  postParticipants PostParticipant[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// 投稿機能
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  content     String?
+  youtubeUrl  String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participants PostParticipant[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 投稿参加機能
+model PostParticipant {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  status    String   // "participating", "not_participating"
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+// チャット機能
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  fileUrl   String?
+  fileName  String?
+  fileType  String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+// スケジュール調整機能
+model Schedule {
+  id          String             @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  dates       ScheduleDate[]
+}
+
+model ScheduleDate {
+  id         String             @id @default(cuid())
+  scheduleId String
+  date       DateTime
+  schedule   Schedule           @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  responses  ScheduleResponse[]
+  createdAt  DateTime           @default(now())
+}
+
+model ScheduleResponse {
+  id             String       @id @default(cuid())
+  scheduleDateId String
+  userId         String
+  status         String       // "available", "maybe", "unavailable"
+  comment        String?
+  scheduleDate   ScheduleDate @relation(fields: [scheduleDateId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([scheduleDateId, userId])
+}

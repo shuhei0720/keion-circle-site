@@ -1,36 +1,200 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 軽音サークル メンバーサイト
 
-## Getting Started
+Next.jsとTailwind CSSで構築された軽音サークルのメンバー専用Webサイトです。
 
-First, run the development server:
+## 主な機能
+
+- 🔐 **パスワード認証**: メールアドレスとパスワードによる安全な認証システム
+- 👤 **役割ベースのアクセス制御**: 管理者と通常ユーザーの2つの役割
+- 📝 **投稿機能（管理者専用）**: YouTubeと連携した動画投稿・編集・削除（公開アクセス可能）
+- 📅 **スケジュール調整機能（改良版）**: 複数候補日への投票、コメント機能、最有力候補の自動表示
+- 💬 **リアルタイムチャット（メンバー専用）**: Socket.ioによるリアルタイムメッセージング + ファイル送信機能
+
+## 技術スタック
+
+- **フレームワーク**: Next.js 16 (App Router)
+- **言語**: TypeScript
+- **スタイリング**: Tailwind CSS 4
+- **認証**: NextAuth.js v5 (Credentials Provider + bcryptjs)
+- **データベース**: Prisma + SQLite
+- **リアルタイム通信**: Socket.io
+- **アイコン**: Lucide React
+- **YouTube埋め込み**: react-youtube
+- **ファイルアップロード**: Multer
+
+## セットアップ
+
+### 1. 依存関係のインストール
+
+```bash
+npm install
+```
+
+### 2. 環境変数の設定
+
+`.env.local` ファイルはすでに作成されていますが、本番環境では必ず `NEXTAUTH_SECRET` を変更してください。
+
+### 3. データベースの初期化
+
+```bash
+export DATABASE_URL="file:./dev.db"
+npx prisma generate
+npx prisma db push
+```
+
+### 4. 管理者ユーザーの作成
+
+```bash
+export DATABASE_URL="file:./dev.db"
+node scripts/create-admin.js admin@example.com password123 "管理者名"
+```
+
+### 5. アップロードディレクトリの作成
+
+```bash
+mkdir -p public/uploads
+```
+
+### 6. 開発サーバーの起動
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+ブラウザで `http://localhost:3000` を開いてください。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 使い方
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 管理者の操作
 
-## Learn More
+#### ログイン
+1. トップページから「ログイン」をクリック
+2. 管理者のメールアドレスとパスワードを入力
+3. 全機能にアクセス可能
 
-To learn more about Next.js, take a look at the following resources:
+#### 投稿管理（管理者のみ）
+- **新規投稿**: タイトル、内容、YouTube URLを入力して投稿
+- **編集**: 投稿の編集ボタンをクリック
+- **削除**: 投稿の削除ボタンをクリック（確認あり）
+- YouTube動画は自動で埋め込まれます
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+#### スケジュール作成（管理者のみ）
+- **新規スケジュール**: タイトル、詳細を入力
+- **複数候補日の設定**: 「候補日を追加」ボタンで複数の日時を設定可能
+- 投票結果は自動集計され、最有力候補が表示されます
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 通常ユーザーの操作
 
-## Deploy on Vercel
+#### 新規登録
+1. トップページから「新規登録」をクリック
+2. 名前、メールアドレス、パスワードを入力
+3. アカウント作成後、ログインページへ
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### 投稿閲覧（ログイン不要）
+- トップページやPostsページで投稿を閲覧可能
+- 最新の活動がトップページに表示されます
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### スケジュール投票（ログイン必要）
+- 各候補日に対して「○（参加可能）」「△（未定）」「×（参加不可）」を選択
+- コメント欄に追加情報を入力可能
+- 投票結果はリアルタイムで集計され、各候補日の参加人数が表示されます
+- 最も参加者が多い日が「最有力候補」として強調表示されます
+
+#### チャット（ログイン必要）
+- リアルタイムメッセージ送受信
+- ファイル添付機能（画像、動画、PDF、Wordなど）
+- 画像は自動でプレビュー表示
+- その他のファイルはダウンロードリンクとして表示
+- ファイルサイズ上限：10MB
+
+## プロジェクト構造
+
+```
+keion-circle-site/
+├── prisma/
+│   └── schema.prisma          # データベーススキーマ（パスワード、役割、複数候補日対応）
+├── public/
+│   └── uploads/               # アップロードされたファイル
+├── scripts/
+│   └── create-admin.js        # 管理者ユーザー作成スクリプト
+├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── auth/
+│   │   │   │   ├── [...nextauth]/  # NextAuth API
+│   │   │   │   └── signup/         # サインアップAPI
+│   │   │   ├── posts/         # 投稿API（管理者のみ作成・編集・削除）
+│   │   │   ├── schedules/     # スケジュールAPI（管理者のみ作成）
+│   │   │   ├── messages/      # チャットAPI
+│   │   │   └── upload/        # ファイルアップロードAPI
+│   │   ├── auth/
+│   │   │   ├── signin/        # ログイン画面（パスワード入力対応）
+│   │   │   └── signup/        # 新規登録画面
+│   │   ├── chat/              # チャットページ（ログイン必要）
+│   │   ├── posts/             # 投稿ページ（公開アクセス可能）
+│   │   ├── schedules/         # スケジュールページ（ログイン必要）
+│   │   ├── layout.tsx         # ルートレイアウト
+│   │   └── page.tsx           # トップページ（投稿一覧表示）
+│   ├── components/
+│   │   ├── DashboardLayout.tsx # ナビゲーション
+│   │   └── Providers.tsx       # SessionProvider
+│   ├── lib/
+│   │   ├── auth.ts            # NextAuth設定（パスワード認証）
+│   │   ├── prisma.ts          # Prismaクライアント
+│   │   └── permissions.ts     # 管理者権限チェック
+│   ├── types/
+│   │   └── next-auth.d.ts     # NextAuth型定義（role含む）
+│   └── middleware.ts          # ログイン保護ミドルウェア
+├── server.js                  # Socket.ioサーバー
+├── .env.local                 # 環境変数
+└── package.json
+```
+
+## 実装済みの機能
+
+### ✅ パスワード認証システム
+
+- bcryptjsによるパスワードハッシュ化
+- 新規登録ページの実装
+- ログイン画面でのパスワード入力
+
+### ✅ 役割ベースのアクセス制御
+
+- 管理者（admin）と通常ユーザー（member）の区別
+- 管理者のみ：投稿の作成・編集・削除、スケジュールの作成
+- 管理者作成スクリプトの提供
+
+### ✅ スケジュール機能の大幅改善
+
+- 1つのスケジュールに複数の候補日を設定可能
+- 各候補日に対する個別投票（○△×）
+- コメント機能の追加
+- 投票数の自動集計と表示（○5人、△2人、×1人）
+- 最有力候補（最も参加者が多い日）の自動ハイライト表示
+
+### ✅ 公開アクセス機能
+
+- トップページに最新投稿3件を表示
+- 投稿ページはログイン不要で閲覧可能
+- スケジュールとチャットはログイン必須
+
+## 本番デプロイ
+
+### 環境変数の設定
+
+本番環境では以下の環境変数を設定してください：
+
+- `NEXTAUTH_SECRET`: ランダムな秘密鍵に変更
+- `NEXTAUTH_URL`: 本番環境のURL
+- `DATABASE_URL`: 本番データベースのURL（PostgreSQLなど推奨）
+
+### ビルドと起動
+
+```bash
+npm run build
+npm start
+```
+
+---
+
+© 2025 軽音サークル

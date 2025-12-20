@@ -1,0 +1,237 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { useSession } from 'next-auth/react'
+import { io, Socket } from 'socket.io-client'
+import DashboardLayout from '@/components/DashboardLayout'
+import { Paperclip, Send, FileIcon, X, User } from 'lucide-react'
+
+interface Message {
+  id: string
+  content: string
+  createdAt: string
+  userId: string
+  fileUrl?: string | null
+  fileName?: string | null
+  fileType?: string | null
+  user: {
+    name: string
+    email: string
+    avatarUrl?: string | null
+  }
+}
+
+export default function ChatPage() {
+  const { data: session } = useSession()
+  const [messages, setMessages] = useState<Message[]>([])
+  const [inputMessage, setInputMessage] = useState('')
+  const [socket, setSocket] = useState<Socket | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetchMessages()
+    const newSocket = io('http://localhost:3000', {
+      transports: ['websocket', 'polling']
+    })
+    newSocket.on('connect', () => console.log('Connected'))
+    newSocket.on('new-message', (message: Message) => {
+      setMessages((prev) => [...prev, message])
+    })
+    setSocket(newSocket)
+    return () => { newSocket.disconnect() }
+  }, [])
+
+  useEffect(() => { scrollToBottom() }, [messages])
+
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch('/api/messages')
+      const data = await res.json()
+      setMessages(data)
+    } catch (error) {
+      console.error('Failed to fetch messages:', error)
+    }
+  }
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('ファイルサイズは10MB以下にしてください')
+        return
+      }
+      setSelectedFile(file)
+    }
+  }
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if ((!inputMessage.trim() && !selectedFile) || !socket || !session?.user) return
+    setUploading(true)
+
+    try {
+      let fileUrl = null, fileName = null, fileType = null
+      if (selectedFile) {
+        const formData = new FormData()
+        formData.append('file', selectedFile)
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData
+        })
+        if (response.ok) {
+          const data = await response.json()
+          fileUrl = data.fileUrl
+          fileName = data.fileName
+          fileType = data.fileType
+        }
+      }
+
+      socket.emit('send-message', {
+        content: inputMessage || (selectedFile ? `${selectedFile.name}を送信しました` : ''),
+        userId: session.user.id,
+        userName: session.user.name || session.user.email,
+        fileUrl,
+        fileName,
+        fileType
+      })
+
+      setInputMessage('')
+      setSelectedFile(null)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    } catch (error) {
+      console.error('Failed to send message:', error)
+      alert('メッセージの送信に失敗しました')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const isImage = (fileType: string | null | undefined) => fileType?.startsWith('image/') || false
+
+  return (
+    <DashboardLayout>
+      <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto bg-white">
+        <div className="bg-blue-600 text-white p-4 shadow-md">
+          <h1 className="text-2xl font-bold">チャット</h1>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          {messages.map((message) => {
+            const isOwnMessage = session?.user && session.user.id === message.userId
+            return (
+              <div key={message.id} className={`flex gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                {!isOwnMessage && (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
+                    {message.user.avatarUrl ? (
+                      <Link href={`/users/${message.userId}`} className="block w-full h-full">
+                        <img
+                          src={message.user.avatarUrl}
+                          alt={message.user.name || ''}
+                          className="w-full h-full object-cover hover:opacity-80 transition"
+                        />
+                      </Link>
+                    ) : (
+                      <Link href={`/users/${message.userId}`} className="block w-full h-full flex items-center justify-center hover:bg-gray-300 transition">
+                        <User className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    )}
+                  </div>
+                )}
+                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow ${isOwnMessage ? 'bg-blue-600 text-white' : 'bg-white text-gray-800'}`}>
+                  <div className="text-xs mb-1 opacity-75">{message.user.name || message.user.email}</div>
+                  <div className="break-words">{message.content}</div>
+                  {message.fileUrl && (
+                    <div className="mt-2">
+                      {isImage(message.fileType) ? (
+                        <img
+                          src={message.fileUrl}
+                          alt={message.fileName || 'Image'}
+                          className="max-w-full rounded cursor-pointer hover:opacity-90"
+                          onClick={() => window.open(message.fileUrl!, '_blank')}
+                        />
+                      ) : (
+                        <a
+                          href={message.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2 p-2 rounded ${isOwnMessage ? 'bg-blue-700' : 'bg-gray-100'} hover:opacity-80`}
+                        >
+                          <FileIcon className="w-5 h-5" />
+                          <span className="text-sm">{message.fileName}</span>
+                        </a>
+                      )}
+                    </div>
+                  )}
+                  <div className="text-xs mt-1 opacity-75">{new Date(message.createdAt).toLocaleTimeString('ja-JP')}</div>
+                </div>
+                {isOwnMessage && (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
+                    {session.user.image ? (
+                      <Link href={`/users/${session.user.id}`} className="block w-full h-full">
+                        <img
+                          src={session.user.image}
+                          alt={session.user.name || ''}
+                          className="w-full h-full object-cover hover:opacity-80 transition"
+                        />
+                      </Link>
+                    ) : (
+                      <Link href={`/users/${session.user.id}`} className="block w-full h-full flex items-center justify-center hover:bg-gray-300 transition">
+                        <User className="w-4 h-4 text-gray-400" />
+                      </Link>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSendMessage} className="border-t p-4 bg-white">
+          {selectedFile && (
+            <div className="mb-2 flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
+              <FileIcon className="w-5 h-5 text-gray-600" />
+              <span className="flex-1 text-sm truncate">{selectedFile.name}</span>
+              <button
+                type="button"
+                onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
+                className="text-red-500 hover:text-red-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" />
+            <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg" title="ファイルを添付">
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              placeholder="メッセージを入力..."
+              className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={uploading}
+            />
+            <button
+              type="submit"
+              disabled={(!inputMessage.trim() && !selectedFile) || uploading}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2"
+            >
+              {uploading ? '送信中...' : <><Send className="w-4 h-4" />送信</>}
+            </button>
+          </div>
+        </form>
+      </div>
+    </DashboardLayout>
+  )
+}
