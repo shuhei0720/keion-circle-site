@@ -179,8 +179,8 @@ export default function SchedulesPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8">スケジュール調整</h1>
+      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">スケジュール調整</h1>
 
         {fetchingSchedules ? (
           <div className="flex justify-center items-center py-12">
@@ -189,41 +189,43 @@ export default function SchedulesPage() {
         ) : (
           <>
         {/* スケジュール一覧 */}
-        <div className="space-y-6 mb-8">
+        <div className="space-y-4 sm:space-y-6 mb-8">
           {schedules.map((schedule) => {
             const { mostPopular, maxAvailable } = getMostPopularDate(schedule.dates)
             
             return (
-              <div key={schedule.id} className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-xl font-semibold mb-2">{schedule.title}</h3>
-                <p className="text-gray-600 mb-4">{schedule.description}</p>
+              <div key={schedule.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">{schedule.title}</h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-4">{schedule.description}</p>
 
                 {/* 最有力候補 */}
                 {mostPopular && maxAvailable > 0 && (
                   <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-green-800">
-                      <Calendar size={20} />
-                      <span className="font-semibold">最有力候補:</span>
-                      <span>{new Date(mostPopular.date as string).toLocaleString('ja-JP')}</span>
-                      <span className="text-sm">({maxAvailable}人が参加可能)</span>
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2 text-green-800 text-sm sm:text-base">
+                      <div className="flex items-center gap-2">
+                        <Calendar size={18} className="flex-shrink-0" />
+                        <span className="font-semibold">最有力候補:</span>
+                      </div>
+                      <span className="truncate">{new Date(mostPopular.date as string).toLocaleString('ja-JP')}</span>
+                      <span className="text-xs sm:text-sm">({maxAvailable}人)</span>
                     </div>
                   </div>
                 )}
 
                 {/* 候補日ごとの投票 */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {schedule.dates.map((dateItem) => {
                     const votes = getVoteCount(dateItem)
                     return (
-                      <div key={dateItem.id} className="border rounded-lg p-4">
-                        <div className="flex items-center justify-between mb-3">
+                      <div key={dateItem.id} className="border rounded-lg p-3 sm:p-4">
+                        <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 mb-3">
                           <div className="flex items-center gap-2">
-                            <Calendar size={18} className="text-blue-600" />
-                            <span className="font-medium">
+                            <Calendar size={16} className="text-blue-600 flex-shrink-0" />
+                            <span className="font-medium text-sm sm:text-base">
                               {new Date(dateItem.date).toLocaleString('ja-JP')}
                             </span>
                           </div>
-                          <div className="flex gap-4 text-sm">
+                          <div className="flex gap-3 sm:gap-4 text-xs sm:text-sm">
                             <span className="text-green-600">○ {votes.available}</span>
                             <span className="text-yellow-600">△ {votes.maybe}</span>
                             <span className="text-red-600">× {votes.unavailable}</span>
@@ -232,24 +234,27 @@ export default function SchedulesPage() {
 
                         {/* 投票ボタン */}
                         <div className="mb-3">
-                          <div className="flex gap-2 mb-2">
+                          <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-2">
                             <button
                               onClick={() => handleResponse(dateItem.id, 'available')}
-                              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                              className="px-2 sm:px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-xs sm:text-sm font-medium touch-manipulation"
                             >
-                              ○ 参加可能
+                              <span className="hidden xs:inline">○ 参加可能</span>
+                              <span className="xs:hidden">○</span>
                             </button>
                             <button
                               onClick={() => handleResponse(dateItem.id, 'maybe')}
-                              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
+                              className="px-2 sm:px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs sm:text-sm font-medium touch-manipulation"
                             >
-                              △ 未定
+                              <span className="hidden xs:inline">△ 未定</span>
+                              <span className="xs:hidden">△</span>
                             </button>
                             <button
                               onClick={() => handleResponse(dateItem.id, 'unavailable')}
-                              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm"
+                              className="px-2 sm:px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-xs sm:text-sm font-medium touch-manipulation"
                             >
-                              × 参加不可
+                              <span className="hidden xs:inline">× 参加不可</span>
+                              <span className="xs:hidden">×</span>
                             </button>
                           </div>
                           <input
@@ -260,7 +265,7 @@ export default function SchedulesPage() {
                               ...selectedDateComments,
                               [dateItem.id]: e.target.value
                             })}
-                            className="w-full px-3 py-2 border rounded text-sm"
+                            className="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
 

@@ -31,9 +31,9 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-      <div className="bg-white p-8 rounded-lg shadow-2xl w-96">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
+      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-md">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
           軽音サークル
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -45,7 +45,7 @@ export default function SignIn() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
@@ -57,13 +57,13 @@ export default function SignIn() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-3 sm:px-4 py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+            className="w-full bg-blue-600 text-white py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm sm:text-base touch-manipulation"
           >
             ログイン
           </button>
@@ -82,7 +82,7 @@ export default function SignIn() {
 
         <button
           onClick={handleGoogleSignIn}
-          className="w-full mt-4 bg-white text-gray-700 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors font-semibold flex items-center justify-center gap-2"
+          className="w-full mt-4 bg-white text-gray-700 py-2.5 sm:py-3 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors font-semibold text-sm sm:text-base flex items-center justify-center gap-2 touch-manipulation"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

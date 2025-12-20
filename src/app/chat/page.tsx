@@ -139,8 +139,8 @@ export default function ChatPage() {
   return (
     <DashboardLayout>
       <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto bg-white">
-        <div className="bg-blue-600 text-white p-4 shadow-md">
-          <h1 className="text-2xl font-bold">チャット</h1>
+        <div className="bg-blue-600 text-white p-3 sm:p-4 shadow-md">
+          <h1 className="text-xl sm:text-2xl font-bold">チャット</h1>
         </div>
 
         {fetchingMessages && messages.length === 0 ? (
@@ -149,13 +149,13 @@ export default function ChatPage() {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
               {messages.map((message) => {
             const isOwnMessage = session?.user && (session.user as any).id === message.userId
             return (
               <div key={message.id} className={`flex gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                 {!isOwnMessage && (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
                     {message.user.avatarUrl ? (
                       <Link href={`/users/${message.userId}`} className="block w-full h-full">
                         <img
@@ -166,14 +166,14 @@ export default function ChatPage() {
                       </Link>
                     ) : (
                       <Link href={`/users/${message.userId}`} className="block w-full h-full flex items-center justify-center hover:bg-gray-300 transition">
-                        <User className="w-4 h-4 text-gray-400" />
+                        <User className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
                       </Link>
                     )}
                   </div>
                 )}
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg shadow ${isOwnMessage ? 'bg-blue-600 text-white' : 'bg-white text-gray-800'}`}>
+                <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-lg shadow ${isOwnMessage ? 'bg-blue-600 text-white' : 'bg-white text-gray-800'}`}>
                   <div className="text-xs mb-1 opacity-75">{message.user.name || message.user.email}</div>
-                  <div className="break-words">{message.content}</div>
+                  <div className="text-sm sm:text-base break-words">{message.content}</div>
                   {message.fileUrl && (
                     <div className="mt-2">
                       {isImage(message.fileType) ? (
@@ -221,40 +221,54 @@ export default function ChatPage() {
           <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSendMessage} className="border-t p-4 bg-white">
+            <form onSubmit={handleSendMessage} className="border-t p-3 sm:p-4 bg-white">
           {selectedFile && (
             <div className="mb-2 flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
-              <FileIcon className="w-5 h-5 text-gray-600" />
-              <span className="flex-1 text-sm truncate">{selectedFile.name}</span>
+              <FileIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 flex-shrink-0" />
+              <span className="flex-1 text-xs sm:text-sm truncate">{selectedFile.name}</span>
               <button
                 type="button"
                 onClick={() => { setSelectedFile(null); if (fileInputRef.current) fileInputRef.current.value = '' }}
-                className="text-red-500 hover:text-red-700"
+                className="text-red-500 hover:text-red-700 p-1 touch-manipulation"
+                aria-label="ファイルを削除"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           )}
 
           <div className="flex gap-2">
             <input type="file" ref={fileInputRef} onChange={handleFileSelect} className="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt" />
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg" title="ファイルを添付">
+            <button 
+              type="button" 
+              onClick={() => fileInputRef.current?.click()} 
+              className="px-3 sm:px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg touch-manipulation flex-shrink-0" 
+              title="ファイルを添付"
+              aria-label="ファイルを添付"
+            >
               <Paperclip className="w-5 h-5" />
             </button>
             <input
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="メッセージを入力..."
-              className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="メッセージ..."
+              className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-0"
               disabled={uploading}
             />
             <button
               type="submit"
               disabled={(!inputMessage.trim() && !selectedFile) || uploading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2"
+              className="px-3 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2 touch-manipulation flex-shrink-0 text-sm sm:text-base font-medium"
             >
-              {uploading ? '送信中...' : <><Send className="w-4 h-4" />送信</>}
+              {uploading ? (
+                <span className="hidden xs:inline">送信中...</span>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span className="hidden xs:inline">送信</span>
+                </>
+              )}
             </button>
           </div>
             </form>

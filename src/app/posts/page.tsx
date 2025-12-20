@@ -299,8 +299,8 @@ export default function PostsPage() {
   if (session) {
     return (
       <DashboardLayout>
-        <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8">投稿一覧</h1>
+        <div className="max-w-4xl mx-auto p-4 sm:p-6">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">投稿一覧</h1>
 
         {fetchingPosts ? (
           <div className="flex justify-center items-center py-12">
@@ -309,17 +309,17 @@ export default function PostsPage() {
         ) : (
           <>
         {/* 投稿一覧 */}
-        <div className="space-y-6 mb-8">
+        <div className="space-y-4 sm:space-y-6 mb-8">
           {currentPosts.map((post) => {
             const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
             const userParticipation = getUserParticipation(post)
             const participatingUsers = getParticipatingUsers(post)
 
             return (
-              <div key={post.id} className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <Link href={`/users/${post.userId}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 hover:opacity-80 transition">
+              <div key={post.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                <div className="flex items-start justify-between mb-4 gap-2">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                    <Link href={`/users/${post.userId}`} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 hover:opacity-80 transition">
                       {post.user.avatarUrl ? (
                         <img
                           src={post.user.avatarUrl}
@@ -327,47 +327,49 @@ export default function PostsPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <User className="w-5 h-5 text-gray-400" />
+                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       )}
                     </Link>
-                    <div>
-                      <h2 className="text-2xl font-bold">{post.title}</h2>
-                      <p className="text-sm text-gray-500">
-                        投稿者: {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
+                    <div className="min-w-0 flex-1">
+                      <h2 className="text-lg sm:text-2xl font-bold truncate">{post.title}</h2>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">
+                        {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
                       </p>
                     </div>
                   </div>
                   {isAdmin && (
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 sm:gap-2 flex-shrink-0">
                       <button
                         onClick={() => handleEdit(post)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        aria-label="編集"
                       >
-                        <Edit className="w-5 h-5" />
+                        <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(post.id)}
                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        aria-label="削除"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                       </button>
                     </div>
                   )}
                 </div>
 
                 {post.content && (
-                  <div className="text-gray-700 mb-4 whitespace-pre-wrap">
+                  <div className="text-sm sm:text-base text-gray-700 mb-4 whitespace-pre-wrap break-words">
                     {post.content.split('\n').map((line, index) => {
                       // 画像マークダウン ![](url) を検出
                       const imageMatch = line.match(/!\[\]\((.+?)\)/)
                       if (imageMatch) {
                         return (
-                          <div key={index} className="my-4">
+                          <div key={index} className="my-3 sm:my-4">
                             <img
                               src={imageMatch[1]}
                               alt="投稿画像"
                               className="max-w-full h-auto rounded-lg"
-                              style={{ maxHeight: '500px', objectFit: 'contain' }}
+                              style={{ maxHeight: '400px', objectFit: 'contain' }}
                             />
                           </div>
                         )
@@ -378,15 +380,17 @@ export default function PostsPage() {
                 )}
 
                 {youtubeId && (
-                  <div className="mb-4 rounded-lg overflow-hidden">
+                  <div className="mb-4 rounded-lg overflow-hidden aspect-video">
                     <YouTube
                       videoId={youtubeId}
                       opts={{
                         width: '100%',
+                        height: '100%',
                         playerVars: {
                           autoplay: 0,
                         },
                       }}
+                      className="w-full h-full"
                     />
                   </div>
                 )}
@@ -394,28 +398,28 @@ export default function PostsPage() {
                 {/* 参加ボタンとリスト */}
                 {session && (
                   <div className="mt-4 pt-4 border-t">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                       <div className="flex items-center gap-2">
-                        <UserPlus className="w-5 h-5 text-gray-500" />
-                        <span className="font-medium">参加状況</span>
-                        <span className="text-sm text-gray-500">
-                          ({participatingUsers.length}名参加)
+                        <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                        <span className="text-sm sm:text-base font-medium">参加状況</span>
+                        <span className="text-xs sm:text-sm text-gray-500">
+                          ({participatingUsers.length}名)
                         </span>
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleParticipate(post.id, 'participating')}
-                          className={`px-4 py-2 rounded-lg transition-colors ${
+                          className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
                             userParticipation?.status === 'participating'
                               ? 'bg-green-600 text-white'
                               : 'bg-gray-200 hover:bg-gray-300'
                           }`}
                         >
-                          参加する
+                          参加
                         </button>
                         <button
                           onClick={() => handleParticipate(post.id, 'not_participating')}
-                          className={`px-4 py-2 rounded-lg transition-colors ${
+                          className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
                             userParticipation?.status === 'not_participating'
                               ? 'bg-red-600 text-white'
                               : 'bg-gray-200 hover:bg-gray-300'
@@ -430,14 +434,14 @@ export default function PostsPage() {
                     <div className="flex items-center gap-4 mt-4 pt-4 border-t">
                       <button
                         onClick={() => isLikedByUser(post) ? handleUnlike(post.id) : handleLike(post.id)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                        className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
                           isLikedByUser(post)
                             ? 'bg-red-100 text-red-600 hover:bg-red-200'
                             : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
                         }`}
                       >
                         <Heart 
-                          className={`w-5 h-5 ${isLikedByUser(post) ? 'fill-current' : ''}`}
+                          className={`w-4 h-4 sm:w-5 sm:h-5 ${isLikedByUser(post) ? 'fill-current' : ''}`}
                         />
                         <span>{post.likes.length}</span>
                       </button>
@@ -450,9 +454,9 @@ export default function PostsPage() {
                           <Link
                             key={participant.id}
                             href={`/users/${participant.user.id}`}
-                            className="flex items-center gap-2 bg-green-50 px-3 py-1 rounded-full hover:bg-green-100 transition"
+                            className="flex items-center gap-2 bg-green-50 px-2 sm:px-3 py-1 rounded-full hover:bg-green-100 transition"
                           >
-                            <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                               {participant.user.avatarUrl ? (
                                 <img
                                   src={participant.user.avatarUrl}
@@ -463,7 +467,7 @@ export default function PostsPage() {
                                 <User className="w-3 h-3 text-gray-400" />
                               )}
                             </div>
-                            <span className="text-sm text-green-700">
+                            <span className="text-xs sm:text-sm text-green-700">
                               {participant.user.name}
                             </span>
                           </Link>
@@ -483,7 +487,8 @@ export default function PostsPage() {
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent"
+              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent touch-manipulation"
+              aria-label="前のページ"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -491,7 +496,7 @@ export default function PostsPage() {
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded-lg ${
+                className={`min-w-[40px] px-3 sm:px-4 py-2 rounded-lg touch-manipulation ${
                   currentPage === page
                     ? 'bg-blue-600 text-white'
                     : 'hover:bg-gray-200'
@@ -503,7 +508,8 @@ export default function PostsPage() {
             <button
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent"
+              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent touch-manipulation"
+              aria-label="次のページ"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -512,8 +518,8 @@ export default function PostsPage() {
 
         {/* 投稿フォーム（管理者のみ・画面下部） */}
         {isAdmin && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">
               {editingId ? '投稿を編集' : '新規投稿'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -523,7 +529,7 @@ export default function PostsPage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   required
                 />
               </div>
@@ -534,7 +540,7 @@ export default function PostsPage() {
                   ref={contentTextareaRef}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   rows={6}
                 />
                 <div className="mt-2">
@@ -548,15 +554,16 @@ export default function PostsPage() {
                   />
                   <label
                     htmlFor="image-upload"
-                    className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 ${
+                    className={`inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 touch-manipulation ${
                       uploadingImage ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
                     <Image className="w-4 h-4" />
-                    {uploadingImage ? '画像アップロード中...' : '画像を挿入'}
+                    <span className="hidden xs:inline">{uploadingImage ? '画像アップロード中...' : '画像を挿入'}</span>
+                    <span className="xs:hidden">{uploadingImage ? 'アップロード中...' : '画像'}</span>
                   </label>
-                  <p className="text-sm text-gray-500 mt-1">
-                    画像をアップロードすると本文に挿入されます（最大10MB）
+                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    最大10MB
                   </p>
                 </div>
               </div>
@@ -567,7 +574,7 @@ export default function PostsPage() {
                   type="text"
                   value={youtubeUrl}
                   onChange={(e) => setYoutubeUrl(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="https://www.youtube.com/watch?v=..."
                 />
               </div>
@@ -576,7 +583,7 @@ export default function PostsPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                  className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 touch-manipulation font-medium"
                 >
                   {loading ? '処理中...' : editingId ? '更新' : '投稿'}
                 </button>
@@ -584,7 +591,7 @@ export default function PostsPage() {
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg hover:bg-gray-50 touch-manipulation font-medium"
                   >
                     キャンセル
                   </button>
