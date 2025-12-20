@@ -174,72 +174,8 @@ export default function SchedulesPage() {
       <div className="max-w-6xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-8">スケジュール調整</h1>
 
-        {/* スケジュール作成フォーム（管理者のみ） */}
-        {isAdmin && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 className="text-xl font-semibold mb-4">新規スケジュール</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">タイトル</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">詳細</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                  rows={3}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">候補日</label>
-                {dates.map((date, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <input
-                      type="datetime-local"
-                      value={date}
-                      onChange={(e) => updateDate(index, e.target.value)}
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                    {dates.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeDateField(index)}
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                      >
-                        削除
-                      </button>
-                    )}
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={addDateField}
-                  className="mt-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-                >
-                  候補日を追加
-                </button>
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
-              >
-                {loading ? '作成中...' : '作成する'}
-              </button>
-            </form>
-          </div>
-        )}
-
         {/* スケジュール一覧 */}
-        <div className="space-y-6">
+        <div className="space-y-6 mb-8">
           {schedules.map((schedule) => {
             const { mostPopular, maxAvailable } = getMostPopularDate(schedule.dates)
             
@@ -343,6 +279,70 @@ export default function SchedulesPage() {
             )
           })}
         </div>
+
+        {/* スケジュール作成フォーム（管理者のみ） - 最下部 */}
+        {isAdmin && (
+          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+            <h2 className="text-xl font-semibold mb-4">新規スケジュール</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">タイトル</label>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">詳細</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">候補日</label>
+                {dates.map((date, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="datetime-local"
+                      value={date}
+                      onChange={(e) => updateDate(index, e.target.value)}
+                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                    {dates.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeDateField(index)}
+                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        削除
+                      </button>
+                    )}
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addDateField}
+                  className="mt-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                >
+                  候補日を追加
+                </button>
+              </div>
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+              >
+                {loading ? '作成中...' : '作成する'}
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   )
