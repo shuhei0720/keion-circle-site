@@ -147,7 +147,7 @@ export default function SchedulesPage() {
     }
   }
 
-  const getMostPopularDate = (dates: ScheduleDate[]) => {
+  const getMostPopularDate = (dates: ScheduleDate[]): { mostPopular: ScheduleDate | null, maxAvailable: number } => {
     let maxAvailable = -1
     let mostPopular: ScheduleDate | null = null
 
