@@ -1,5 +1,4 @@
 import NextAuth from "next-auth"
-import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
@@ -16,7 +15,6 @@ console.log('AUTH_URL:', process.env.AUTH_URL)
 console.log('NEXTAUTH_URL:', process.env.NEXTAUTH_URL)
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   debug: true,
   trustHost: true,
   basePath: '/api/auth',
@@ -98,7 +96,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ user, account, profile }) {
       // PrismaAdapterがユーザー作成を自動的に処理するため、
       // 特別な処理は不要
-      return true
-    }
+      retGoogle OAuth経由の場合、ユーザーを手動でDBに保存
+      if (account?.provider === "google" && user.email) {
+        try {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email }
+          })
+          
+          if (!existingUser) {
+            await prisma.user.create({
+              data: {
+                email: user.email,
+                name: user.name || user.email,
+                image: user.image,
+                avatarUrl: user.image,
+                role: "member",
+              }
+            })
+          }
+        } catch (error) {
+          console.error('Error creating user:', error)
+          return false
+        }
+      }
   }
 })
