@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Music, Calendar, MessageCircle, FileText, User } from 'lucide-react'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
 
@@ -30,41 +30,10 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([])
   const [popularPosts, setPopularPosts] = useState<Post[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const headerRef = useRef<HTMLDivElement>(null)
-  const postsRef = useRef<HTMLDivElement>(null)
-  const popularRef = useRef<HTMLDivElement>(null)
-  const featuresRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     fetchPosts()
   }, [])
-
-  useEffect(() => {
-    // データがロードされた後にアニメーションを設定
-    if (isLoading) return
-
-    // スクロールアニメーションの設定
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -100px 0px'
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate-fade-in')
-        }
-      })
-    }, observerOptions)
-
-    // 各セクションを監視
-    const sections = [postsRef.current, popularRef.current, featuresRef.current]
-    sections.forEach(section => {
-      if (section) observer.observe(section)
-    })
-
-    return () => observer.disconnect()
-  }, [isLoading])
 
   const fetchPosts = async () => {
     try {
@@ -110,7 +79,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
       <div className="container mx-auto px-4 py-16">
         {/* ヘッダー */}
-        <div ref={headerRef} className="text-center mb-16 animate-slide-down">
+        <div className="text-center mb-16 animate-slide-down">
           <div className="flex items-center justify-center mb-4 animate-bounce-slow">
             <Music className="w-16 h-16 text-white" />
           </div>
@@ -139,7 +108,7 @@ export default function Home() {
         </div>
 
         {/* 機能カード（投稿、スケジュール、チャット） */}
-        <div ref={featuresRef} className={`max-w-6xl mx-auto mb-16 transition-all duration-700 ${isLoading ? '' : 'opacity-0 translate-y-10'}`}>
+        <div className="max-w-6xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">サービス</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Link href="/posts" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow group">
@@ -173,7 +142,7 @@ export default function Home() {
         </div>
 
         {/* 最新の投稿 */}
-        <div ref={postsRef} className={`max-w-4xl mx-auto mb-16 transition-all duration-700 ${isLoading ? '' : 'opacity-0 translate-y-10'}`}>
+        <div className="max-w-4xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
@@ -247,7 +216,7 @@ export default function Home() {
 
         {/* 人気の投稿 */}
         {!isLoading && popularPosts.length > 0 && (
-          <div ref={popularRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
+          <div className="max-w-4xl mx-auto mb-16">
             <h2 className="text-3xl font-bold text-white mb-8 text-center">人気の投稿</h2>
             <div className="grid md:grid-cols-3 gap-6">
               {popularPosts.map((post) => (
