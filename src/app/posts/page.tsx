@@ -24,7 +24,9 @@ interface Post {
   content: string
   youtubeUrl: string | null
   createdAt: string
+  userId: string
   user: {
+    id: string
     name: string
     email: string
     avatarUrl: string | null
