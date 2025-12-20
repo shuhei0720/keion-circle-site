@@ -146,62 +146,64 @@ export default function Home() {
               <p>読み込み中...</p>
             </div>
           ) : posts.length > 0 ? (
-            <div className="space-y-6">
-              {posts.map((post) => {
-                const videoId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
-                return (
-                  <div key={post.id} className="bg-white rounded-xl shadow-lg p-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <Link href={`/users/${post.userId}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden hover:opacity-80 transition">
-                        {post.user.avatarUrl ? (
-                          <img
-                            src={post.user.avatarUrl}
-                            alt={post.user.name}
-                            className="w-full h-full object-cover"
+            <>
+              <div className="space-y-6">
+                {posts.map((post) => {
+                  const videoId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
+                  return (
+                    <div key={post.id} className="bg-white rounded-xl shadow-lg p-6">
+                      <div className="flex items-center gap-3 mb-4">
+                        <Link href={`/users/${post.userId}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden hover:opacity-80 transition">
+                          {post.user.avatarUrl ? (
+                            <img
+                              src={post.user.avatarUrl}
+                              alt={post.user.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <User className="w-5 h-5 text-gray-400" />
+                          )}
+                        </Link>
+                        <div>
+                          <h3 className="text-xl font-semibold">{post.title}</h3>
+                          <p className="text-sm text-gray-500">
+                            {post.user.name || post.user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-gray-600 mb-4 whitespace-pre-wrap">
+                        {renderContent(post.content)}
+                      </div>
+                      {videoId && (
+                        <div className="mb-4">
+                          <YouTube
+                            videoId={videoId}
+                            opts={{
+                              width: '100%',
+                              height: '390',
+                              playerVars: {
+                                autoplay: 0,
+                              },
+                            }}
                           />
-                        ) : (
-                          <User className="w-5 h-5 text-gray-400" />
-                        )}
-                      </Link>
-                      <div>
-                        <h3 className="text-xl font-semibold">{post.title}</h3>
-                        <p className="text-sm text-gray-500">
-                          {post.user.name || post.user.email}
-                        </p>
+                        </div>
+                      )}
+                      <div className="text-sm text-gray-500">
+                        {new Date(post.createdAt).toLocaleString('ja-JP')}
                       </div>
                     </div>
-                    <div className="text-gray-600 mb-4 whitespace-pre-wrap">
-                      {renderContent(post.content)}
-                    </div>
-                    {videoId && (
-                      <div className="mb-4">
-                        <YouTube
-                          videoId={videoId}
-                          opts={{
-                            width: '100%',
-                            height: '390',
-                            playerVars: {
-                              autoplay: 0,
-                            },
-                          }}
-                        />
-                      </div>
-                    )}
-                    <div className="text-sm text-gray-500">
-                      {new Date(post.createdAt).toLocaleString('ja-JP')}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <div className="text-center mt-6">
-              <Link 
-                href="/posts"
-                className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-              >
-                すべての投稿を見る
-              </Link>
-            </div>
+                  )
+                })}
+              </div>
+              <div className="text-center mt-6">
+                <Link 
+                  href="/posts"
+                  className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                >
+                  すべての投稿を見る
+                </Link>
+              </div>
+            </>
           ) : (
             <div className="text-center text-white">
               <p>まだ投稿がありません</p>
