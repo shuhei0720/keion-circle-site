@@ -74,8 +74,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       console.log('[jwt callback] Starting', { hasUser: !!user, provider: account?.provider })
       
       if (user) {
-        // とりあえずユーザー情報をそのままトークンに設定
-        token.id = user.id as string
+        // Google OAuthではuser.idが存在しないので、emailをIDとして使用
+        token.id = user.id || user.email || crypto.randomUUID()
         token.email = user.email
         token.name = user.name
         token.role = "member"
