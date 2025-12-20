@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
-// いいねを登録
+export const runtime = 'nodejs'
+
+// いいねを登録・削除（トグル）
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -27,7 +29,13 @@ export async function POST(
     });
 
     if (existingLike) {
-      return NextResponse.json({ error: '既にいいね済みです' }, { status: 400 });
+      // 既にいいねしている場合は削除（いいね取り消し）
+      await prisma.postLike.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+      return NextResponse.json({ message: 'いいねを取り消しました', liked: false });
     }
 
     // いいねを作成
@@ -38,7 +46,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(like);
+    return NextResponse.json({ like, liked: true });
   } catch (error) {
     console.error('いいね登録エラー:', error);
     return NextResponse.json({ error: 'いいね登録に失敗しました' }, { status: 500 });
