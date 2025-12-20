@@ -142,8 +142,8 @@ export default function Home() {
         <div ref={postsRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>
           {isLoading ? (
-            <div className="text-center text-white">
-              <p>読み込み中...</p>
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
             </div>
           ) : posts.length > 0 ? (
             <>

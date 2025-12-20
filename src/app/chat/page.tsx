@@ -27,11 +27,18 @@ export default function ChatPage() {
   const [inputMessage, setInputMessage] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [fetchingMessages, setFetchingMessages] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (status === 'loading') {
-    return <DashboardLayout><div className="p-6">読み込み中...</div></DashboardLayout>
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
+    )
   }
 
   if (!session?.user) {
@@ -48,12 +55,15 @@ export default function ChatPage() {
   useEffect(() => { scrollToBottom() }, [messages])
 
   const fetchMessages = async () => {
+    setFetchingMessages(true)
     try {
       const res = await fetch('/api/messages')
       const data = await res.json()
       setMessages(data)
     } catch (error) {
       console.error('Failed to fetch messages:', error)
+    } finally {
+      setFetchingMessages(false)
     }
   }
 
@@ -133,8 +143,14 @@ export default function ChatPage() {
           <h1 className="text-2xl font-bold">チャット</h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-          {messages.map((message) => {
+        {fetchingMessages && messages.length === 0 ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+              {messages.map((message) => {
             const isOwnMessage = session?.user && (session.user as any).id === message.userId
             return (
               <div key={message.id} className={`flex gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
@@ -203,9 +219,9 @@ export default function ChatPage() {
             )
           })}
           <div ref={messagesEndRef} />
-        </div>
+            </div>
 
-        <form onSubmit={handleSendMessage} className="border-t p-4 bg-white">
+            <form onSubmit={handleSendMessage} className="border-t p-4 bg-white">
           {selectedFile && (
             <div className="mb-2 flex items-center gap-2 p-2 bg-gray-100 rounded-lg">
               <FileIcon className="w-5 h-5 text-gray-600" />
@@ -241,7 +257,9 @@ export default function ChatPage() {
               {uploading ? '送信中...' : <><Send className="w-4 h-4" />送信</>}
             </button>
           </div>
-        </form>
+            </form>
+          </>
+        )}
       </div>
     </DashboardLayout>
   )
