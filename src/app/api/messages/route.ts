@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
 
 export const runtime = 'nodejs'
 
@@ -23,6 +24,44 @@ export async function GET() {
     })
     return NextResponse.json(messages)
   } catch (error) {
+    console.error('Failed to fetch messages:', error)
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })
+  }
+}
+
+// メッセージ送信
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { content, fileUrl, fileName, fileType } = body
+
+    const message = await prisma.message.create({
+      data: {
+        content,
+        userId: session.user.id!,
+        fileUrl: fileUrl || null,
+        fileName: fileName || null,
+        fileType: fileType || null
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            avatarUrl: true
+          }
+        }
+      }
+    })
+
+    return NextResponse.json(message)
+  } catch (error) {
+    console.error('Failed to send message:', error)
+    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
   }
 }
