@@ -84,7 +84,7 @@ export default function Home() {
             <Music className="w-16 h-16 text-white" />
           </div>
           <h1 className="text-5xl font-bold text-white mb-4 animate-fade-in">
-            <span className="font-extrabold">BOLD</span> 軽音部 メンバーサイト
+            <span className="font-extrabold">BOLD 軽音</span> メンバーサイト
           </h1>
           <p className="text-xl text-white/80 animate-fade-in-delay">
             音楽を楽しむ仲間たちのコミュニティ
@@ -254,7 +254,7 @@ export default function Home() {
 
         {/* フッター */}
         <div className="text-center mt-16 text-white/60">
-          <p>&copy; 2025 BOLD 軽音部. All rights reserved.</p>
+          <p>&copy; 2025 BOLD 軽音. All rights reserved.</p>
         </div>
       </div>
     </div>

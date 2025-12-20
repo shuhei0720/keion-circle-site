@@ -20,7 +20,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-xl font-semibold mb-3">第1条（適用）</h2>
               <p className="leading-relaxed">
-                本利用規約（以下「本規約」）は、BOLD 軽音部メンバーサイト（以下「本サービス」）の利用条件を定めるものです。
+                本利用規約（以下「本規約」）は、BOLD 軽音メンバーサイト（以下「本サービス」）の利用条件を定めるものです。
                 本サービスを利用するすべてのユーザーは、本規約に同意したものとみなされます。
               </p>
             </section>

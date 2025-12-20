@@ -94,8 +94,51 @@ export default function SchedulesPage() {
   }
 
   const handleResponse = async (scheduleDateId: string, status: string) => {
+    if (!session?.user) return
+
+    const comment = selectedDateComments[scheduleDateId] || ''
+    
+    // 楽観的UI更新: 即座にUIを更新
+    setSchedules(prevSchedules => prevSchedules.map(schedule => ({
+      ...schedule,
+      dates: schedule.dates.map(date => {
+        if (date.id === scheduleDateId) {
+          const existingResponse = date.responses.find(r => r.user.email === session.user.email)
+          
+          if (existingResponse) {
+            // 既存の投票を更新
+            return {
+              ...date,
+              responses: date.responses.map(r =>
+                r.user.email === session.user.email
+                  ? { ...r, status, comment: comment || r.comment }
+                  : r
+              )
+            }
+          } else {
+            // 新規投票を追加
+            return {
+              ...date,
+              responses: [...date.responses, {
+                id: `temp-${Date.now()}`,
+                status,
+                comment: comment || null,
+                user: {
+                  name: session.user.name || '',
+                  email: session.user.email || ''
+                }
+              }]
+            }
+          }
+        }
+        return date
+      })
+    })))
+
+    // コメント入力欄をクリア
+    setSelectedDateComments({...selectedDateComments, [scheduleDateId]: ''})
+
     try {
-      const comment = selectedDateComments[scheduleDateId] || ''
       const res = await fetch(`/api/schedules/${scheduleDateId}/response`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,13 +146,13 @@ export default function SchedulesPage() {
       })
 
       if (!res.ok) {
+        // エラー時は元に戻す
+        fetchSchedules()
         alert('投票に失敗しました')
-        return
       }
-
-      setSelectedDateComments({...selectedDateComments, [scheduleDateId]: ''})
-      fetchSchedules()
     } catch (error) {
+      // エラー時は元に戻す
+      fetchSchedules()
       console.error('Failed to submit response:', error)
       alert('投票に失敗しました')
     }

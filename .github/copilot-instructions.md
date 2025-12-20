@@ -1,8 +1,8 @@
-# BOLD 軽音部 メンバーサイト - 開発ガイド
+# BOLD 軽音 メンバーサイト - 開発ガイド
 
 ## プロジェクト概要
 
-Next.js 16 + TypeScript で構築されたBOLD 軽音部のメンバー専用 Web サイトです。
+Next.js 16 + TypeScript で構築されたBOLD 軽音のメンバー専用 Web サイトです。
 
 ## 実装済み機能
 

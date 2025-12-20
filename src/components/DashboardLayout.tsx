@@ -50,7 +50,7 @@ export default function DashboardLayout({
             {/* ロゴ */}
             <Link href="/" className="flex items-center gap-2 text-lg sm:text-xl font-bold text-blue-600">
               <Home className="w-5 h-5 sm:w-6 sm:h-6" />
-              <span className="hidden xs:inline">BOLD 軽音部</span>
+              <span className="hidden xs:inline">BOLD 軽音</span>
               <span className="xs:hidden">BOLD</span>
             </Link>
 
@@ -217,7 +217,7 @@ export default function DashboardLayout({
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
             <p className="text-center sm:text-left">
-              © 2025 BOLD 軽音部. All rights reserved.
+              © 2025 BOLD 軽音. All rights reserved.
             </p>
             <div className="flex gap-4 sm:gap-6">
               <Link href="/privacy" className="hover:text-blue-600 transition-colors">

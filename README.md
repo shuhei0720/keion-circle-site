@@ -1,4 +1,4 @@
-# BOLD 軽音部 メンバーサイト
+# BOLD 軽音 メンバーサイト
 
 Next.js 16 + TypeScript で構築されたメンバー専用コミュニティサイトです。
 
@@ -23,4 +23,4 @@ https://keion-circle-site.vercel.app/
 
 ---
 
-© 2025 BOLD 軽音部
+© 2025 BOLD 軽音
