@@ -7,20 +7,58 @@
 
 ## 1. データベースの準備
 
-### オプションA: Vercel Postgres（推奨）
+### Supabase（選択済み）
+
+**無料プラン**: 500MB ストレージ、50,000リクエスト/月、100,000 MB 転送量/月
+
+#### 1. プロジェクトの作成
+
+1. [Supabase](https://supabase.com/) にアクセスしてサインアップ
+2. 「New project」をクリック
+3. プロジェクト設定:
+   - **Name**: `keion-circle-site`（任意の名前）
+   - **Database Password**: 強力なパスワードを設定（**必ず保存**）
+   - **Region**: `Northeast Asia (Tokyo)` を選択
+   - **Pricing Plan**: Free を選択
+4. 「Create new project」をクリック（プロジェクト作成に1-2分かかります）
+
+#### 2. 接続文字列の取得
+
+1. プロジェクトダッシュボードで、左サイドバーから「Project Settings」（⚙️歯車アイコン）をクリック
+2. 「Database」タブを選択
+3. 下にスクロールして「Connection string」セクションを表示
+4. **「Connection Pooling」** のタブを選択（重要！）
+5. **Mode: Transaction** を選択（Prismaに最適）
+6. 接続文字列をコピー:
+   ```
+   postgres://postgres.xxxxx:[YOUR-PASSWORD]@xxx.pooler.supabase.com:6543/postgres?pgbouncer=true
+   ```
+7. `[YOUR-PASSWORD]`を先ほど設定したデータベースパスワードに置き換え
+
+**⚠️ 重要**: 必ず「Connection Pooling」（Transaction mode）の接続文字列を使用してください。Direct connectionではなく、pgBouncerを経由する接続文字列を使います。
+
+---
+
+### その他のオプション
+
+<details>
+<summary>オプションA: Vercel Postgres</summary>
 
 1. Vercelダッシュボードにログイン
 2. 「Storage」タブから「Create Database」
 3. 「Postgres」を選択
 4. リージョンを選択（Tokyo推奨）
 5. データベースが作成されたら、「.env.local」タブから`DATABASE_URL`をコピー
+</details>
 
-### オプションB: Neon（無料プランあり）
+<details>
+<summary>オプションB: Neon</summary>
 
 1. https://neon.tech にサインアップ
 2. 新しいプロジェクトを作成
 3. リージョンを選択（Tokyo推奨）
 4. 接続文字列（DATABASE_URL）をコピー
+</details>
 
 ## 2. Vercelにデプロイ
 
