@@ -7,15 +7,6 @@ import { Suspense, useEffect, useState } from 'react'
 function ErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
-  const [envDebug, setEnvDebug] = useState<any>(null)
-
-  useEffect(() => {
-    // 環境変数のデバッグ情報を取得
-    fetch('/api/debug/env')
-      .then(res => res.json())
-      .then(data => setEnvDebug(data))
-      .catch(err => console.error('Failed to fetch env debug:', err))
-  }, [])
 
   const errorMessages: Record<string, string> = {
     Configuration: '認証設定エラーです。NEXTAUTH_URLが正しく設定されていない可能性があります。',
@@ -56,14 +47,6 @@ function ErrorContent() {
         )}
       </div>
 
-      {envDebug && (
-        <div className="mb-6 p-4 bg-gray-100 rounded text-left text-xs">
-          <h3 className="font-bold mb-2">デバッグ情報:</h3>
-          <pre className="whitespace-pre-wrap break-words">
-            {JSON.stringify(envDebug, null, 2)}
-          </pre>
-        </div>
-      )}
       
       <div className="space-y-3">
         <Link
