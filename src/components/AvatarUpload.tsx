@@ -41,71 +41,55 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
   };
 
   const getCroppedImg = useCallback(async (): Promise<Blob | null> => {
-    if (!selectedImage) return null;
+    if (!imgRef.current || !completedCrop) return null;
+
+    const image = imgRef.current;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Canvas context not available');
+    }
+
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+
+    // Set canvas size to desired output size (e.g., 400x400)
+    const outputSize = 400;
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+
+    // Fill with white background (prevents transparency issues)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, outputSize, outputSize);
+
+    // Draw the cropped image scaled to output size
+    ctx.drawImage(
+      image,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0,
+      0,
+      outputSize,
+      outputSize
+    );
 
     return new Promise((resolve, reject) => {
-      const img = new Image();
-      
-      img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-
-          if (!ctx) {
-            reject(new Error('Canvas context not available'));
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Canvas to Blob conversion failed'));
             return;
           }
-
-          // Calculate crop dimensions based on natural image size
-          const pixelCrop: PixelCrop = {
-            x: (crop.x / 100) * img.naturalWidth,
-            y: (crop.y / 100) * img.naturalHeight,
-            width: (crop.width / 100) * img.naturalWidth,
-            height: (crop.height / 100) * img.naturalHeight,
-            unit: 'px',
-          };
-
-          // Set canvas size to crop size
-          canvas.width = pixelCrop.width;
-          canvas.height = pixelCrop.height;
-
-          // Draw the cropped image
-          ctx.drawImage(
-            img,
-            pixelCrop.x,
-            pixelCrop.y,
-            pixelCrop.width,
-            pixelCrop.height,
-            0,
-            0,
-            pixelCrop.width,
-            pixelCrop.height
-          );
-
-          // Convert to blob
-          canvas.toBlob(
-            (blob) => {
-              if (blob) {
-                resolve(blob);
-              } else {
-                reject(new Error('Canvas to Blob conversion failed'));
-              }
-            },
-            'image/jpeg',
-            0.95
-          );
-        } catch (error) {
-          reject(error);
-        }
-      };
-
-      img.onerror = () => {
-        reject(new Error('Failed to load image'));
-      };
-
-      img.src = selectedImage;
+          resolve(blob);
+        },
+        'image/jpeg',
+        0.92
+      );
     });
-  }, [crop, selectedImage]);
+  }, [completedCrop]);
 
   const handleUpload = async () => {
     try {
@@ -199,6 +183,7 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
             <ReactCrop
               crop={crop}
               onChange={(c) => setCrop(c)}
+              onComplete={(c) => setCompletedCrop(c)}
               aspect={1}
               circularCrop
             >
@@ -214,7 +199,7 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
             <button
               type="button"
               onClick={handleUpload}
-              disabled={uploading}
+              disabled={uploading || !completedCrop}
               className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
             >
               {uploading ? 'アップロード中...' : 'アップロード'}
