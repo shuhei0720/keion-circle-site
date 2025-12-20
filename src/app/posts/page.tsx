@@ -340,9 +340,9 @@ export default function PostsPage() {
 
   // 本文を画像込みでレンダリング
   const renderContent = (content: string) => {
-    const parts = content.split(/(!\\[\\]\\([^)]+\\))/)
+    const parts = content.split(/(!?\[.*?\]\([^)]+\))/)
     return parts.map((part, index) => {
-      const imageMatch = part.match(/!\\[\\]\\(([^)]+)\\)/)
+      const imageMatch = part.match(/!\[.*?\]\(([^)]+)\)/)
       if (imageMatch) {
         return (
           <img

@@ -8,6 +8,7 @@ import bcrypt from "bcryptjs"
  * NextAuth v5 認証設定
  * - Google OAuth: Google アカウントでログイン
  * - Credentials: メールアドレスとパスワードでログイン
+ * - JWT Strategy: 最小限のデータのみをトークンに含める
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -54,6 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30日
   },
   trustHost: true,
   pages: {
@@ -61,7 +63,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signOut: '/',
   },
   callbacks: {
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       // Google OAuth でログインした場合、ユーザー情報を DB に保存
       if (account?.provider === "google" && user.email) {
         try {
@@ -70,64 +72,58 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           })
 
           if (!existingUser) {
-            // 新規ユーザーを作成
             await prisma.user.create({
               data: {
                 email: user.email,
                 name: user.name || user.email.split('@')[0],
                 avatarUrl: user.image,
-                role: "member", // デフォルトは一般メンバー
-              }
-            })
-          } else {
-            // 既存ユーザーの情報を更新（名前やアバター画像が変更されている可能性がある）
-            await prisma.user.update({
-              where: { email: user.email },
-              data: {
-                name: user.name || existingUser.name,
-                avatarUrl: user.image || existingUser.avatarUrl,
+                role: "member",
               }
             })
           }
         } catch (error) {
-          console.error('Error saving user to database:', error)
+          console.error('Error saving user:', error)
           return false
         }
       }
-      
       return true
     },
-    async jwt({ token, user, trigger, session }) {
-      if (user) {
-        // ログイン時にDBからユーザー情報を取得
-        if (user.email) {
-          const dbUser = await prisma.user.findUnique({
-            where: { email: user.email }
-          })
-          
-          if (dbUser) {
-            token.id = dbUser.id
-            token.email = dbUser.email
-            token.name = dbUser.name
-            token.role = dbUser.role
-            token.avatarUrl = dbUser.avatarUrl
-          }
+    async jwt({ token, user }) {
+      // ログイン時のみ、必要最小限の情報をトークンに追加
+      if (user?.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true, role: true } // IDとroleのみ取得
+        })
+        
+        if (dbUser) {
+          token.sub = dbUser.id // subにユーザーIDを設定
+          token.role = dbUser.role
         }
       }
-      
-      // セッション更新時（プロフィール変更時など）
-      if (trigger === "update" && session) {
-        token.name = session.name || token.name
-        token.avatarUrl = session.avatarUrl || token.avatarUrl
-      }
-      
       return token
     },
     async session({ session, token }) {
-      if (session.user && token.id) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-        session.user.avatarUrl = token.avatarUrl as string | null
+      // セッション取得時に、DBから最新のユーザー情報を取得
+      if (token.sub) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            avatarUrl: true,
+            role: true
+          }
+        })
+        
+        if (dbUser) {
+          session.user.id = dbUser.id
+          session.user.email = dbUser.email!
+          session.user.name = dbUser.name
+          session.user.avatarUrl = dbUser.avatarUrl
+          session.user.role = dbUser.role
+        }
       }
       return session
     },
