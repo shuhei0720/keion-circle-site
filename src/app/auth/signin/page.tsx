@@ -34,7 +34,7 @@ export default function SignIn() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 p-4">
       <div className="bg-white p-6 sm:p-8 rounded-lg shadow-2xl w-full max-w-md">
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
-          軽音サークル
+          BOLD 軽音部
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "軽音サークル - メンバーサイト",
-  description: "軽音サークルのメンバー専用コミュニティサイト",
+  title: "BOLD 軽音部 - メンバーサイト",
+  description: "BOLD 軽音部のメンバー専用コミュニティサイト",
 };
 
 export default function RootLayout({

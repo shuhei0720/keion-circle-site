@@ -1,6 +1,6 @@
-# 軽音サークル メンバーサイト
+# BOLD 軽音部 メンバーサイト
 
-Next.jsとTailwind CSSで構築された軽音サークルのメンバー専用Webサイトです。
+Next.jsとTailwind CSSで構築されたBOLD 軽音部のメンバー専用Webサイトです。
 
 ## 主な機能
 

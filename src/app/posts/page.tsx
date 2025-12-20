@@ -679,7 +679,7 @@ export default function PostsPage() {
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 text-xl font-bold text-blue-600">
               <Home className="w-6 h-6" />
-              軽音サークル
+              BOLD 軽音部
             </Link>
             <Link
               href="/auth/signin"
