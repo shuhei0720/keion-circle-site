@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function AuthError() {
+function ErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
@@ -26,42 +27,54 @@ export default function AuthError() {
   const message = error ? errorMessages[error] || errorMessages.Default : errorMessages.Default
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
-      <div className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
-            <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">
-            認証エラー
-          </h1>
-          <p className="text-gray-600">
-            {message}
+    <div className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full">
+      <div className="text-center mb-6">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
+          <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          認証エラー
+        </h1>
+        <p className="text-gray-600">
+          {message}
+        </p>
+        {error && (
+          <p className="text-sm text-gray-500 mt-2">
+            エラーコード: {error}
           </p>
-          {error && (
-            <p className="text-sm text-gray-500 mt-2">
-              エラーコード: {error}
-            </p>
-          )}
-        </div>
-        
-        <div className="space-y-3">
-          <Link
-            href="/auth/signin"
-            className="block w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors text-center font-semibold"
-          >
-            ログインページに戻る
-          </Link>
-          <Link
-            href="/"
-            className="block w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors text-center font-semibold"
-          >
-            トップページに戻る
-          </Link>
-        </div>
+        )}
       </div>
+      
+      <div className="space-y-3">
+        <Link
+          href="/auth/signin"
+          className="block w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors text-center font-semibold"
+        >
+          ログインページに戻る
+        </Link>
+        <Link
+          href="/"
+          className="block w-full bg-gray-100 text-gray-700 py-3 rounded-lg hover:bg-gray-200 transition-colors text-center font-semibold"
+        >
+          トップページに戻る
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+export default function AuthError() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600">
+      <Suspense fallback={
+        <div className="bg-white p-8 rounded-lg shadow-2xl max-w-md w-full">
+          <div className="text-center">読み込み中...</div>
+        </div>
+      }>
+        <ErrorContent />
+      </Suspense>
     </div>
   )
 }
