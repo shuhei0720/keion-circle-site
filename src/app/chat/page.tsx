@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { io, Socket } from 'socket.io-client'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Paperclip, Send, FileIcon, X, User } from 'lucide-react'
+import Link from 'next/link'
 
 interface Message {
   id: string
