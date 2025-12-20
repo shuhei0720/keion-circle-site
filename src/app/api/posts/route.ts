@@ -43,7 +43,8 @@ export async function GET() {
     })
     return NextResponse.json(posts)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
+    console.error('Failed to fetch posts:', error)
+    return NextResponse.json({ error: 'Failed to fetch posts', details: error instanceof Error ? error.message : String(error) }, { status: 500 })
   }
 }
 
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(post)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    console.error('Failed to create post:', error)
+    return NextResponse.json({ error: 'Failed to create post', details: error instanceof Error ? error.message : String(error) }, { status: 500 })
   }
 }

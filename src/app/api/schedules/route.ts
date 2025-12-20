@@ -34,7 +34,8 @@ export async function GET() {
     })
     return NextResponse.json(schedules)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch schedules' }, { status: 500 })
+    console.error('Failed to fetch schedules:', error)
+    return NextResponse.json({ error: 'Failed to fetch schedules', details: error instanceof Error ? error.message : String(error) }, { status: 500 })
   }
 }
 
