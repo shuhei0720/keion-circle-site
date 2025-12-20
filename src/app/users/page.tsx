@@ -20,7 +20,7 @@ interface UserData {
 }
 
 export default function UsersPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
@@ -28,14 +28,16 @@ export default function UsersPage() {
   const isAdmin = session?.user?.role === 'admin'
 
   useEffect(() => {
-    if (session && !isAdmin) {
-      router.push('/')
+    // 認証状態が確定するまで待つ
+    if (status === 'loading') return
+    
+    if (!session || !isAdmin) {
+      router.replace('/')
       return
     }
-    if (session) {
-      fetchUsers()
-    }
-  }, [session, isAdmin, router])
+    
+    fetchUsers()
+  }, [session, isAdmin, router, status])
 
   const fetchUsers = async () => {
     try {
@@ -59,19 +61,23 @@ export default function UsersPage() {
       return
     }
 
+    // 楽観的UI更新: 即座にUIからユーザーを削除
+    setUsers(prevUsers => prevUsers.filter(u => u.id !== userId))
+
     try {
       const res = await fetch(`/api/users/${userId}`, {
         method: 'DELETE'
       })
 
-      if (res.ok) {
-        alert('ユーザーを削除しました')
+      if (!res.ok) {
+        // エラー時は元に戻す
         fetchUsers()
-      } else {
         const error = await res.json()
         alert(error.error || 'ユーザーの削除に失敗しました')
       }
     } catch (error) {
+      // エラー時は元に戻す
+      fetchUsers()
       console.error('Failed to delete user:', error)
       alert('ユーザーの削除に失敗しました')
     }
@@ -83,6 +89,11 @@ export default function UsersPage() {
       return
     }
 
+    // 楽観的UI更新: 即座に役割を変更
+    setUsers(prevUsers => prevUsers.map(u => 
+      u.id === userId ? { ...u, role: newRole } : u
+    ))
+
     try {
       const res = await fetch(`/api/users/${userId}`, {
         method: 'PATCH',
@@ -90,14 +101,15 @@ export default function UsersPage() {
         body: JSON.stringify({ role: newRole })
       })
 
-      if (res.ok) {
-        alert('役割を変更しました')
+      if (!res.ok) {
+        // エラー時は元に戻す
         fetchUsers()
-      } else {
         const error = await res.json()
         alert(error.error || '役割の変更に失敗しました')
       }
     } catch (error) {
+      // エラー時は元に戻す
+      fetchUsers()
       console.error('Failed to update role:', error)
       alert('役割の変更に失敗しました')
     }
