@@ -44,22 +44,27 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
     const image = imgRef.current;
     if (!image || !selectedImage) return null;
 
+    // Create a new image element to ensure it's fully loaded
+    const img = new Image();
+    img.src = selectedImage;
+    
     // Wait for image to fully load
-    if (!image.complete || image.naturalWidth === 0) {
-      await new Promise<void>((resolve) => {
-        image.onload = () => resolve();
+    if (!img.complete) {
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error('Failed to load image'));
       });
     }
 
     const canvas = document.createElement('canvas');
-    const scaleX = image.naturalWidth / image.width;
-    const scaleY = image.naturalHeight / image.height;
+    const scaleX = img.naturalWidth / img.width;
+    const scaleY = img.naturalHeight / img.height;
 
     const pixelCrop: PixelCrop = {
-      x: (crop.x / 100) * image.width * scaleX,
-      y: (crop.y / 100) * image.height * scaleY,
-      width: (crop.width / 100) * image.width * scaleX,
-      height: (crop.height / 100) * image.height * scaleY,
+      x: (crop.x / 100) * img.width * scaleX,
+      y: (crop.y / 100) * img.height * scaleY,
+      width: (crop.width / 100) * img.width * scaleX,
+      height: (crop.height / 100) * img.height * scaleY,
       unit: 'px',
     };
 
@@ -70,7 +75,7 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
     if (!ctx) return null;
 
     ctx.drawImage(
-      image,
+      img,
       pixelCrop.x,
       pixelCrop.y,
       pixelCrop.width,

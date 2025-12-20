@@ -42,6 +42,25 @@ export default function Home() {
     return match ? match[1] : null
   }
 
+  const renderContent = (content: string) => {
+    return content.split('\n').map((line, index) => {
+      const imgMatch = line.match(/!\[.*?\]\((.*?)\)/)
+      if (imgMatch) {
+        return (
+          <div key={index} className="my-2">
+            <img
+              src={imgMatch[1]}
+              alt="投稿画像"
+              className="max-w-full h-auto rounded-lg"
+              style={{ maxHeight: '500px', objectFit: 'contain' }}
+            />
+          </div>
+        )
+      }
+      return line ? <div key={index}>{line}</div> : <br key={index} />
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
       <div className="container mx-auto px-4 py-16">
@@ -102,7 +121,9 @@ export default function Home() {
                         </p>
                       </div>
                     </div>
-                    <p className="text-gray-600 mb-4">{post.content}</p>
+                    <div className="text-gray-600 mb-4 whitespace-pre-wrap">
+                      {renderContent(post.content)}
+                    </div>
                     {videoId && (
                       <div className="mb-4">
                         <YouTube
