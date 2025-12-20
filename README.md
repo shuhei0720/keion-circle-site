@@ -49,6 +49,39 @@ export DATABASE_URL="file:./dev.db"
 node scripts/create-admin.js admin@example.com password123 "管理者名"
 ```
 
+## GitHubとの連携
+
+このプロジェクトはGit管理されています。GitHubリポジトリと連携するには：
+
+### 新しいGitHubリポジトリを作成する場合
+
+1. GitHubで新しいリポジトリを作成します（README等は追加しない）
+2. 以下のコマンドでリモートリポジトリを追加：
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git branch -M main
+git push -u origin main
+```
+
+### 既存のGitHubリポジトリがある場合
+
+```bash
+git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+git pull origin main --allow-unrelated-histories
+git push -u origin main
+```
+
+### コードの更新とプッシュ
+
+今後、コードを変更した後は：
+
+```bash
+git add .
+git commit -m "適切なコミットメッセージ"
+git push
+```
+
 ### 5. アップロードディレクトリの作成
 
 ```bash
