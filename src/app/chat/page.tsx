@@ -22,7 +22,7 @@ interface Message {
 }
 
 export default function ChatPage() {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [messages, setMessages] = useState<Message[]>([])
   const [inputMessage, setInputMessage] = useState('')
   const [socket, setSocket] = useState<Socket | null>(null)
@@ -30,6 +30,14 @@ export default function ChatPage() {
   const [uploading, setUploading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  if (status === 'loading') {
+    return <DashboardLayout><div className="p-6">読み込み中...</div></DashboardLayout>
+  }
+
+  if (!session?.user) {
+    return <DashboardLayout><div className="p-6">ログインが必要です</div></DashboardLayout>
+  }
 
   useEffect(() => {
     fetchMessages()
@@ -95,7 +103,7 @@ export default function ChatPage() {
 
       socket.emit('send-message', {
         content: inputMessage || (selectedFile ? `${selectedFile.name}を送信しました` : ''),
-        userId: session.user.id,
+        userId: (session.user as any).id,
         userName: session.user.name || session.user.email,
         fileUrl,
         fileName,
@@ -124,7 +132,7 @@ export default function ChatPage() {
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
           {messages.map((message) => {
-            const isOwnMessage = session?.user && session.user.id === message.userId
+            const isOwnMessage = session?.user && (session.user as any).id === message.userId
             return (
               <div key={message.id} className={`flex gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                 {!isOwnMessage && (
@@ -174,7 +182,7 @@ export default function ChatPage() {
                 {isOwnMessage && (
                   <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
                     {session.user.image ? (
-                      <Link href={`/users/${session.user.id}`} className="block w-full h-full">
+                      <Link href={`/users/${(session.user as any).id}`} className="block w-full h-full">
                         <img
                           src={session.user.image}
                           alt={session.user.name || ''}
@@ -182,7 +190,7 @@ export default function ChatPage() {
                         />
                       </Link>
                     ) : (
-                      <Link href={`/users/${session.user.id}`} className="block w-full h-full flex items-center justify-center hover:bg-gray-300 transition">
+                      <Link href={`/users/${(session.user as any).id}`} className="block w-full h-full flex items-center justify-center hover:bg-gray-300 transition">
                         <User className="w-4 h-4 text-gray-400" />
                       </Link>
                     )}
