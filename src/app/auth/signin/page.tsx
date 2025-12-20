@@ -16,18 +16,18 @@ export default function SignIn() {
       email,
       password,
       redirect: false,
-      callbackUrl: '/posts'
+      callbackUrl: '/'
     })
     
     if (result?.ok) {
-      router.push('/posts')
+      router.push('/')
     } else if (result?.error) {
       alert('ログインに失敗しました。メールアドレスとパスワードを確認してください。')
     }
   }
 
   const handleGoogleSignIn = async () => {
-    await signIn('google', { callbackUrl: '/posts' })
+    await signIn('google', { callbackUrl: '/' })
   }
 
   return (

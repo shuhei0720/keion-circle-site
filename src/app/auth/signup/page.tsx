@@ -36,7 +36,7 @@ export default function SignUp() {
   }
 
   const handleGoogleSignUp = async () => {
-    await signIn('google', { callbackUrl: '/posts' })
+    await signIn('google', { callbackUrl: '/' })
   }
 
   return (
