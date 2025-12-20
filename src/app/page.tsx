@@ -139,7 +139,7 @@ export default function Home() {
         </div>
 
         {/* 最新の投稿 */}
-        <div ref={postsRef} className="max-w-4xl mx-auto mb-16 opacity-0 translate-y-10 transition-all duration-700">
+        <div ref={postsRef} className={`max-w-4xl mx-auto mb-16 transition-all duration-700 ${isLoading ? '' : 'opacity-0 translate-y-10'}`}>
           <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>
           {isLoading ? (
             <div className="flex justify-center items-center py-12">
