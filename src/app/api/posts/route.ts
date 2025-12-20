@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
 
-// 投稿一覧取得（参加情報含む）
+// 投稿一覧取得（参加情報といいね情報含む）
 export async function GET() {
   try {
     const posts = await prisma.post.findMany({
@@ -25,6 +25,12 @@ export async function GET() {
                 avatarUrl: true
               }
             }
+          }
+        },
+        likes: {
+          select: {
+            userId: true,
+            createdAt: true
           }
         }
       },

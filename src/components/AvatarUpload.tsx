@@ -14,10 +14,10 @@ export default function AvatarUpload({ currentAvatar, onUploadComplete }: Avatar
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
-    width: 80,
-    height: 80,
-    x: 10,
-    y: 10,
+    width: 50,
+    height: 50,
+    x: 25,
+    y: 25,
   });
   const [completedCrop, setCompletedCrop] = useState<PixelCrop | null>(null);
   const [uploading, setUploading] = useState(false);

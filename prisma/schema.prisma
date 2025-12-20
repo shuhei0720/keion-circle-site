@@ -54,6 +54,7 @@ model User {
   messages      Message[]
   schedules     ScheduleResponse[]
   postParticipants PostParticipant[]
+  postLikes     PostLike[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -75,6 +76,7 @@ model Post {
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   participants PostParticipant[]
+  likes       PostLike[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -85,6 +87,18 @@ model PostParticipant {
   postId    String
   userId    String
   status    String   // "participating", "not_participating"
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+}
+
+// 投稿いいね機能
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
   post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())

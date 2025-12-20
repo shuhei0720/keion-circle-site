@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth';
 // 投稿への参加/不参加を登録
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -18,7 +18,7 @@ export async function POST(
       return NextResponse.json({ error: '無効なステータスです' }, { status: 400 });
     }
 
-    const postId = params.id;
+    const { id: postId } = await params;
     const userId = session.user.id!;
 
     // 既存の参加情報を確認
@@ -65,7 +65,7 @@ export async function POST(
 // 参加をキャンセル（削除）
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -73,7 +73,7 @@ export async function DELETE(
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 });
     }
 
-    const postId = params.id;
+    const { id: postId } = await params;
     const userId = session.user.id!;
 
     await prisma.postParticipant.delete({

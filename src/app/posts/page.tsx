@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
-import { Edit, Trash2, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Image } from 'lucide-react'
+import { Edit, Trash2, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Image, Heart } from 'lucide-react'
 import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
 
@@ -30,6 +30,10 @@ interface Post {
     avatarUrl: string | null
   }
   participants: PostParticipant[]
+  likes: {
+    userId: string
+    createdAt: string
+  }[]
 }
 
 const POSTS_PER_PAGE = 5
@@ -205,6 +209,51 @@ export default function PostsPage() {
     return post.participants.filter(p => p.status === 'participating')
   }
 
+  const handleLike = async (postId: string) => {
+    if (!session?.user?.id) return
+    
+    try {
+      const res = await fetch(`/api/posts/${postId}/like`, {
+        method: 'POST',
+      })
+      
+      if (res.ok) {
+        fetchPosts()
+      } else {
+        const error = await res.json()
+        alert(error.error || 'いいねに失敗しました')
+      }
+    } catch (error) {
+      console.error('いいねエラー:', error)
+      alert('いいねに失敗しました')
+    }
+  }
+
+  const handleUnlike = async (postId: string) => {
+    if (!session?.user?.id) return
+    
+    try {
+      const res = await fetch(`/api/posts/${postId}/like`, {
+        method: 'DELETE',
+      })
+      
+      if (res.ok) {
+        fetchPosts()
+      } else {
+        const error = await res.json()
+        alert(error.error || 'いいね解除に失敗しました')
+      }
+    } catch (error) {
+      console.error('いいね解除エラー:', error)
+      alert('いいね解除に失敗しました')
+    }
+  }
+
+  const isLikedByUser = (post: Post) => {
+    if (!session?.user?.id) return false
+    return post.likes.some(like => like.userId === session.user.id)
+  }
+
   const extractYouTubeId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
     return match ? match[1] : null
@@ -359,6 +408,23 @@ export default function PostsPage() {
                           不参加
                         </button>
                       </div>
+                    </div>
+
+                    {/* いいねボタン */}
+                    <div className="flex items-center gap-4 mt-4 pt-4 border-t">
+                      <button
+                        onClick={() => isLikedByUser(post) ? handleUnlike(post.id) : handleLike(post.id)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                          isLikedByUser(post)
+                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        }`}
+                      >
+                        <Heart 
+                          className={`w-5 h-5 ${isLikedByUser(post) ? 'fill-current' : ''}`}
+                        />
+                        <span>{post.likes.length}</span>
+                      </button>
                     </div>
 
                     {/* 参加者リスト */}

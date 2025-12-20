@@ -17,11 +17,16 @@ interface Post {
     email: string
     avatarUrl: string | null
   }
+  likes: {
+    userId: string
+    createdAt: string
+  }[]
 }
 
 export default function Home() {
   const { data: session } = useSession()
   const [posts, setPosts] = useState<Post[]>([])
+  const [popularPosts, setPopularPosts] = useState<Post[]>([])
 
   useEffect(() => {
     fetchPosts()
@@ -32,6 +37,10 @@ export default function Home() {
       const res = await fetch('/api/posts')
       const data = await res.json()
       setPosts(data.slice(0, 3)) // 最新3件のみ表示
+      
+      // いいね数でソートして人気の投稿を取得（最大3件）
+      const sorted = [...data].sort((a, b) => b.likes.length - a.likes.length)
+      setPopularPosts(sorted.slice(0, 3).filter(p => p.likes.length > 0))
     } catch (error) {
       console.error('Failed to fetch posts:', error)
     }
@@ -152,6 +161,44 @@ export default function Home() {
               >
                 すべての投稿を見る
               </Link>
+            </div>
+          </div>
+        )}
+
+        {/* 人気の投稿 */}
+        {popularPosts.length > 0 && (
+          <div className="max-w-4xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-white mb-8 text-center">人気の投稿</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              {popularPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  href="/posts"
+                  className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                      {post.user.avatarUrl ? (
+                        <img
+                          src={post.user.avatarUrl}
+                          alt={post.user.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+                    <span className="text-sm text-gray-600">{post.user.name}</span>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2 line-clamp-2">{post.title}</h3>
+                  <div className="flex items-center gap-2 text-red-600">
+                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span className="font-semibold">{post.likes.length}</span>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         )}
