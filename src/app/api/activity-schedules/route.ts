@@ -47,7 +47,7 @@ export async function GET() {
         }
       },
       orderBy: {
-        date: 'desc'
+        createdAt: 'desc'
       }
     })
 
@@ -73,11 +73,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
     }
 
-    const { title, content, date } = await request.json()
+    const { title, content } = await request.json()
 
-    if (!title || !content || !date) {
+    if (!title || !content) {
       return NextResponse.json(
-        { error: 'タイトル、内容、日付は必須です' },
+        { error: 'タイトルと内容は必須です' },
         { status: 400 }
       )
     }
@@ -86,7 +86,6 @@ export async function POST(request: Request) {
       data: {
         title,
         content,
-        date: new Date(date),
         userId: session.user.id
       },
       include: {

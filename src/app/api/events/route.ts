@@ -47,7 +47,7 @@ export async function GET() {
         }
       },
       orderBy: {
-        date: 'desc'
+        createdAt: 'desc'
       }
     })
 
@@ -75,18 +75,12 @@ export async function POST(request: Request) {
 
     const {
       title,
-      content,
-      date,
-      location,
-      songTitle,
-      songSheetUrl,
-      songYoutubeUrl,
-      parts
+      content
     } = await request.json()
 
-    if (!title || !content || !date) {
+    if (!title || !content) {
       return NextResponse.json(
-        { error: 'タイトル、内容、日付は必須です' },
+        { error: 'タイトルと内容は必須です' },
         { status: 400 }
       )
     }
@@ -95,12 +89,6 @@ export async function POST(request: Request) {
       data: {
         title,
         content,
-        date: new Date(date),
-        location,
-        songTitle,
-        songSheetUrl,
-        songYoutubeUrl,
-        parts: parts ? JSON.stringify(parts) : null,
         userId: session.user.id
       },
       include: {
