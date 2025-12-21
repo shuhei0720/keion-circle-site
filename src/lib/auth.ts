@@ -30,8 +30,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
+        console.log('[NextAuth Credentials] Authorize called')
+        console.log('[NextAuth Credentials] Email:', credentials?.email)
+        
         try {
           if (!credentials?.email || !credentials?.password) {
+            console.error('[NextAuth Credentials] Missing credentials')
             throw new Error("メールアドレスとパスワードを入力してください")
           }
 
@@ -39,8 +43,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             where: { email: credentials.email as string },
             select: { id: true, email: true, password: true, role: true }
           })
+          console.log('[NextAuth Credentials] User found:', !!user)
 
           if (!user || !user.password) {
+            console.error('[NextAuth Credentials] User not found or no password')
             throw new Error("ユーザーが見つかりません")
           }
 
@@ -48,18 +54,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             credentials.password as string,
             user.password
           )
+          console.log('[NextAuth Credentials] Password valid:', isPasswordValid)
 
           if (!isPasswordValid) {
+            console.error('[NextAuth Credentials] Invalid password')
             throw new Error("パスワードが正しくありません")
           }
 
-          // 最小限の情報のみ返す
-          return {
+          const result = {
             id: user.id,
             email: user.email,
           }
+          console.log('[NextAuth Credentials] Success, returning:', JSON.stringify(result, null, 2))
+          return result
         } catch (error) {
-          console.error('Authorize error:', error)
+          console.error('[NextAuth Credentials] Error:', error)
           return null
         }
       }
@@ -75,14 +84,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signOut: '/',
   },
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
+      console.log('[NextAuth SignIn] Provider:', account?.provider)
+      console.log('[NextAuth SignIn] User email:', user.email)
+      console.log('[NextAuth SignIn] User object:', JSON.stringify(user, null, 2))
+      
       if (account?.provider === "google" && user.email) {
         try {
           let dbUser = await prisma.user.findUnique({
             where: { email: user.email }
           })
+          console.log('[NextAuth SignIn] DB User found:', !!dbUser)
 
           if (!dbUser) {
+            console.log('[NextAuth SignIn] Creating new user...')
             dbUser = await prisma.user.create({
               data: {
                 email: user.email,
@@ -91,38 +106,52 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 role: "member",
               }
             })
+            console.log('[NextAuth SignIn] New user created:', dbUser.id)
           }
         } catch (error) {
-          console.error('SignIn error:', error)
+          console.error('[NextAuth SignIn] Error:', error)
           return false
         }
       }
+      console.log('[NextAuth SignIn] Success')
       return true
     },
-    async jwt({ token, user, trigger }) {
-      // 初回ログイン時のみDBアクセス
+    async jwt({ token, user, trigger, account }) {
+      console.log('[NextAuth JWT] Trigger:', trigger)
+      console.log('[NextAuth JWT] User present:', !!user)
+      console.log('[NextAuth JWT] User email:', user?.email)
+      console.log('[NextAuth JWT] Token before:', JSON.stringify(token, null, 2))
+      
       if (user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
           select: { id: true, role: true }
         })
+        console.log('[NextAuth JWT] DB User:', dbUser)
         
         if (dbUser) {
-          // 既存のトークンを完全に破棄し、最小限の新しいトークンを返す
-          return {
+          const newToken = {
             sub: dbUser.id,
             role: dbUser.role,
           }
+          console.log('[NextAuth JWT] New token created:', JSON.stringify(newToken, null, 2))
+          return newToken
         }
       }
-      // 2回目以降はそのまま返す
+      
+      console.log('[NextAuth JWT] Returning existing token')
       return token
     },
     async session({ session, token }) {
+      console.log('[NextAuth Session] Token:', JSON.stringify(token, null, 2))
+      console.log('[NextAuth Session] Session before:', JSON.stringify(session, null, 2))
+      
       if (token.sub) {
         session.user.id = token.sub
         session.user.role = (token.role as string) || 'member'
       }
+      
+      console.log('[NextAuth Session] Session after:', JSON.stringify(session, null, 2))
       return session
     },
   },
