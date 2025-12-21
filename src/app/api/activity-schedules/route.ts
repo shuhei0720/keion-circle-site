@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma'
 // 活動スケジュール一覧取得
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
@@ -69,7 +69,7 @@ export async function GET() {
 // 活動スケジュール作成
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
