@@ -42,7 +42,7 @@ export async function POST(
     // トランザクションで投稿作成
     const result = await prisma.$transaction(async (tx) => {
       // 投稿を作成
-      const post = await tx.post.create(
+      const post = await tx.post.create({
         data: {
           title,
           content,
