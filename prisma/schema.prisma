@@ -78,8 +78,6 @@ model Post {
   title       String
   content     String?
   youtubeUrl  String?
-  type        String   @default("manual") // "manual", "activity_report", "event_report"
-  sourceId    String?  // ActivitySchedule or Event ID
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   participants PostParticipant[]
