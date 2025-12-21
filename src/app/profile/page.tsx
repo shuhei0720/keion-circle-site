@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import DashboardLayout from '@/components/DashboardLayout';
+import ProfileEditClient from './ProfileEditClient';
 import { User, Mail, Calendar, FileText, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
@@ -49,36 +50,8 @@ export default async function ProfilePage() {
       <div className="max-w-4xl mx-auto p-6">
         <h1 className="text-3xl font-bold mb-6">マイプロフィール</h1>
 
-        {/* プロフィール情報 */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
-              <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center">
-                <User size={40} className="text-blue-600" />
-              </div>
-            </div>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold mb-2">{user.name}</h2>
-              <div className="flex items-center gap-2 text-gray-600 mb-2">
-                <Mail size={16} />
-                <span>{user.email}</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-600">
-                <Calendar size={16} />
-                <span>登録日: {new Date(user.createdAt).toLocaleDateString('ja-JP')}</span>
-              </div>
-              <div className="mt-3">
-                <span className={`px-3 py-1 rounded-full text-sm ${
-                  user.role === 'admin' 
-                    ? 'bg-purple-100 text-purple-800' 
-                    : 'bg-blue-100 text-blue-800'
-                }`}>
-                  {user.role === 'admin' ? '管理者' : 'メンバー'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* プロフィール編集 */}
+        <ProfileEditClient user={user} />
 
         {/* 統計情報 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
