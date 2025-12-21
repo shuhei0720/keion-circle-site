@@ -100,6 +100,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return true
     },
     async jwt({ token, user, trigger }) {
+      // 初回ログイン時のみDBアクセス
       if (user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
@@ -107,15 +108,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
         
         if (dbUser) {
-          // トークンには最小限: subとroleのみ
-          token.sub = dbUser.id
-          token.role = dbUser.role
-          // email, name, imageは削除
-          delete token.email
-          delete token.name
-          delete token.picture
+          // 既存のトークンを完全に破棄し、最小限の新しいトークンを返す
+          return {
+            sub: dbUser.id,
+            role: dbUser.role,
+          }
         }
       }
+      // 2回目以降はそのまま返す
       return token
     },
     async session({ session, token }) {
