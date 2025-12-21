@@ -3,19 +3,28 @@
 import { useState, useEffect, useRef } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
-import { Edit, Trash2, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Image, Heart } from 'lucide-react'
+import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send } from 'lucide-react'
 import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
+
+interface User {
+  id: string
+  name: string
+  email: string
+  avatarUrl: string | null
+}
+
+interface Comment {
+  id: string
+  content: string
+  createdAt: string
+  user: User
+}
 
 interface PostParticipant {
   id: string
   status: string
-  user: {
-    id: string
-    name: string
-    email: string
-    avatarUrl: string | null
-  }
+  user: User
 }
 
 interface Post {
@@ -25,17 +34,13 @@ interface Post {
   youtubeUrl: string | null
   createdAt: string
   userId: string
-  user: {
-    id: string
-    name: string
-    email: string
-    avatarUrl: string | null
-  }
+  user: User
   participants: PostParticipant[]
   likes: {
     userId: string
     createdAt: string
   }[]
+  comments: Comment[]
 }
 
 const POSTS_PER_PAGE = 5
@@ -50,8 +55,8 @@ export default function PostsPage() {
   const [loading, setLoading] = useState(false)
   const [fetchingPosts, setFetchingPosts] = useState(true)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [uploadingImage, setUploadingImage] = useState(false)
-  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const [newComment, setNewComment] = useState<{ [postId: string]: string }>({})
+  const [submittingComment, setSubmittingComment] = useState<string | null>(null)
 
   const isAdmin = session?.user?.role === 'admin'
 
@@ -74,21 +79,20 @@ export default function PostsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!editingId) return // 編集の場合のみ送信可能
+
     setLoading(true)
 
     try {
-      const url = editingId ? `/api/posts/${editingId}` : '/api/posts'
-      const method = editingId ? 'PUT' : 'POST'
-      
-      const res = await fetch(url, {
-        method,
+      const res = await fetch(`/api/posts/${editingId}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, content, youtubeUrl })
       })
 
       if (!res.ok) {
         const error = await res.json()
-        alert(error.error || '操作に失敗しました')
+        alert(error.error || '更新に失敗しました')
         return
       }
 
@@ -99,7 +103,7 @@ export default function PostsPage() {
       fetchPosts()
     } catch (error) {
       console.error('Failed to save post:', error)
-      alert('操作に失敗しました')
+      alert('更新に失敗しました')
     } finally {
       setLoading(false)
     }
@@ -113,143 +117,53 @@ export default function PostsPage() {
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('この投稿を削除しますか?')) return
-
-    try {
-      const res = await fetch(`/api/posts/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (!res.ok) {
-        const error = await res.json()
-        alert(error.error || '削除に失敗しました')
-        return
-      }
-
-      fetchPosts()
-    } catch (error) {
-      console.error('Failed to delete post:', error)
-      alert('削除に失敗しました')
-    }
-  }
-
   const handleCancel = () => {
     setEditingId(null)
     setTitle('')
     setContent('')
     setYoutubeUrl('')
   }
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
 
-    if (file.size > 10 * 1024 * 1024) {
-      alert('ファイルサイズは10MB以下にしてください')
-      return
-    }
+  const handleCommentSubmit = async (postId: string) => {
+    const commentContent = newComment[postId]?.trim()
+    if (!commentContent || submittingComment) return
 
-    setUploadingImage(true)
+    setSubmittingComment(postId)
 
     try {
-      const formData = new FormData()
-      formData.append('image', file)
-
-      const res = await fetch('/api/posts/image', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (res.ok) {
-        const data = await res.json()
-        // カーソル位置に画像マークダウンを挿入
-        const imageMarkdown = `\n![](${data.imageUrl})\n`
-        const textarea = contentTextareaRef.current
-        if (textarea) {
-          const start = textarea.selectionStart
-          const end = textarea.selectionEnd
-          const newContent = content.substring(0, start) + imageMarkdown + content.substring(end)
-          setContent(newContent)
-          // カーソル位置を画像マークダウンの後に移動
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd = start + imageMarkdown.length
-            textarea.focus()
-          }, 0)
-        } else {
-          setContent(content + imageMarkdown)
-        }
-      } else {
-        alert('画像のアップロードに失敗しました')
-      }
-    } catch (error) {
-      console.error('画像アップロードエラー:', error)
-      alert('画像のアップロードに失敗しました')
-    } finally {
-      setUploadingImage(false)
-      // ファイル入力をリセット
-      e.target.value = ''
-    }
-  }
-  const handleParticipate = async (postId: string, status: string) => {
-    if (!session?.user?.id) return
-
-    // 楽観的UI更新: 即座にUIを更新
-    setPosts(prevPosts => prevPosts.map(post => {
-      if (post.id === postId) {
-        const existingParticipation = post.participants.find(p => p.user.id === session.user.id)
-        
-        if (existingParticipation) {
-          // 既存の参加状態を更新
-          return {
-            ...post,
-            participants: post.participants.map(p => 
-              p.user.id === session.user.id ? { ...p, status } : p
-            )
-          }
-        } else {
-          // 新規参加を追加
-          return {
-            ...post,
-            participants: [...post.participants, {
-              id: `temp-${Date.now()}`,
-              status,
-              user: {
-                id: session.user.id,
-                name: session.user.name || '',
-                email: session.user.email || '',
-                avatarUrl: session.user.avatarUrl || null
-              }
-            }]
-          }
-        }
-      }
-      return post
-    }))
-
-    try {
-      const res = await fetch(`/api/posts/${postId}/participate`, {
+      const res = await fetch(`/api/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ content: commentContent })
       })
 
       if (!res.ok) {
-        // エラー時は元に戻す
-        fetchPosts()
-        alert('参加登録に失敗しました')
+        const error = await res.json()
+        alert(error.error || 'コメントの投稿に失敗しました')
         return
       }
-    } catch (error) {
-      // エラー時は元に戻す
-      fetchPosts()
-      console.error('Failed to participate:', error)
-      alert('参加登録に失敗しました')
-    }
-  }
 
-  const getUserParticipation = (post: Post) => {
-    if (!session?.user?.id) return null
-    return post.participants.find(p => p.user.id === session.user.id)
+      const newCommentData = await res.json()
+      
+      // コメントをローカルステートに追加
+      setPosts(prevPosts => prevPosts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            comments: [...post.comments, newCommentData]
+          }
+        }
+        return post
+      }))
+
+      // 入力をクリア
+      setNewComment(prev => ({ ...prev, [postId]: '' }))
+    } catch (error) {
+      console.error('Failed to post comment:', error)
+      alert('コメントの投稿に失敗しました')
+    } finally {
+      setSubmittingComment(null)
+    }
   }
 
   const getParticipatingUsers = (post: Post) => {
@@ -259,7 +173,7 @@ export default function PostsPage() {
   const handleLike = async (postId: string) => {
     if (!session?.user?.id) return
     
-    // 楽観的UI更新: 即座にUIを更新
+    // 楽観的UI更新
     setPosts(prevPosts => prevPosts.map(post => {
       if (post.id === postId) {
         return {
@@ -276,13 +190,11 @@ export default function PostsPage() {
       })
       
       if (!res.ok) {
-        // エラー時は元に戻す
         fetchPosts()
         const error = await res.json()
         alert(error.error || 'いいねに失敗しました')
       }
     } catch (error) {
-      // エラー時は元に戻す
       fetchPosts()
       console.error('いいねエラー:', error)
       alert('いいねに失敗しました')
@@ -292,7 +204,7 @@ export default function PostsPage() {
   const handleUnlike = async (postId: string) => {
     if (!session?.user?.id) return
     
-    // 楽観的UI更新: 即座にUIを更新
+    // 楽観的UI更新
     setPosts(prevPosts => prevPosts.map(post => {
       if (post.id === postId) {
         return {
@@ -309,13 +221,11 @@ export default function PostsPage() {
       })
       
       if (!res.ok) {
-        // エラー時は元に戻す
         fetchPosts()
         const error = await res.json()
         alert(error.error || 'いいね解除に失敗しました')
       }
     } catch (error) {
-      // エラー時は元に戻す
       fetchPosts()
       console.error('いいね解除エラー:', error)
       alert('いいね解除に失敗しました')
@@ -338,455 +248,528 @@ export default function PostsPage() {
   const endIndex = startIndex + POSTS_PER_PAGE
   const currentPosts = posts.slice(startIndex, endIndex)
 
-  // 本文を画像込みでレンダリング
-  const renderContent = (content: string) => {
-    const parts = content.split(/(!?\[.*?\]\([^)]+\))/)
-    return parts.map((part, index) => {
-      const imageMatch = part.match(/!\[.*?\]\(([^)]+)\)/)
-      if (imageMatch) {
-        return (
-          <img
-            key={index}
-            src={imageMatch[1]}
-            alt="投稿画像"
-            className="max-w-full h-auto rounded-lg my-2"
-            style={{ maxHeight: '500px', objectFit: 'contain' }}
-          />
-        )
-      }
-      return part ? <span key={index}>{part}</span> : null
-    })
-  }
-
   // ログインしているユーザーにはDashboardLayoutを表示
   if (session) {
     return (
       <DashboardLayout>
         <div className="max-w-4xl mx-auto p-4 sm:p-6">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">投稿一覧</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">活動一覧</h1>
 
-        {fetchingPosts ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <>
-        {/* 投稿一覧 */}
-        <div className="space-y-4 sm:space-y-6 mb-8">
-          {currentPosts.map((post) => {
-            const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
-            const userParticipation = getUserParticipation(post)
-            const participatingUsers = getParticipatingUsers(post)
+          {fetchingPosts ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <>
+              {/* 投稿一覧 */}
+              <div className="space-y-4 sm:space-y-6 mb-8">
+                {currentPosts.map((post) => {
+                  const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
+                  const participatingUsers = getParticipatingUsers(post)
 
-            return (
-              <div key={post.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-                <div className="flex items-start justify-between mb-4 gap-2">
-                  <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                    <Link href={`/users/${post.userId}`} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 hover:opacity-80 transition">
-                      {post.user.avatarUrl ? (
-                        <img
-                          src={post.user.avatarUrl}
-                          alt={post.user.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                      )}
-                    </Link>
-                    <div className="min-w-0 flex-1">
-                      <h2 className="text-lg sm:text-2xl font-bold truncate">{post.title}</h2>
-                      <p className="text-xs sm:text-sm text-gray-500 truncate">
-                        {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
-                      </p>
-                    </div>
-                  </div>
-                  {isAdmin && (
-                    <div className="flex gap-1 sm:gap-2 flex-shrink-0">
-                      <button
-                        onClick={() => handleEdit(post)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                        aria-label="編集"
-                      >
-                        <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(post.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        aria-label="削除"
-                      >
-                        <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {post.content && (
-                  <div className="text-sm sm:text-base text-gray-700 mb-4 whitespace-pre-wrap break-words">
-                    {post.content.split('\n').map((line, index) => {
-                      // 画像マークダウン ![](url) を検出
-                      const imageMatch = line.match(/!\[\]\((.+?)\)/)
-                      if (imageMatch) {
-                        return (
-                          <div key={index} className="my-3 sm:my-4">
-                            <img
-                              src={imageMatch[1]}
-                              alt="投稿画像"
-                              className="max-w-full h-auto rounded-lg"
-                              style={{ maxHeight: '400px', objectFit: 'contain' }}
-                            />
-                          </div>
-                        )
-                      }
-                      return line ? <div key={index}>{line}</div> : <br key={index} />
-                    })}
-                  </div>
-                )}
-
-                {youtubeId && (
-                  <div className="mb-4 rounded-lg overflow-hidden aspect-video">
-                    <YouTube
-                      videoId={youtubeId}
-                      opts={{
-                        width: '100%',
-                        height: '100%',
-                        playerVars: {
-                          autoplay: 0,
-                        },
-                      }}
-                      className="w-full h-full"
-                    />
-                  </div>
-                )}
-
-                {/* 参加ボタンとリスト */}
-                {session && (
-                  <div className="mt-4 pt-4 border-t">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                      <div className="flex items-center gap-2">
-                        <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-                        <span className="text-sm sm:text-base font-medium">参加状況</span>
-                        <span className="text-xs sm:text-sm text-gray-500">
-                          ({participatingUsers.length}名)
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleParticipate(post.id, 'participating')}
-                          className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
-                            userParticipation?.status === 'participating'
-                              ? 'bg-green-600 text-white'
-                              : 'bg-gray-200 hover:bg-gray-300'
-                          }`}
-                        >
-                          参加
-                        </button>
-                        <button
-                          onClick={() => handleParticipate(post.id, 'not_participating')}
-                          className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
-                            userParticipation?.status === 'not_participating'
-                              ? 'bg-red-600 text-white'
-                              : 'bg-gray-200 hover:bg-gray-300'
-                          }`}
-                        >
-                          不参加
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* いいねボタン */}
-                    <div className="flex items-center gap-4 mt-4 pt-4 border-t">
-                      <button
-                        onClick={() => isLikedByUser(post) ? handleUnlike(post.id) : handleLike(post.id)}
-                        className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
-                          isLikedByUser(post)
-                            ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                        }`}
-                      >
-                        <Heart 
-                          className={`w-4 h-4 sm:w-5 sm:h-5 ${isLikedByUser(post) ? 'fill-current' : ''}`}
-                        />
-                        <span>{post.likes.length}</span>
-                      </button>
-                    </div>
-
-                    {/* 参加者リスト */}
-                    {participatingUsers.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-3">
-                        {participatingUsers.map((participant) => (
-                          <Link
-                            key={participant.id}
-                            href={`/users/${participant.user.id}`}
-                            className="flex items-center gap-2 bg-green-50 px-2 sm:px-3 py-1 rounded-full hover:bg-green-100 transition"
-                          >
-                            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                              {participant.user.avatarUrl ? (
-                                <img
-                                  src={participant.user.avatarUrl}
-                                  alt={participant.user.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <User className="w-3 h-3 text-gray-400" />
-                              )}
-                            </div>
-                            <span className="text-xs sm:text-sm text-green-700">
-                              {participant.user.name}
-                            </span>
+                  return (
+                    <div key={post.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                      <div className="flex items-start justify-between mb-4 gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+                          <Link href={`/users/${post.userId}`} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 hover:opacity-80 transition">
+                            {post.user.avatarUrl ? (
+                              <img
+                                src={post.user.avatarUrl}
+                                alt={post.user.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                            )}
                           </Link>
-                        ))}
+                          <div className="min-w-0 flex-1">
+                            <h2 className="text-lg sm:text-2xl font-bold truncate">{post.title}</h2>
+                            <p className="text-xs sm:text-sm text-gray-500 truncate">
+                              {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
+                            </p>
+                          </div>
+                        </div>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleEdit(post)}
+                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+                            aria-label="編集"
+                          >
+                            <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </button>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )}
+
+                      {post.content && (
+                        <div className="text-sm sm:text-base text-gray-700 mb-4 whitespace-pre-wrap break-words">
+                          {post.content.split('\n').map((line, index) => {
+                            const imageMatch = line.match(/!\[\]\((.+?)\)/)
+                            if (imageMatch) {
+                              return (
+                                <div key={index} className="my-3 sm:my-4">
+                                  <img
+                                    src={imageMatch[1]}
+                                    alt="投稿画像"
+                                    className="max-w-full h-auto rounded-lg"
+                                    style={{ maxHeight: '400px', objectFit: 'contain' }}
+                                  />
+                                </div>
+                              )
+                            }
+                            return line ? <div key={index}>{line}</div> : <br key={index} />
+                          })}
+                        </div>
+                      )}
+
+                      {youtubeId && (
+                        <div className="mb-4 rounded-lg overflow-hidden aspect-video">
+                          <YouTube
+                            videoId={youtubeId}
+                            opts={{
+                              width: '100%',
+                              height: '100%',
+                              playerVars: {
+                                autoplay: 0,
+                              },
+                            }}
+                            className="w-full h-full"
+                          />
+                        </div>
+                      )}
+
+                      {/* 参加者表示（読み取り専用） */}
+                      {participatingUsers.length > 0 && (
+                        <div className="mt-4 pt-4 border-t">
+                          <div className="flex items-center gap-2 mb-3">
+                            <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                            <span className="text-sm sm:text-base font-medium">参加者</span>
+                            <span className="text-xs sm:text-sm text-gray-500">
+                              ({participatingUsers.length}名)
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {participatingUsers.map((participant) => (
+                              <Link
+                                key={participant.id}
+                                href={`/users/${participant.user.id}`}
+                                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                              >
+                                {participant.user.avatarUrl ? (
+                                  <img
+                                    src={participant.user.avatarUrl}
+                                    alt={participant.user.name}
+                                    className="w-5 h-5 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <User className="w-4 h-4 text-gray-400" />
+                                )}
+                                <span className="text-sm">{participant.user.name}</span>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* いいねボタン */}
+                      <div className="flex items-center gap-4 mt-4 pt-4 border-t">
+                        <button
+                          onClick={() => isLikedByUser(post) ? handleUnlike(post.id) : handleLike(post.id)}
+                          className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
+                            isLikedByUser(post)
+                              ? 'bg-red-100 text-red-600 hover:bg-red-200'
+                              : 'bg-gray-100 hover:bg-gray-200'
+                          }`}
+                        >
+                          <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isLikedByUser(post) ? 'fill-current' : ''}`} />
+                          <span>{post.likes.length}</span>
+                        </button>
+                        <div className="flex items-center gap-2 text-gray-600">
+                          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <span className="text-sm sm:text-base">{post.comments.length}</span>
+                        </div>
+                      </div>
+
+                      {/* コメントセクション */}
+                      <div className="mt-4 pt-4 border-t">
+                        <h3 className="text-sm sm:text-base font-semibold mb-3">コメント</h3>
+                        
+                        {/* コメント一覧 */}
+                        {post.comments.length > 0 ? (
+                          <div className="space-y-3 mb-4">
+                            {post.comments.map((comment) => (
+                              <div key={comment.id} className="flex gap-2 sm:gap-3">
+                                <Link href={`/users/${comment.user.id}`} className="flex-shrink-0">
+                                  {comment.user.avatarUrl ? (
+                                    <img
+                                      src={comment.user.avatarUrl}
+                                      alt={comment.user.name}
+                                      className="w-8 h-8 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                      <User className="w-4 h-4 text-gray-400" />
+                                    </div>
+                                  )}
+                                </Link>
+                                <div className="flex-1 min-w-0">
+                                  <div className="bg-gray-50 rounded-lg p-3">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-sm font-semibold">{comment.user.name}</span>
+                                      <span className="text-xs text-gray-500">
+                                        {new Date(comment.createdAt).toLocaleString('ja-JP', {
+                                          month: 'short',
+                                          day: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit'
+                                        })}
+                                      </span>
+                                    </div>
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                      {comment.content}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 mb-4">まだコメントがありません</p>
+                        )}
+
+                        {/* コメント入力フォーム */}
+                        <div className="flex gap-2">
+                          {session?.user?.avatarUrl ? (
+                            <img
+                              src={session.user.avatarUrl}
+                              alt={session.user.name || ''}
+                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                              <User className="w-4 h-4 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 flex gap-2">
+                            <input
+                              type="text"
+                              value={newComment[post.id] || ''}
+                              onChange={(e) => setNewComment(prev => ({ ...prev, [post.id]: e.target.value }))}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault()
+                                  handleCommentSubmit(post.id)
+                                }
+                              }}
+                              placeholder="コメントを入力..."
+                              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                              disabled={submittingComment === post.id}
+                            />
+                            <button
+                              onClick={() => handleCommentSubmit(post.id)}
+                              disabled={!newComment[post.id]?.trim() || submittingComment === post.id}
+                              className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                              <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
-            )
-          })}
-        </div>
 
-        {/* ページネーション */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2 mb-8">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent touch-manipulation"
-              aria-label="前のページ"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`min-w-[40px] px-3 sm:px-4 py-2 rounded-lg touch-manipulation ${
-                  currentPage === page
-                    ? 'bg-blue-600 text-white'
-                    : 'hover:bg-gray-200'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent touch-manipulation"
-              aria-label="次のページ"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        )}
-
-        {/* 投稿フォーム（管理者のみ・画面下部） */}
-        {isAdmin && (
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">
-              {editingId ? '投稿を編集' : '新規投稿'}
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">タイトル</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">本文</label>
-                <textarea
-                  ref={contentTextareaRef}
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows={6}
-                />
-                <div className="mt-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                    disabled={uploadingImage}
-                  />
-                  <label
-                    htmlFor="image-upload"
-                    className={`inline-flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 touch-manipulation ${
-                      uploadingImage ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
+              {/* ページネーション */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center gap-2 mt-8">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    <Image className="w-4 h-4" />
-                    <span className="hidden xs:inline">{uploadingImage ? '画像アップロード中...' : '画像を挿入'}</span>
-                    <span className="xs:hidden">{uploadingImage ? 'アップロード中...' : '画像'}</span>
-                  </label>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                    最大10MB
-                  </p>
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <span className="text-sm sm:text-base px-3 sm:px-4">
+                    {currentPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
                 </div>
-              </div>
+              )}
+            </>
+          )}
 
-              <div>
-                <label className="block text-sm font-medium mb-2">YouTube URL</label>
-                <input
-                  type="text"
-                  value={youtubeUrl}
-                  onChange={(e) => setYoutubeUrl(e.target.value)}
-                  className="w-full px-3 sm:px-4 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 touch-manipulation font-medium"
-                >
-                  {loading ? '処理中...' : editingId ? '更新' : '投稿'}
-                </button>
-                {editingId && (
+          {/* 編集フォーム（管理者のみ） */}
+          {isAdmin && editingId && (
+            <div className="mt-8 bg-white rounded-lg shadow-md p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4">投稿を編集</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">タイトル</label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">内容</label>
+                  <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    rows={6}
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">YouTube URL</label>
+                  <input
+                    type="url"
+                    value={youtubeUrl}
+                    onChange={(e) => setYoutubeUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 sm:flex-none bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  >
+                    {loading ? '更新中...' : '更新'}
+                  </button>
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 text-sm sm:text-base border border-gray-300 rounded-lg hover:bg-gray-50 touch-manipulation font-medium"
+                    className="flex-1 sm:flex-none bg-gray-300 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
                   >
                     キャンセル
                   </button>
-                )}
-              </div>
-            </form>
-          </div>
-        )}
-        </>
-        )}
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </DashboardLayout>
     )
   }
 
-  // ログインしていないユーザー向けの表示
+  // 未ログインユーザーには公開ビューを表示
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ヘッダー */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-blue-600">
-              <Home className="w-6 h-6" />
-              BOLD 軽音
-            </Link>
-            <Link
-              href="/auth/signin"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              <LogIn className="w-4 h-4" />
-              ログイン
-            </Link>
-          </div>
+      <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
+            <Home className="w-5 h-5" />
+            <span className="font-semibold hidden sm:inline">ホーム</span>
+          </Link>
+          <h1 className="text-lg sm:text-xl font-bold">活動一覧</h1>
+          <Link
+            href="/auth/signin"
+            className="flex items-center gap-1 sm:gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>ログイン</span>
+          </Link>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-8">投稿一覧</h1>
-
+      {/* メインコンテンツ */}
+      <div className="max-w-4xl mx-auto p-4 sm:p-6">
         {fetchingPosts ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         ) : (
           <>
-        {/* 投稿一覧（読み取り専用） */}
-        <div className="space-y-6 mb-8">
-          {currentPosts.map((post) => {
-            const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
+            <div className="space-y-4 sm:space-y-6 mb-8">
+              {currentPosts.map((post) => {
+                const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
+                const participatingUsers = getParticipatingUsers(post)
 
-            return (
-              <div key={post.id} className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-start mb-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
-                      {post.user.avatarUrl ? (
-                        <img
-                          src={post.user.avatarUrl}
-                          alt={post.user.name}
-                          className="w-full h-full object-cover"
+                return (
+                  <div key={post.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div className="flex items-center gap-2 sm:gap-3 mb-4">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {post.user.avatarUrl ? (
+                          <img
+                            src={post.user.avatarUrl}
+                            alt={post.user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                        )}
+                      </div>
+                      <div>
+                        <h2 className="text-lg sm:text-2xl font-bold">{post.title}</h2>
+                        <p className="text-xs sm:text-sm text-gray-500">
+                          {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {post.content && (
+                      <div className="text-sm sm:text-base text-gray-700 mb-4 whitespace-pre-wrap break-words">
+                        {post.content.split('\n').map((line, index) => {
+                          const imageMatch = line.match(/!\[\]\((.+?)\)/)
+                          if (imageMatch) {
+                            return (
+                              <div key={index} className="my-3 sm:my-4">
+                                <img
+                                  src={imageMatch[1]}
+                                  alt="投稿画像"
+                                  className="max-w-full h-auto rounded-lg"
+                                  style={{ maxHeight: '400px', objectFit: 'contain' }}
+                                />
+                              </div>
+                            )
+                          }
+                          return line ? <div key={index}>{line}</div> : <br key={index} />
+                        })}
+                      </div>
+                    )}
+
+                    {youtubeId && (
+                      <div className="mb-4 rounded-lg overflow-hidden aspect-video">
+                        <YouTube
+                          videoId={youtubeId}
+                          opts={{
+                            width: '100%',
+                            height: '100%',
+                            playerVars: {
+                              autoplay: 0,
+                            },
+                          }}
+                          className="w-full h-full"
                         />
-                      ) : (
-                        <User className="w-5 h-5 text-gray-400" />
-                      )}
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold">{post.title}</h2>
-                      <p className="text-sm text-gray-500">
-                        投稿者: {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                      </div>
+                    )}
 
-                {post.content && (
-                  <div className="text-gray-700 mb-4 whitespace-pre-wrap">
-                    {renderContent(post.content)}
-                  </div>
-                )}
+                    {/* 参加者表示 */}
+                    {participatingUsers.length > 0 && (
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="flex items-center gap-2 mb-3">
+                          <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
+                          <span className="text-sm sm:text-base font-medium">参加者</span>
+                          <span className="text-xs sm:text-sm text-gray-500">
+                            ({participatingUsers.length}名)
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {participatingUsers.map((participant) => (
+                            <div
+                              key={participant.id}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-full"
+                            >
+                              {participant.user.avatarUrl ? (
+                                <img
+                                  src={participant.user.avatarUrl}
+                                  alt={participant.user.name}
+                                  className="w-5 h-5 rounded-full object-cover"
+                                />
+                              ) : (
+                                <User className="w-4 h-4 text-gray-400" />
+                              )}
+                              <span className="text-sm">{participant.user.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                {youtubeId && (
-                  <div className="mb-4 rounded-lg overflow-hidden">
-                    <YouTube
-                      videoId={youtubeId}
-                      opts={{
-                        width: '100%',
-                        playerVars: {
-                          autoplay: 0,
-                        },
-                      }}
-                    />
+                    {/* いいね数とコメント数の表示 */}
+                    <div className="flex items-center gap-4 mt-4 pt-4 border-t text-gray-600">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="text-sm sm:text-base">{post.likes.length}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="text-sm sm:text-base">{post.comments.length}</span>
+                      </div>
+                    </div>
+
+                    {/* コメント表示（未ログインでも閲覧可能） */}
+                    {post.comments.length > 0 && (
+                      <div className="mt-4 pt-4 border-t">
+                        <h3 className="text-sm sm:text-base font-semibold mb-3">コメント</h3>
+                        <div className="space-y-3">
+                          {post.comments.map((comment) => (
+                            <div key={comment.id} className="flex gap-2 sm:gap-3">
+                              <div className="flex-shrink-0">
+                                {comment.user.avatarUrl ? (
+                                  <img
+                                    src={comment.user.avatarUrl}
+                                    alt={comment.user.name}
+                                    className="w-8 h-8 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <User className="w-4 h-4 text-gray-400" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="bg-gray-50 rounded-lg p-3">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-sm font-semibold">{comment.user.name}</span>
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(comment.createdAt).toLocaleString('ja-JP', {
+                                        month: 'short',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                    {comment.content}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                )
+              })}
+            </div>
+
+            {/* ページネーション */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <span className="text-sm sm:text-base px-3 sm:px-4">
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
               </div>
-            )
-          })}
-        </div>
-
-        {/* ページネーション */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-2">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded-lg ${
-                  currentPage === page
-                    ? 'bg-blue-600 text-white'
-                    : 'hover:bg-gray-200'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="p-2 rounded-lg hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-transparent"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
-          </div>
-        )}
-        </>
+            )}
+          </>
         )}
       </div>
     </div>
