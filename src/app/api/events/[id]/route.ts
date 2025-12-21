@@ -19,7 +19,8 @@ export async function PUT(
 
     const {
       title,
-      content
+      content,
+      date
     } = await request.json()
     const { id } = await params
 
@@ -27,7 +28,8 @@ export async function PUT(
       where: { id },
       data: {
         title,
-        content
+        content,
+        date: date ? new Date(date) : null
       },
       include: {
         user: {

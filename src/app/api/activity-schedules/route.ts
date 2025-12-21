@@ -73,7 +73,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
     }
 
-    const { title, content } = await request.json()
+    const { title, content, date } = await request.json()
 
     if (!title || !content) {
       return NextResponse.json(
@@ -86,6 +86,7 @@ export async function POST(request: Request) {
       data: {
         title,
         content,
+        date: date ? new Date(date) : null,
         userId: session.user.id
       },
       include: {

@@ -177,6 +177,7 @@ model ActivitySchedule {
   id          String   @id @default(cuid())
   title       String
   content     String?  // マークダウン形式
+  date        DateTime?
   userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   participants ActivityParticipant[]
@@ -201,6 +202,7 @@ model Event {
   id            String   @id @default(cuid())
   title         String
   content       String?  // マークダウン形式
+  date          DateTime?
   userId        String?
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   participants  EventParticipant[]

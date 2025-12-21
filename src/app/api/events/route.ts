@@ -75,7 +75,8 @@ export async function POST(request: Request) {
 
     const {
       title,
-      content
+      content,
+      date
     } = await request.json()
 
     if (!title || !content) {
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
       data: {
         title,
         content,
+        date: date ? new Date(date) : null,
         userId: session.user.id
       },
       include: {
