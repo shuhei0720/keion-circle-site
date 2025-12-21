@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 
@@ -8,9 +9,10 @@ import bcrypt from "bcryptjs"
  * NextAuth v5 認証設定
  * - Google OAuth: Google アカウントでログイン
  * - Credentials: メールアドレスとパスワードでログイン
- * - JWT Strategy: 最小限のデータのみをトークンに含める
+ * - Database Strategy: セッションをデータベースに保存
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -54,7 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     })
   ],
   session: {
-    strategy: "jwt",
+    strategy: "database",
     maxAge: 30 * 24 * 60 * 60, // 30日
   },
   trustHost: true,
@@ -88,45 +90,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    async jwt({ token, user, trigger }) {
-      // ログイン時のみ最小限の情報をトークンに保存
-      if (user?.email || trigger === 'signIn') {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user?.email || token.email as string },
-          select: {
-            id: true,
-            role: true
-          }
-        })
-        
-        if (dbUser) {
-          token.sub = dbUser.id
-          token.role = dbUser.role
-        }
-      }
-      return token
-    },
-    async session({ session, token }) {
-      // 必要な時だけDBから取得
-      if (token.sub) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub as string },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            avatarUrl: true,
-            role: true
-          }
-        })
-        
-        if (dbUser) {
-          session.user.id = dbUser.id
-          session.user.email = dbUser.email!
-          session.user.name = dbUser.name
-          session.user.avatarUrl = dbUser.avatarUrl
-          session.user.role = dbUser.role
-        }
+    async session({ session, user }) {
+      // データベースストラテジーの場合、userオブジェクトが渡される
+      if (user) {
+        session.user.id = user.id
+        session.user.role = user.role
+        session.user.avatarUrl = user.avatarUrl
       }
       return session
     },
