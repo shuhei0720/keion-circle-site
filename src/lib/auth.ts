@@ -89,20 +89,27 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    async jwt({ token, user }) {
-      // ログイン時のみ、IDとroleのみ保存
-      if (user) {
-        token.sub = user.id
-        token.role = (user as any).role || 'member'
+    async jwt({ token, user, account }) {
+      // 初回ログイン時
+      if (user && user.email) {
+        // DBからユーザー情報を取得してIDとroleのみ保存
+        const dbUser = await prisma.user.findUnique({
+          where: { email: user.email },
+          select: { id: true, role: true }
+        })
+        
+        if (dbUser) {
+          token.sub = dbUser.id
+          token.role = dbUser.role
+        }
       }
       return token
     },
     async session({ session, token }) {
-      // セッションにはIDとroleのみ設定
+      // セッションには最小限の情報のみ
       if (token.sub) {
         session.user.id = token.sub
-        session.user.role = token.role as string
-        // name, email, avatarUrlはトークンに含めず、必要な時にDBから取得
+        session.user.role = (token.role as string) || 'member'
       }
       return session
     },
