@@ -9,10 +9,9 @@ import bcrypt from "bcryptjs"
  * NextAuth v5 認証設定
  * - Google OAuth: Google アカウントでログイン
  * - Credentials: メールアドレスとパスワードでログイン
- * - Database Strategy: セッションをデータベースに保存
+ * - JWT Strategy: 最小限の情報のみトークンに含める
  */
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -56,7 +55,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     })
   ],
   session: {
-    strategy: "database",
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30日
   },
   trustHost: true,
@@ -90,12 +89,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    async session({ session, user }) {
-      // データベースストラテジーの場合、userオブジェクトが渡される
+    async jwt({ token, user }) {
+      // ログイン時のみ、IDとroleのみ保存
       if (user) {
-        session.user.id = user.id
-        session.user.role = (user as any).role || 'member'
-        session.user.avatarUrl = (user as any).avatarUrl || null
+        token.sub = user.id
+        token.role = (user as any).role || 'member'
+      }
+      return token
+    },
+    async session({ session, token }) {
+      // セッションにはIDとroleのみ設定
+      if (token.sub) {
+        session.user.id = token.sub
+        session.user.role = token.role as string
+        // name, email, avatarUrlはトークンに含めず、必要な時にDBから取得
       }
       return session
     },
