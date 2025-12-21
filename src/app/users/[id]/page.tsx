@@ -90,21 +90,6 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                   <p className="text-2xl font-bold text-green-600">{totalParticipations}</p>
                 </div>
               </div>
-              
-              {user.instrument && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-1">担当楽器</p>
-                  <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
-                    🎸 {user.instrument}
-                  </span>
-                </div>
-              )}
-              {user.bio && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-600 mb-1">自己紹介</p>
-                  <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded">{user.bio}</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
