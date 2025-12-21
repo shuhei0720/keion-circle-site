@@ -12,7 +12,6 @@ interface User {
   id: string
   name: string | null
   email: string | null
-  avatarUrl: string | null
 }
 
 interface Participant {
@@ -554,13 +553,6 @@ ${event.content}
                           key={p.id}
                           className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full"
                         >
-                          {p.user.avatarUrl && (
-                            <img
-                              src={p.user.avatarUrl}
-                              alt={p.user.name || ''}
-                              className="w-6 h-6 rounded-full"
-                            />
-                          )}
                           <span className="text-sm">{p.user.name || p.user.email}</span>
                         </div>
                       ))}
@@ -600,13 +592,6 @@ ${event.content}
                     <div className="space-y-3 mb-3">
                       {event.comments.map((comment) => (
                         <div key={comment.id} className="flex gap-3 bg-gray-50 p-3 rounded-lg">
-                          {comment.user.avatarUrl && (
-                            <img
-                              src={comment.user.avatarUrl}
-                              alt={comment.user.name || ''}
-                              className="w-8 h-8 rounded-full"
-                            />
-                          )}
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <span className="font-medium text-sm">

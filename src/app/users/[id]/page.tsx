@@ -71,17 +71,9 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.name || ''}
-                  className="w-32 h-32 rounded-full object-cover border-2 border-gray-200"
-                />
-              ) : (
-                <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
-                  <User size={48} className="text-gray-400" />
-                </div>
-              )}
+              <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
+                <User size={48} className="text-gray-400" />
+              </div>
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">{user.name}</h1>
@@ -112,14 +104,6 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                   <p className="text-sm text-gray-600 mb-1">自己紹介</p>
                   <p className="text-gray-700 whitespace-pre-wrap bg-gray-50 p-3 rounded">{user.bio}</p>
                 </div>
-              )}
-              {isOwnProfile && (
-                <Link
-                  href="/profile"
-                  className="mt-4 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  プロフィールを編集
-                </Link>
               )}
             </div>
           </div>

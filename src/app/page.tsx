@@ -17,7 +17,6 @@ interface Post {
     id: string
     name: string
     email: string
-    avatarUrl: string | null
   }
   likes: {
     userId: string
@@ -156,16 +155,8 @@ export default function Home() {
                   return (
                     <div key={post.id} className="bg-white rounded-xl shadow-lg p-6">
                       <div className="flex items-center gap-3 mb-4">
-                        <Link href={`/users/${post.userId}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden hover:opacity-80 transition">
-                          {post.user.avatarUrl ? (
-                            <img
-                              src={post.user.avatarUrl}
-                              alt={post.user.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <User className="w-5 h-5 text-gray-400" />
-                          )}
+                        <Link href={`/users/${post.userId}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:opacity-80 transition">
+                          <User className="w-5 h-5 text-gray-400" />
                         </Link>
                         <div>
                           <h3 className="text-xl font-semibold">{post.title}</h3>
@@ -226,16 +217,8 @@ export default function Home() {
                   className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow"
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                      {post.user.avatarUrl ? (
-                        <img
-                          src={post.user.avatarUrl}
-                          alt={post.user.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <User className="w-4 h-4 text-gray-400" />
-                      )}
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User className="w-4 h-4 text-gray-400" />
                     </div>
                     <span className="text-sm text-gray-600">{post.user.name}</span>
                   </div>

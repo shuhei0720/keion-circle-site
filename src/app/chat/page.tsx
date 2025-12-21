@@ -17,7 +17,6 @@ interface Message {
   user: {
     name: string
     email: string
-    avatarUrl?: string | null
   }
 }
 
@@ -100,8 +99,7 @@ export default function ChatPage() {
       fileType: selectedFile?.type || null,
       user: {
         name: session.user.name || '',
-        email: session.user.email || '',
-        avatarUrl: session.user.avatarUrl || null
+        email: session.user.email || ''
       }
     }
     
@@ -182,21 +180,9 @@ export default function ChatPage() {
             return (
               <div key={message.id} className={`flex gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                 {!isOwnMessage && (
-                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
-                    {message.user.avatarUrl ? (
-                      <Link href={`/users/${message.userId}`} className="block w-full h-full">
-                        <img
-                          src={message.user.avatarUrl}
-                          alt={message.user.name || ''}
-                          className="w-full h-full object-cover hover:opacity-80 transition"
-                        />
-                      </Link>
-                    ) : (
-                      <Link href={`/users/${message.userId}`} className="block w-full h-full flex items-center justify-center hover:bg-gray-300 transition">
-                        <User className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
-                      </Link>
-                    )}
-                  </div>
+                  <Link href={`/users/${message.userId}`} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1 hover:bg-gray-300 transition">
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+                  </Link>
                 )}
                 <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-lg shadow ${isOwnMessage ? 'bg-blue-600 text-white' : 'bg-white text-gray-800'}`}>
                   <div className="text-xs mb-1 opacity-75">{message.user.name || message.user.email}</div>
@@ -226,21 +212,9 @@ export default function ChatPage() {
                   <div className="text-xs mt-1 opacity-75">{new Date(message.createdAt).toLocaleTimeString('ja-JP')}</div>
                 </div>
                 {isOwnMessage && (
-                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 mt-1">
-                    {((session.user as any).avatarUrl || session.user.image) ? (
-                      <Link href={`/users/${(session.user as any).id}`} className="block w-full h-full">
-                        <img
-                          src={(session.user as any).avatarUrl || session.user.image}
-                          alt={session.user.name || ''}
-                          className="w-full h-full object-cover hover:opacity-80 transition"
-                        />
-                      </Link>
-                    ) : (
-                      <Link href={`/users/${(session.user as any).id}`} className="block w-full h-full flex items-center justify-center hover:bg-gray-300 transition">
-                        <User className="w-4 h-4 text-gray-400" />
-                      </Link>
-                    )}
-                  </div>
+                  <Link href={`/users/${(session.user as any).id}`} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1 hover:bg-gray-300 transition">
+                    <User className="w-4 h-4 text-gray-400" />
+                  </Link>
                 )}
               </div>
             )

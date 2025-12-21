@@ -11,7 +11,6 @@ interface User {
   id: string
   name: string
   email: string
-  avatarUrl: string | null
 }
 
 interface Comment {
@@ -271,16 +270,8 @@ export default function PostsPage() {
                     <div key={post.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
                       <div className="flex items-start justify-between mb-4 gap-2">
                         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                          <Link href={`/users/${post.userId}`} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0 hover:opacity-80 transition">
-                            {post.user.avatarUrl ? (
-                              <img
-                                src={post.user.avatarUrl}
-                                alt={post.user.name}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                            )}
+                          <Link href={`/users/${post.userId}`} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 hover:opacity-80 transition">
+                            <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                           </Link>
                           <div className="min-w-0 flex-1">
                             <h2 className="text-lg sm:text-2xl font-bold truncate">{post.title}</h2>
@@ -354,15 +345,7 @@ export default function PostsPage() {
                                 href={`/users/${participant.user.id}`}
                                 className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
                               >
-                                {participant.user.avatarUrl ? (
-                                  <img
-                                    src={participant.user.avatarUrl}
-                                    alt={participant.user.name}
-                                    className="w-5 h-5 rounded-full object-cover"
-                                  />
-                                ) : (
-                                  <User className="w-4 h-4 text-gray-400" />
-                                )}
+                                <User className="w-4 h-4 text-gray-400" />
                                 <span className="text-sm">{participant.user.name}</span>
                               </Link>
                             ))}
@@ -399,17 +382,9 @@ export default function PostsPage() {
                             {(post.comments || []).map((comment) => (
                               <div key={comment.id} className="flex gap-2 sm:gap-3">
                                 <Link href={`/users/${comment.user.id}`} className="flex-shrink-0">
-                                  {comment.user.avatarUrl ? (
-                                    <img
-                                      src={comment.user.avatarUrl}
-                                      alt={comment.user.name}
-                                      className="w-8 h-8 rounded-full object-cover"
-                                    />
-                                  ) : (
-                                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                                      <User className="w-4 h-4 text-gray-400" />
-                                    </div>
-                                  )}
+                                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <User className="w-4 h-4 text-gray-400" />
+                                  </div>
                                 </Link>
                                 <div className="flex-1 min-w-0">
                                   <div className="bg-gray-50 rounded-lg p-3">
@@ -438,17 +413,9 @@ export default function PostsPage() {
 
                         {/* コメント入力フォーム */}
                         <div className="flex gap-2">
-                          {session?.user?.avatarUrl ? (
-                            <img
-                              src={session.user.avatarUrl}
-                              alt={session.user.name || ''}
-                              className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                              <User className="w-4 h-4 text-gray-400" />
-                            </div>
-                          )}
+                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                            <User className="w-4 h-4 text-gray-400" />
+                          </div>
                           <div className="flex-1 flex gap-2">
                             <input
                               type="text"
