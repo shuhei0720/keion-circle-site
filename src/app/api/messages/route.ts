@@ -37,22 +37,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { content, fileUrl, fileName, fileType } = body
+    const { content } = body
 
     const message = await prisma.message.create({
       data: {
         content,
-        userId: session.user.id!,
-        fileUrl: fileUrl || null,
-        fileName: fileName || null,
-        fileType: fileType || null
+        userId: session.user.id!
       },
       include: {
         user: {
           select: {
             name: true,
-            email: true,
-            avatarUrl: true
+            email: true
           }
         }
       }
