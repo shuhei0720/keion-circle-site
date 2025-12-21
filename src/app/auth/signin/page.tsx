@@ -12,6 +12,9 @@ export default function SignIn() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('[Client SignIn] Attempting credentials login...')
+    console.log('[Client SignIn] Email:', email)
+    
     const result = await signIn('credentials', {
       email,
       password,
@@ -19,15 +22,32 @@ export default function SignIn() {
       callbackUrl: '/'
     })
     
+    console.log('[Client SignIn] Result:', result)
+    console.log('[Client SignIn] OK:', result?.ok)
+    console.log('[Client SignIn] Error:', result?.error)
+    console.log('[Client SignIn] Status:', result?.status)
+    console.log('[Client SignIn] URL:', result?.url)
+    
     if (result?.ok) {
+      console.log('[Client SignIn] Success! Redirecting to /')
       router.push('/')
     } else if (result?.error) {
+      console.error('[Client SignIn] Failed:', result.error)
       alert('ログインに失敗しました。メールアドレスとパスワードを確認してください。')
     }
   }
 
   const handleGoogleSignIn = async () => {
-    await signIn('google', { callbackUrl: '/' })
+    console.log('[Client SignIn] Attempting Google login...')
+    try {
+      const result = await signIn('google', { 
+        callbackUrl: '/',
+        redirect: true
+      })
+      console.log('[Client SignIn] Google result:', result)
+    } catch (error) {
+      console.error('[Client SignIn] Google error:', error)
+    }
   }
 
   return (
