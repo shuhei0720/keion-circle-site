@@ -42,11 +42,6 @@ model User {
   name          String?
   email         String?   @unique
   password      String?
-  emailVerified DateTime?
-  image         String?
-  avatarUrl     String?   // プロフィール画像URL
-  bio           String?   // 自己紹介
-  instrument    String?   // 担当楽器
   role          String    @default("member") // admin, member
   accounts      Account[]
   sessions      Session[]
