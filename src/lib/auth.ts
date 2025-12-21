@@ -88,26 +88,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true
     },
-    async jwt({ token, user }) {
-      // ログイン時のみ、必要最小限の情報をトークンに追加
-      if (user?.email) {
+    async jwt({ token, user, trigger }) {
+      // ログイン時のみユーザー情報を取得してトークンに保存
+      if (user?.email || trigger === 'signIn') {
         const dbUser = await prisma.user.findUnique({
-          where: { email: user.email },
-          select: { id: true, role: true } // IDとroleのみ取得
-        })
-        
-        if (dbUser) {
-          token.sub = dbUser.id // subにユーザーIDを設定
-          token.role = dbUser.role
-        }
-      }
-      return token
-    },
-    async session({ session, token }) {
-      // セッション取得時に、DBから最新のユーザー情報を取得
-      if (token.sub) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.sub },
+          where: { email: user?.email || token.email as string },
           select: {
             id: true,
             email: true,
@@ -118,12 +103,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
         
         if (dbUser) {
-          session.user.id = dbUser.id
-          session.user.email = dbUser.email!
-          session.user.name = dbUser.name
-          session.user.avatarUrl = dbUser.avatarUrl
-          session.user.role = dbUser.role
+          token.sub = dbUser.id
+          token.email = dbUser.email
+          token.name = dbUser.name
+          token.picture = dbUser.avatarUrl
+          token.role = dbUser.role
         }
+      }
+      return token
+    },
+    async session({ session, token }) {
+      // トークンからセッションを構築（DBクエリなし）
+      if (token.sub) {
+        session.user.id = token.sub as string
+        session.user.email = token.email as string
+        session.user.name = token.name as string
+        session.user.avatarUrl = token.picture as string | null
+        session.user.role = token.role as string
       }
       return session
     },
