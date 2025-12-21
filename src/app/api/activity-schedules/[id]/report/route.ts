@@ -5,10 +5,10 @@ import prisma from '@/lib/prisma'
 // 活動報告作成
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
@@ -18,7 +18,7 @@ export async function POST(
     }
 
     const { title, content, youtubeUrl } = await request.json()
-    const { id } = params
+    const { id } = await params
 
     // 活動スケジュールを取得
     const schedule = await prisma.activitySchedule.findUnique({

@@ -5,7 +5,7 @@ import prisma from '@/lib/prisma'
 // 投稿へのコメント投稿
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth()
@@ -14,7 +14,7 @@ export async function POST(
     }
 
     const { content } = await request.json()
-    const { id } = params
+    const { id } = await params
 
     if (!content || content.trim() === '') {
       return NextResponse.json(

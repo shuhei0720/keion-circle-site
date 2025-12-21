@@ -5,10 +5,10 @@ import prisma from '@/lib/prisma'
 // イベント更新
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
@@ -27,7 +27,7 @@ export async function PUT(
       songYoutubeUrl,
       parts
     } = await request.json()
-    const { id } = params
+    const { id } = await params
 
     const event = await prisma.event.update({
       where: { id },

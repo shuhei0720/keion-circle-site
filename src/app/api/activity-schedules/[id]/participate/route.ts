@@ -5,15 +5,15 @@ import prisma from '@/lib/prisma'
 // 参加登録/解除
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
 
     // 既存の参加を確認
     const existing = await prisma.activityParticipant.findUnique({
