@@ -40,7 +40,7 @@ interface Post {
     userId: string
     createdAt: string
   }[]
-  comments: Comment[]
+  comments?: Comment[]
 }
 
 const POSTS_PER_PAGE = 5
@@ -150,7 +150,7 @@ export default function PostsPage() {
         if (post.id === postId) {
           return {
             ...post,
-            comments: [...post.comments, newCommentData]
+            comments: [...(post.comments || []), newCommentData]
           }
         }
         return post
@@ -385,7 +385,7 @@ export default function PostsPage() {
                         </button>
                         <div className="flex items-center gap-2 text-gray-600">
                           <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                          <span className="text-sm sm:text-base">{post.comments.length}</span>
+                          <span className="text-sm sm:text-base">{(post.comments || []).length}</span>
                         </div>
                       </div>
 
@@ -394,9 +394,9 @@ export default function PostsPage() {
                         <h3 className="text-sm sm:text-base font-semibold mb-3">コメント</h3>
                         
                         {/* コメント一覧 */}
-                        {post.comments.length > 0 ? (
+                        {(post.comments || []).length > 0 ? (
                           <div className="space-y-3 mb-4">
-                            {post.comments.map((comment) => (
+                            {(post.comments || []).map((comment) => (
                               <div key={comment.id} className="flex gap-2 sm:gap-3">
                                 <Link href={`/users/${comment.user.id}`} className="flex-shrink-0">
                                   {comment.user.avatarUrl ? (
@@ -695,16 +695,16 @@ export default function PostsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="text-sm sm:text-base">{post.comments.length}</span>
+                        <span className="text-sm sm:text-base">{(post.comments || []).length}</span>
                       </div>
                     </div>
 
                     {/* コメント表示（未ログインでも閲覧可能） */}
-                    {post.comments.length > 0 && (
+                    {(post.comments || []).length > 0 && (
                       <div className="mt-4 pt-4 border-t">
                         <h3 className="text-sm sm:text-base font-semibold mb-3">コメント</h3>
                         <div className="space-y-3">
-                          {post.comments.map((comment) => (
+                          {(post.comments || []).map((comment) => (
                             <div key={comment.id} className="flex gap-2 sm:gap-3">
                               <div className="flex-shrink-0">
                                 {comment.user.avatarUrl ? (
