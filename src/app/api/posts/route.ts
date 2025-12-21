@@ -5,7 +5,7 @@ import { isAdmin } from '@/lib/permissions'
 
 export const runtime = 'nodejs'
 
-// 投稿一覧取得（参加情報といいね情報含む）
+// 投稿一覧取得（参加情報、いいね情報、コメント含む）
 export async function GET() {
   try {
     const posts = await prisma.post.findMany({
@@ -34,6 +34,21 @@ export async function GET() {
           select: {
             userId: true,
             createdAt: true
+          }
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatarUrl: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
           }
         }
       },
