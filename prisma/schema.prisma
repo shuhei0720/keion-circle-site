@@ -55,6 +55,11 @@ model User {
   schedules     ScheduleResponse[]
   postParticipants PostParticipant[]
   postLikes     PostLike[]
+  activitySchedules ActivitySchedule[]
+  events        Event[]
+  activityParticipants ActivityParticipant[]
+  eventParticipants EventParticipant[]
+  comments      Comment[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -73,10 +78,13 @@ model Post {
   title       String
   content     String?
   youtubeUrl  String?
+  type        String   @default("manual") // "manual", "activity_report", "event_report"
+  sourceId    String?  // ActivitySchedule or Event ID
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   participants PostParticipant[]
   likes       PostLike[]
+  comments    Comment[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -148,4 +156,81 @@ model ScheduleResponse {
   createdAt      DateTime     @default(now())
 
   @@unique([scheduleDateId, userId])
+}
+
+// コメント機能（投稿、活動スケジュール、イベント用）
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // ポリモーフィック関連
+  postId              String?
+  activityScheduleId  String?
+  eventId             String?
+  
+  post              Post?              @relation(fields: [postId], references: [id], onDelete: Cascade)
+  activitySchedule  ActivitySchedule?  @relation(fields: [activityScheduleId], references: [id], onDelete: Cascade)
+  event             Event?             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 活動スケジュール機能
+model ActivitySchedule {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   // マークダウン形式
+  date        DateTime
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participants ActivityParticipant[]
+  comments    Comment[]
+  reportCreated Boolean @default(false) // 活動報告が作成されたか
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivityParticipant {
+  id                  String            @id @default(cuid())
+  activityScheduleId  String
+  userId              String
+  activitySchedule    ActivitySchedule  @relation(fields: [activityScheduleId], references: [id], onDelete: Cascade)
+  user                User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt           DateTime          @default(now())
+
+  @@unique([activityScheduleId, userId])
+}
+
+// イベント機能
+model Event {
+  id            String   @id @default(cuid())
+  title         String
+  content       String   // マークダウン形式
+  date          DateTime
+  location      String?  // 開催場所
+  songTitle     String?  // 課題曲
+  songSheetUrl  String?  // 楽譜URL
+  songYoutubeUrl String? // YouTube URL
+  parts         String?  // JSONとして保存（各パート担当）
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  participants  EventParticipant[]
+  comments      Comment[]
+  reportCreated Boolean @default(false) // イベント報告が作成されたか
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model EventParticipant {
+  id        String   @id @default(cuid())
+  eventId   String
+  userId    String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, userId])
 }

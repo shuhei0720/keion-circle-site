@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { Home, FileText, Calendar, MessageCircle, LogOut, User, Users, Menu, X } from 'lucide-react'
+import { Home, FileText, Calendar, MessageCircle, LogOut, User, Users, Menu, X, CalendarDays, PartyPopper } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
@@ -63,16 +63,25 @@ export default function DashboardLayout({
                 }`}
               >
                 <FileText className="w-5 h-5" />
-                <span>投稿</span>
+                <span>活動一覧</span>
               </Link>
               <Link
-                href="/schedules"
+                href="/activity-schedules"
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/activity-schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
                 }`}
               >
-                <Calendar className="w-5 h-5" />
-                <span>スケジュール</span>
+                <CalendarDays className="w-5 h-5" />
+                <span>活動スケジュール</span>
+              </Link>
+              <Link
+                href="/events"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  isActive('/events') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                }`}
+              >
+                <PartyPopper className="w-5 h-5" />
+                <span>イベント</span>
               </Link>
               <Link
                 href="/chat"
@@ -144,17 +153,27 @@ export default function DashboardLayout({
                 }`}
               >
                 <FileText className="w-5 h-5" />
-                <span className="font-medium">投稿</span>
+                <span className="font-medium">活動一覧</span>
               </Link>
               <Link
-                href="/schedules"
+                href="/activity-schedules"
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/activity-schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
                 }`}
               >
-                <Calendar className="w-5 h-5" />
-                <span className="font-medium">スケジュール</span>
+                <CalendarDays className="w-5 h-5" />
+                <span className="font-medium">活動スケジュール</span>
+              </Link>
+              <Link
+                href="/events"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  isActive('/events') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                }`}
+              >
+                <PartyPopper className="w-5 h-5" />
+                <span className="font-medium">イベント</span>
               </Link>
               <Link
                 href="/chat"
