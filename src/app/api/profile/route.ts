@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 export async function PATCH(req: NextRequest) {
   try {
     const session = await auth()
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
 
@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest) {
     const { name } = body
 
     const updatedUser = await prisma.user.update({
-      where: { email: session.user.email },
+      where: { id: session.user.id },
       data: { name },
     })
 

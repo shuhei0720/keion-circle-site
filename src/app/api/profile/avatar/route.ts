@@ -7,7 +7,7 @@ import path from 'path'
 export async function POST(req: NextRequest) {
   try {
     const session = await auth()
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     if (!file || file.size === 0) {
       // アバター削除
       await prisma.user.update({
-        where: { email: session.user.email },
+        where: { id: session.user.id },
         data: { avatarUrl: null },
       })
       return NextResponse.json({ avatarUrl: null })
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     await mkdir(uploadsDir, { recursive: true })
 
     const ext = path.extname(file.name)
-    const filename = `${session.user.email.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}${ext}`
+    const filename = `${session.user.id.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}${ext}`
     const filepath = path.join(uploadsDir, filename)
 
     await writeFile(filepath, buffer)
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     // データベース更新
     const updatedUser = await prisma.user.update({
-      where: { email: session.user.email },
+      where: { id: session.user.id },
       data: { avatarUrl },
     })
 
