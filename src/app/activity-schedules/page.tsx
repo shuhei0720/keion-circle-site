@@ -34,7 +34,6 @@ interface ActivitySchedule {
   user: User
   participants: Participant[]
   comments: Comment[]
-  reportCreated: boolean
   createdAt: string
   updatedAt: string
 }
@@ -187,7 +186,7 @@ ${schedule.content}
   const canCreateReport = (schedule: ActivitySchedule) => {
     const scheduleDate = new Date(schedule.date)
     const now = new Date()
-    return session?.user?.role === 'admin' && scheduleDate <= now && !schedule.reportCreated
+    return session?.user?.role === 'admin' && scheduleDate <= now
   }
 
   if (status === 'loading' || loading) {
@@ -295,7 +294,7 @@ ${schedule.content}
                       <span>{new Date(schedule.date).toLocaleDateString('ja-JP')}</span>
                     </div>
                   </div>
-                  {session?.user?.role === 'admin' && !schedule.reportCreated && (
+                  {session?.user?.role === 'admin' && (
                     <button
                       onClick={() => handleEdit(schedule)}
                       className="p-2 hover:bg-gray-100 rounded-lg"

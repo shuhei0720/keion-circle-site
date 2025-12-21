@@ -40,7 +40,6 @@ interface Event {
   user: User
   participants: Participant[]
   comments: Comment[]
-  reportCreated: boolean
   createdAt: string
   updatedAt: string
 }
@@ -242,7 +241,7 @@ ${event.content}
   const canCreateReport = (event: Event) => {
     const eventDate = new Date(event.date)
     const now = new Date()
-    return session?.user?.role === 'admin' && eventDate <= now && !event.reportCreated
+    return session?.user?.role === 'admin' && eventDate <= now
   }
 
   const getYoutubeVideoId = (url: string) => {
@@ -482,7 +481,7 @@ ${event.content}
                         )}
                       </div>
                     </div>
-                    {session?.user?.role === 'admin' && !event.reportCreated && (
+                    {session?.user?.role === 'admin' && (
                       <button
                         onClick={() => handleEdit(event)}
                         className="p-2 hover:bg-gray-100 rounded-lg"

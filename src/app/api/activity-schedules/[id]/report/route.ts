@@ -39,17 +39,10 @@ export async function POST(
       )
     }
 
-    if (schedule.reportCreated) {
-      return NextResponse.json(
-        { error: 'すでに活動報告が作成されています' },
-        { status: 400 }
-      )
-    }
-
-    // トランザクションで投稿作成とスケジュール更新
+    // トランザクションで投稿作成
     const result = await prisma.$transaction(async (tx) => {
       // 投稿を作成
-      const post = await tx.post.create({
+      const post = await tx.post.create(
         data: {
           title,
           content,
@@ -68,12 +61,6 @@ export async function POST(
           }))
         })
       }
-
-      // 活動スケジュールを報告済みに
-      await tx.activitySchedule.update({
-        where: { id },
-        data: { reportCreated: true }
-      })
 
       return post
     })

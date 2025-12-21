@@ -11,9 +11,7 @@ export async function GET() {
     }
 
     const schedules = await prisma.activitySchedule.findMany({
-      where: {
-        reportCreated: false // 報告が作成されていないもののみ
-      },
+      where: {},
       include: {
         user: {
           select: {

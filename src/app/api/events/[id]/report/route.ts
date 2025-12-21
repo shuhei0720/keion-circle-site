@@ -39,14 +39,7 @@ export async function POST(
       )
     }
 
-    if (event.reportCreated) {
-      return NextResponse.json(
-        { error: 'すでにイベント報告が作成されています' },
-        { status: 400 }
-      )
-    }
-
-    // トランザクションで投稿作成とイベント更新
+    // トランザクションで投稿作成
     const result = await prisma.$transaction(async (tx) => {
       // 投稿を作成
       const post = await tx.post.create({
@@ -68,12 +61,6 @@ export async function POST(
           }))
         })
       }
-
-      // イベントを報告済みに
-      await tx.event.update({
-        where: { id },
-        data: { reportCreated: true }
-      })
 
       return post
     })
