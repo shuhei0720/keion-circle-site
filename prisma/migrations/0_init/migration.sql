@@ -1,0 +1,2 @@
+-- This is an empty migration to initialize the migration history
+-- The database schema already exists in production
