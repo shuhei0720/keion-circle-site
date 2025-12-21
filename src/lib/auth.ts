@@ -94,8 +94,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // データベースストラテジーの場合、userオブジェクトが渡される
       if (user) {
         session.user.id = user.id
-        session.user.role = user.role
-        session.user.avatarUrl = user.avatarUrl
+        session.user.role = (user as any).role || 'member'
+        session.user.avatarUrl = (user as any).avatarUrl || null
       }
       return session
     },
