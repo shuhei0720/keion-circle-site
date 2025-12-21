@@ -54,8 +54,6 @@ export async function POST(
           title,
           content,
           youtubeUrl,
-          type: 'activity_report',
-          sourceId: id,
           userId: session.user.id
         }
       })
