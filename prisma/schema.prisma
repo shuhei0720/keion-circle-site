@@ -176,13 +176,11 @@ model Comment {
 model ActivitySchedule {
   id          String   @id @default(cuid())
   title       String
-  content     String   // マークダウン形式
-  date        DateTime
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content     String?  // マークダウン形式
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   participants ActivityParticipant[]
   comments    Comment[]
-  reportCreated Boolean @default(false) // 活動報告が作成されたか
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -202,18 +200,11 @@ model ActivityParticipant {
 model Event {
   id            String   @id @default(cuid())
   title         String
-  content       String   // マークダウン形式
-  date          DateTime
-  location      String?  // 開催場所
-  songTitle     String?  // 課題曲
-  songSheetUrl  String?  // 楽譜URL
-  songYoutubeUrl String? // YouTube URL
-  parts         String?  // JSONとして保存（各パート担当）
-  userId        String
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content       String?  // マークダウン形式
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   participants  EventParticipant[]
   comments      Comment[]
-  reportCreated Boolean @default(false) // イベント報告が作成されたか
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
