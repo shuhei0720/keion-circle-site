@@ -46,8 +46,7 @@ export async function PUT(
           select: {
             id: true,
             name: true,
-            email: true,
-            avatarUrl: true
+            email: true
           }
         },
         participants: {
@@ -56,8 +55,7 @@ export async function PUT(
               select: {
                 id: true,
                 name: true,
-                email: true,
-                avatarUrl: true
+                email: true
               }
             }
           }
@@ -68,8 +66,7 @@ export async function PUT(
               select: {
                 id: true,
                 name: true,
-                email: true,
-                avatarUrl: true
+                email: true
               }
             }
           },
