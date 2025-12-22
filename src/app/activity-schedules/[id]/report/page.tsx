@@ -35,23 +35,40 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
         return
       }
       
-      // テンプレートを取得
-      fetchTemplate()
+      // スケジュール情報とテンプレートを取得
+      if (scheduleId) {
+        fetchScheduleAndTemplate()
+      }
     }
-  }, [status, session, router])
+  }, [status, session, router, scheduleId])
 
-  const fetchTemplate = async () => {
+  const fetchScheduleAndTemplate = async () => {
     try {
-      const res = await fetch('/api/templates')
-      if (res.ok) {
-        const data = await res.json()
+      // スケジュール情報を取得
+      const scheduleRes = await fetch(`/api/activity-schedules/${scheduleId}/details`)
+      let scheduleTitle = ''
+      if (scheduleRes.ok) {
+        const scheduleData = await scheduleRes.json()
+        scheduleTitle = scheduleData.title || ''
+      }
+
+      // テンプレートを取得
+      const templateRes = await fetch('/api/templates')
+      if (templateRes.ok) {
+        const templateData = await templateRes.json()
+        setFormData({
+          title: scheduleTitle,
+          content: templateData.content || '',
+          youtubeUrl: ''
+        })
+      } else {
         setFormData(prev => ({
           ...prev,
-          content: data.content || ''
+          title: scheduleTitle
         }))
       }
     } catch (error) {
-      console.error('テンプレート取得エラー:', error)
+      console.error('データ取得エラー:', error)
     }
   }
 

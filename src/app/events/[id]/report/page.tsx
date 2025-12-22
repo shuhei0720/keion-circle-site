@@ -35,23 +35,40 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
         return
       }
 
-      // テンプレートを取得
-      fetchTemplate()
+      // イベント情報とテンプレートを取得
+      if (eventId) {
+        fetchEventAndTemplate()
+      }
     }
-  }, [status, session, router])
+  }, [status, session, router, eventId])
 
-  const fetchTemplate = async () => {
+  const fetchEventAndTemplate = async () => {
     try {
-      const res = await fetch('/api/templates')
-      if (res.ok) {
-        const data = await res.json()
+      // イベント情報を取得
+      const eventRes = await fetch(`/api/events/${eventId}/details`)
+      let eventTitle = ''
+      if (eventRes.ok) {
+        const eventData = await eventRes.json()
+        eventTitle = eventData.title || ''
+      }
+
+      // テンプレートを取得
+      const templateRes = await fetch('/api/templates')
+      if (templateRes.ok) {
+        const templateData = await templateRes.json()
+        setFormData({
+          title: eventTitle,
+          content: templateData.content || '',
+          youtubeUrl: ''
+        })
+      } else {
         setFormData(prev => ({
           ...prev,
-          content: data.content || ''
+          title: eventTitle
         }))
       }
     } catch (error) {
-      console.error('テンプレート取得エラー:', error)
+      console.error('データ取得エラー:', error)
     }
   }
 

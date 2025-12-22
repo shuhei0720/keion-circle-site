@@ -66,10 +66,15 @@ export async function POST(
     })
 
     return NextResponse.json(result, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('イベント報告作成エラー:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
     return NextResponse.json(
-      { error: 'イベント報告の作成に失敗しました' },
+      { 
+        error: 'イベント報告の作成に失敗しました',
+        details: error?.message || String(error)
+      },
       { status: 500 }
     )
   }
