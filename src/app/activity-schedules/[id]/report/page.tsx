@@ -45,29 +45,46 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
 
   const fetchScheduleAndTemplate = async () => {
     try {
-      // スケジュール情報を取得
-      const scheduleRes = await fetch(`/api/activity-schedules/${scheduleId}/details`)
-      let scheduleTitle = ''
-      if (scheduleRes.ok) {
-        const scheduleData = await scheduleRes.json()
-        scheduleTitle = scheduleData.title || ''
-      }
-
-      // テンプレートを取得
-      const templateRes = await fetch('/api/templates')
-      if (templateRes.ok) {
-        const templateData = await templateRes.json()
+      // URLパラメータからテンプレートを取得
+      const templateParam = searchParams.get('template')
+      
+      if (templateParam) {
+        // URLパラメータにテンプレートがある場合はそれを使用
+        const decodedTemplate = decodeURIComponent(templateParam)
+        const lines = decodedTemplate.split('\n')
+        const title = lines[0].replace(/^#\s*/, '') // 最初の行からタイトルを抽出
+        
         setFormData({
-          title: scheduleTitle,
-          content: templateData.content || '',
+          title: title || '',
+          content: decodedTemplate,
           youtubeUrls: [],
           images: []
         })
       } else {
-        setFormData(prev => ({
-          ...prev,
-          title: scheduleTitle
-        }))
+        // テンプレートがない場合は従来通りスケジュール情報を取得
+        const scheduleRes = await fetch(`/api/activity-schedules/${scheduleId}/details`)
+        let scheduleTitle = ''
+        if (scheduleRes.ok) {
+          const scheduleData = await scheduleRes.json()
+          scheduleTitle = scheduleData.title || ''
+        }
+
+        // デフォルトテンプレートを取得
+        const templateRes = await fetch('/api/templates')
+        if (templateRes.ok) {
+          const templateData = await templateRes.json()
+          setFormData({
+            title: scheduleTitle,
+            content: templateData.content || '',
+            youtubeUrls: [],
+            images: []
+          })
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            title: scheduleTitle
+          }))
+        }
       }
     } catch (error) {
       console.error('データ取得エラー:', error)
