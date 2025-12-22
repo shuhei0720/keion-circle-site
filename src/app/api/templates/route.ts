@@ -23,9 +23,14 @@ export async function GET() {
     }
 
     return NextResponse.json(template)
-  } catch (error) {
+  } catch (error: any) {
     console.error('テンプレート取得エラー:', error)
-    return NextResponse.json({ error: 'サーバーエラー' }, { status: 500 })
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
+    return NextResponse.json({ 
+      error: 'サーバーエラー',
+      details: error?.message || String(error)
+    }, { status: 500 })
   }
 }
 
@@ -55,8 +60,13 @@ export async function PUT(request: NextRequest) {
     })
 
     return NextResponse.json(template)
-  } catch (error) {
+  } catch (error: any) {
     console.error('テンプレート更新エラー:', error)
-    return NextResponse.json({ error: 'サーバーエラー' }, { status: 500 })
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
+    return NextResponse.json({ 
+      error: 'サーバーエラー',
+      details: error?.message || String(error)
+    }, { status: 500 })
   }
 }
