@@ -106,7 +106,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return `${baseUrl}/posts`
     },
-  callbacks: {
     async signIn({ user, account, profile }) {
       console.log('[NextAuth SignIn] Provider:', account?.provider)
       console.log('[NextAuth SignIn] User email:', user.email)
