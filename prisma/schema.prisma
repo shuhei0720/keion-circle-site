@@ -81,6 +81,7 @@ model Post {
   eventId     String?  // 報告元のイベントID
   activityScheduleId String?  // 報告元の活動スケジュールID
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event?   @relation("EventPosts", fields: [eventId], references: [id], onDelete: SetNull)
   participants PostParticipant[]
   likes       PostLike[]
   comments    Comment[]
@@ -217,6 +218,7 @@ model Event {
   user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   participants  EventParticipant[]
   comments      Comment[]
+  posts         Post[]   @relation("EventPosts")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
