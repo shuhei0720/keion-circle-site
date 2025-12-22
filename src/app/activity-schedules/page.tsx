@@ -15,6 +15,7 @@ interface User {
 
 interface Participant {
   id: string
+  userId: string
   user: User
   createdAt: string
 }
@@ -253,7 +254,7 @@ ${schedule.content}
   }
 
   const isParticipating = (schedule: ActivitySchedule) => {
-    return schedule.participants.some(p => p.user.email === session?.user?.email)
+    return schedule.participants.some(p => p.user.id === session?.user?.id)
   }
 
   const canCreateReport = (schedule: ActivitySchedule) => {

@@ -16,6 +16,7 @@ interface User {
 
 interface Participant {
   id: string
+  userId: string
   user: User
   createdAt: string
 }
@@ -314,7 +315,7 @@ ${event.content}
   }
 
   const isParticipating = (event: Event) => {
-    return event.participants.some(p => p.user.email === session?.user?.email)
+    return event.participants.some(p => p.user.id === session?.user?.id)
   }
 
   const canCreateReport = (event: Event) => {
