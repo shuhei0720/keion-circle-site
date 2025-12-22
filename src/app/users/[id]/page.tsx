@@ -15,17 +15,12 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   const session = await auth();
   const { id } = await params;
 
-  if (!session?.user?.email) {
-    redirect('/auth/signin');
-  }
-
-  const currentUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  });
-
-  if (!currentUser) {
-    redirect('/auth/signin');
-  }
+  // ログインユーザーの情報を取得（ログインしていない場合はnull）
+  const currentUser = session?.user?.email
+    ? await prisma.user.findUnique({
+        where: { email: session.user.email },
+      })
+    : null;
 
   const user = await prisma.user.findUnique({
     where: { id },
@@ -61,7 +56,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     );
   }
 
-  const isOwnProfile = currentUser.id === user.id;
+  const isOwnProfile = currentUser?.id === user.id;
   const totalParticipations = user.postParticipants.length;
   const totalPosts = user.posts.length;
 
