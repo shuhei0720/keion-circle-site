@@ -205,6 +205,31 @@ export default function ActivitySchedulesPage() {
     const content = newComment[scheduleId]
     if (!content || content.trim() === '') return
 
+    const tempComment = {
+      id: 'temp-' + Date.now(),
+      content,
+      user: {
+        id: session?.user?.id || '',
+        name: session?.user?.name || session?.user?.email || 'Unknown',
+        email: session?.user?.email || ''
+      },
+      createdAt: new Date().toISOString()
+    }
+
+    // 即座にUIを更新
+    if (expandedComments[scheduleId]) {
+      setComments(prev => ({
+        ...prev,
+        [scheduleId]: [...(prev[scheduleId] || []), tempComment]
+      }))
+    }
+    setSchedules(schedules.map(s => 
+      s.id === scheduleId && s._count
+        ? { ...s, _count: { comments: s._count.comments + 1 } }
+        : s
+    ))
+    setNewComment({ ...newComment, [scheduleId]: '' })
+
     try {
       const res = await fetch(`/api/activity-schedules/${scheduleId}/comments`, {
         method: 'POST',
@@ -212,19 +237,20 @@ export default function ActivitySchedulesPage() {
         body: JSON.stringify({ content })
       })
 
-      if (res.ok) {
-        setNewComment({ ...newComment, [scheduleId]: '' })
-        // コメントが展開されている場合のみ再取得
+      if (!res.ok) {
+        // エラー時はロールバック
         if (expandedComments[scheduleId]) {
           fetchComments(scheduleId)
         } else {
-          // コメント数を更新
           setSchedules(schedules.map(s => 
             s.id === scheduleId && s._count
-              ? { ...s, _count: { comments: s._count.comments + 1 } }
+              ? { ...s, _count: { comments: s._count.comments - 1 } }
               : s
           ))
         }
+      } else if (expandedComments[scheduleId]) {
+        // 成功時は実データで再取得
+        fetchComments(scheduleId)
       }
     } catch (error) {
       console.error('コメント投稿エラー:', error)
@@ -297,9 +323,7 @@ export default function ActivitySchedulesPage() {
 
   const handleCreateReport = (schedule: ActivitySchedule) => {
     // テンプレート作成
-    const template = `━━━━━━━━━━━━━━━━━━━━
-${schedule.title} - 活動報告
-━━━━━━━━━━━━━━━━━━━━
+    const template = `${schedule.title} - 活動報告
 
 📅 日時
   ${new Date(schedule.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
@@ -313,26 +337,20 @@ ${schedule.location || schedule.locationUrl ? `
 
 ━━━━━━━━━━━━━━━━━━━━
 📝 活動内容
-━━━━━━━━━━━━━━━━━━━━
 
 ${schedule.content}
 
 
 ━━━━━━━━━━━━━━━━━━━━
 ✨ 成果・気づき
-━━━━━━━━━━━━━━━━━━━━
 
 （ここに活動の成果や気づきを記入してください）
 
 
 ━━━━━━━━━━━━━━━━━━━━
 💭 次回に向けて
-━━━━━━━━━━━━━━━━━━━━
 
 （次回に向けての課題や目標を記入してください）
-
-
-━━━━━━━━━━━━━━━━━━━━
 `
 
     router.push(`/activity-schedules/${schedule.id}/report?template=${encodeURIComponent(template)}`)

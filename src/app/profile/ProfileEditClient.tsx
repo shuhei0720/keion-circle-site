@@ -7,7 +7,8 @@ import AvatarUpload from '@/components/AvatarUpload'
 // 選択可能な楽器リスト
 const AVAILABLE_INSTRUMENTS = [
   'ボーカル',
-  'ギター',
+  'エレキギター',
+  'アコースティックギター',
   'ベース',
   'ドラム',
   'キーボード',

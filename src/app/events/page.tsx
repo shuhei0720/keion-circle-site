@@ -216,6 +216,31 @@ export default function EventsPage() {
     const content = newComment[eventId]
     if (!content || content.trim() === '') return
 
+    const tempComment = {
+      id: 'temp-' + Date.now(),
+      content,
+      user: {
+        id: session?.user?.id || '',
+        name: session?.user?.name || session?.user?.email || 'Unknown',
+        email: session?.user?.email || ''
+      },
+      createdAt: new Date().toISOString()
+    }
+
+    // 即座にUIを更新
+    if (expandedComments[eventId]) {
+      setComments(prev => ({
+        ...prev,
+        [eventId]: [...(prev[eventId] || []), tempComment]
+      }))
+    }
+    setEvents(events.map(e => 
+      e.id === eventId && e._count
+        ? { ...e, _count: { comments: e._count.comments + 1 } }
+        : e
+    ))
+    setNewComment({ ...newComment, [eventId]: '' })
+
     try {
       const res = await fetch(`/api/events/${eventId}/comments`, {
         method: 'POST',
@@ -223,19 +248,20 @@ export default function EventsPage() {
         body: JSON.stringify({ content })
       })
 
-      if (res.ok) {
-        setNewComment({ ...newComment, [eventId]: '' })
-        // コメントが展開されている場合のみ再取得
+      if (!res.ok) {
+        // エラー時はロールバック
         if (expandedComments[eventId]) {
           fetchComments(eventId)
         } else {
-          // コメント数を更新
           setEvents(events.map(e => 
             e.id === eventId && e._count
-              ? { ...e, _count: { comments: e._count.comments + 1 } }
+              ? { ...e, _count: { comments: e._count.comments - 1 } }
               : e
           ))
         }
+      } else if (expandedComments[eventId]) {
+        // 成功時は実データで再取得
+        fetchComments(eventId)
       }
     } catch (error) {
       console.error('コメント投稿エラー:', error)
@@ -312,7 +338,9 @@ export default function EventsPage() {
     
     const instrumentNames: { [key: string]: string } = {
       vocal: 'ボーカル',
-      guitar: 'ギター',
+      electric_guitar: 'エレキギター',
+      acoustic_guitar: 'アコースティックギター',
+      guitar: 'ギター', // 旧データ対応
       bass: 'ベース',
       drums: 'ドラム',
       keyboard: 'キーボード',
@@ -324,11 +352,7 @@ export default function EventsPage() {
         ? '\n    ' + song.parts.map((p: any) => `${instrumentNames[p.instrument] || p.instrument}: ${p.player}`).join(' / ')
         : ''
       
-      let songSection = `\n━━━━━━━━━━━━━━━━━━━━
-♪ 課題曲 ${index + 1}
-━━━━━━━━━━━━━━━━━━━━
-
-  曲名: ${song.title}`
+      let songSection = `\n♪ 課題曲 ${index + 1}\n\n  曲名: ${song.title}`
       
       if (song.sheetUrl) {
         songSection += `\n  楽譜: ${song.sheetUrl}`
@@ -343,9 +367,7 @@ export default function EventsPage() {
       return songSection
     }).join('\n\n')
 
-    const template = `━━━━━━━━━━━━━━━━━━━━
-${event.title} - 活動報告
-━━━━━━━━━━━━━━━━━━━━
+    const template = `${event.title} - 活動報告
 
 📅 日時
   ${new Date(event.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
@@ -359,33 +381,26 @@ ${songsText}
 
 ━━━━━━━━━━━━━━━━━━━━
 📝 活動内容
-━━━━━━━━━━━━━━━━━━━━
 
 ${event.content}
 
 
 ━━━━━━━━━━━━━━━━━━━━
 ✨ 成果・ハイライト
-━━━━━━━━━━━━━━━━━━━━
 
 （ここにイベントの成果や印象に残ったことを記入してください）
 
 
 ━━━━━━━━━━━━━━━━━━━━
 📷 写真・動画
-━━━━━━━━━━━━━━━━━━━━
 
 （写真や動画のURLを追加してください）
 
 
 ━━━━━━━━━━━━━━━━━━━━
 💭 次回に向けて
-━━━━━━━━━━━━━━━━━━━━
 
 （次回に向けての課題や改善点を記入してください）
-
-
-━━━━━━━━━━━━━━━━━━━━
 `
 
     router.push(`/events/${event.id}/report?template=${encodeURIComponent(template)}`)
@@ -634,7 +649,8 @@ ${event.content}
                                       className="px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white"
                                     >
                                       <option value="vocal">ボーカル</option>
-                                      <option value="guitar">ギター</option>
+                                      <option value="electric_guitar">エレキギター</option>
+                                      <option value="acoustic_guitar">アコースティックギター</option>
                                       <option value="bass">ベース</option>
                                       <option value="drums">ドラム</option>
                                       <option value="keyboard">キーボード</option>
@@ -764,7 +780,9 @@ ${event.content}
                         const videoId = song.youtubeUrl ? getYoutubeVideoId(song.youtubeUrl) : null
                         const instrumentNames: { [key: string]: string } = {
                           vocal: 'ボーカル',
-                          guitar: 'ギター',
+                          electric_guitar: 'エレキギター',
+                          acoustic_guitar: 'アコースティックギター',
+                          guitar: 'ギター', // 旧データ対応
                           bass: 'ベース',
                           drums: 'ドラム',
                           keyboard: 'キーボード',

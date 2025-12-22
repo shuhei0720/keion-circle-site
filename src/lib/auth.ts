@@ -96,15 +96,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // ログイン後は常に活動一覧(/posts)に遷移
+      // ログイン後はHome画面(/)に遷移
       if (url === baseUrl || url === `${baseUrl}/`) {
-        return `${baseUrl}/posts`
+        return baseUrl
       }
-      // サインイン後も活動一覧に
+      // サインイン後もHomeに
       if (url.startsWith(baseUrl)) {
         return url
       }
-      return `${baseUrl}/posts`
+      return baseUrl
     },
     async signIn({ user, account, profile }) {
       console.log('[NextAuth SignIn] Provider:', account?.provider)
