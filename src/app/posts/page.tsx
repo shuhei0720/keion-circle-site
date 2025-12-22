@@ -527,9 +527,6 @@ export default function PostsPage() {
                   />
                 </div>
                 <div>
-                  />
-                </div>
-                <div>
                   <label className="block text-sm font-medium mb-2">YouTube URL</label>
                   <input
                     type="url"
