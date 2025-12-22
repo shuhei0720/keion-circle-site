@@ -4,22 +4,23 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Serverless環境用の接続プール最適化
-const createPrismaClient = () => {
-  return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : [],
     datasources: {
       db: {
         url: process.env.DATABASE_URL,
       },
     },
   })
-}
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient()
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma
+// 本番環境でのクリーンアップ
+if (process.env.NODE_ENV === 'production') {
+  // Serverless環境でのコネクションプールの適切な管理
+  prisma.$connect()
 }
 
 // デフォルトエクスポートも追加
