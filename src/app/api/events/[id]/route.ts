@@ -21,6 +21,7 @@ export async function PUT(
       title,
       content,
       date,
+      locationName,
       locationUrl,
       songs
     } = await request.json()
@@ -32,6 +33,7 @@ export async function PUT(
         title,
         content,
         date: date ? new Date(date) : null,
+        locationName: locationName || null,
         locationUrl: locationUrl || null,
         songs: songs && songs.length > 0 ? JSON.stringify(songs) : null
       },

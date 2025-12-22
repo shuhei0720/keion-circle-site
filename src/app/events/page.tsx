@@ -34,6 +34,7 @@ interface Event {
   title: string
   content: string
   date: string
+  locationName: string | null
   locationUrl: string | null
   songs: string | null
   user: User
@@ -64,6 +65,7 @@ export default function EventsPage() {
     title: '',
     content: '',
     date: '',
+    locationName: '',
     locationUrl: '',
     songs: [] as {
       title: string
@@ -147,6 +149,7 @@ export default function EventsPage() {
           title: '',
           content: '',
           date: '',
+          locationName: '',
           locationUrl: '',
           songs: []
         })
@@ -246,6 +249,7 @@ export default function EventsPage() {
       title: event.title,
       content: event.content,
       date: new Date(event.date).toISOString().split('T')[0],
+      locationName: event.locationName || '',
       locationUrl: event.locationUrl || '',
       songs: event.songs ? JSON.parse(event.songs) : []
     })
@@ -319,7 +323,7 @@ ${song.sheetUrl ? `**楽譜**: ${song.sheetUrl}\n` : ''}${song.youtubeUrl ? `**Y
     const template = `# ${event.title}
 
 **日時**: ${new Date(event.date).toLocaleDateString('ja-JP')}
-${event.locationUrl ? `**場所**: ${event.locationUrl}` : ''}
+${event.locationName ? `**場所**: ${event.locationName}${event.locationUrl ? ` (${event.locationUrl})` : ''}` : event.locationUrl ? `**場所**: ${event.locationUrl}` : ''}
 
 **参加者**: ${event.participants.map(p => p.user.name || p.user.email).join('、')}
 
@@ -425,6 +429,7 @@ ${event.content}
                     title: '',
                     content: '',
                     date: '',
+                    locationName: '',
                     locationUrl: '',
                     songs: []
                   })
@@ -476,15 +481,26 @@ ${event.content}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">開催場所URL（任意）</label>
+                  <label className="block text-sm font-medium mb-2">開催場所名（任意）</label>
                   <input
-                    type="url"
-                    value={formData.locationUrl}
-                    onChange={(e) => setFormData({ ...formData, locationUrl: e.target.value })}
+                    type="text"
+                    value={formData.locationName}
+                    onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="例: https://maps.app.goo.gl/..."
+                    placeholder="例: 第一体育館"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">開催場所URL（任意）</label>
+                <input
+                  type="url"
+                  value={formData.locationUrl}
+                  onChange={(e) => setFormData({ ...formData, locationUrl: e.target.value })}
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="例: https://maps.app.goo.gl/..."
+                />
               </div>
 
               <div>
@@ -633,6 +649,7 @@ ${event.content}
                       title: '',
                       content: '',
                       date: '',
+                      locationName: '',
                       locationUrl: '',
                       songs: []
                     })
@@ -666,12 +683,16 @@ ${event.content}
                           <Calendar className="w-4 h-4" />
                           <span>{new Date(event.date).toLocaleDateString('ja-JP')}</span>
                         </div>
-                        {event.locationUrl && (
+                        {(event.locationName || event.locationUrl) && (
                           <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4" />
-                            <a href={event.locationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                              開催場所を見る
-                            </a>
+                            {event.locationUrl ? (
+                              <a href={event.locationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                {event.locationName || '開催場所を見る'}
+                              </a>
+                            ) : (
+                              <span>{event.locationName}</span>
+                            )}
                           </div>
                         )}
                         {songs.length > 0 && (

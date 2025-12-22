@@ -205,6 +205,7 @@ model Event {
   title         String
   content       String?  // マークダウン形式
   date          DateTime?
+  locationName  String?  // 開催場所名
   locationUrl   String?  // 開催場所URL（Google Mapsなど）
   songs         String?  // 課題曲配列（JSON文字列）[{title, sheetUrl, youtubeUrl, parts: [{instrument, player}]}]
   userId        String?

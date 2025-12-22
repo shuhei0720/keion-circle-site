@@ -32,6 +32,7 @@ export async function GET() {
         title: true,
         content: true,
         date: true,
+        locationName: true,
         locationUrl: true,
         songs: true,
         createdAt: true,
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
       title,
       content,
       date,
+      locationName,
       locationUrl,
       songs
     } = await request.json()
@@ -116,6 +118,7 @@ export async function POST(request: Request) {
         title,
         content,
         date: date ? new Date(date) : null,
+        locationName: locationName || null,
         locationUrl: locationUrl || null,
         songs: songs && songs.length > 0 ? JSON.stringify(songs) : null,
         userId: session.user.id
