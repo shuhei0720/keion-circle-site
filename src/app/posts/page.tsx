@@ -657,22 +657,6 @@ export default function PostsPage() {
                       <div className="text-sm sm:text-base text-white/80 mb-4 prose prose-sm max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                     )}
 
-                    {youtubeId && (
-                      <div className="mb-4 rounded-lg overflow-hidden aspect-video">
-                        <YouTube
-                          videoId={youtubeId}
-                          opts={{
-                            width: '100%',
-                            height: '100%',
-                            playerVars: {
-                              autoplay: 0,
-                            },
-                          }}
-                          className="w-full h-full"
-                        />
-                      </div>
-                    )}
-
                     {/* 参加者表示 */}
                     {participatingUsers.length > 0 && (
                       <div className="mt-4 pt-4 border-t">
