@@ -623,7 +623,7 @@ ${event.content}
                   </div>
 
                   {/* 内容 */}
-                  <div className="prose prose-sm max-w-none mb-4" dangerouslySetInnerHTML={{ __html: event.content }} />
+                  <div className="prose prose-sm max-w-none mb-4 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: event.content }} />
 
                   {/* 楽譜リンク */}
                   {event.songSheetUrl && (

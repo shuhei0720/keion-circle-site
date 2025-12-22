@@ -47,7 +47,8 @@ export async function POST(
           title,
           content,
           youtubeUrl,
-          userId: session.user.id
+          userId: session.user.id,
+          eventId: id
         }
       })
 

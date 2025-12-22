@@ -603,7 +603,7 @@ export default function PostsPage() {
                     </div>
 
                     {post.content && (
-                      <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+                      <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                     )}
 
                     {youtubeId && (

@@ -10,8 +10,23 @@ export async function GET() {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
 
+    // 報告書が作成済みのイベントIDを取得
+    const postsWithEventId = await prisma.post.findMany({
+      where: {
+        eventId: { not: null }
+      },
+      select: {
+        eventId: true
+      }
+    })
+    const reportedEventIds = postsWithEventId.map(p => p.eventId).filter(Boolean) as string[]
+
     const events = await prisma.event.findMany({
-      where: {},
+      where: {
+        id: {
+          notIn: reportedEventIds
+        }
+      },
       select: {
         id: true,
         title: true,

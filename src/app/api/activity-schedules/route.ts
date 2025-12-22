@@ -10,8 +10,23 @@ export async function GET() {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
 
+    // 報告書が作成済みのスケジュールIDを取得
+    const postsWithScheduleId = await prisma.post.findMany({
+      where: {
+        activityScheduleId: { not: null }
+      },
+      select: {
+        activityScheduleId: true
+      }
+    })
+    const reportedScheduleIds = postsWithScheduleId.map(p => p.activityScheduleId).filter(Boolean) as string[]
+
     const schedules = await prisma.activitySchedule.findMany({
-      where: {},
+      where: {
+        id: {
+          notIn: reportedScheduleIds
+        }
+      },
       select: {
         id: true,
         title: true,

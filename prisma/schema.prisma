@@ -75,6 +75,8 @@ model Post {
   content     String?
   youtubeUrl  String?
   userId      String
+  eventId     String?  // 報告元のイベントID
+  activityScheduleId String?  // 報告元の活動スケジュールID
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   participants PostParticipant[]
   likes       PostLike[]
