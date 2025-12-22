@@ -30,17 +30,16 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
   const editorRef = useRef<HTMLDivElement>(null)
   const isComposingRef = useRef(false)
   const isUpdatingRef = useRef(false)
+  const initializedRef = useRef(false)
 
   useEffect(() => {
-    if (!editorRef.current || isUpdatingRef.current) return
+    // 初期化時のみHTMLを設定
+    if (!editorRef.current || initializedRef.current) return
     
     const html = marked(value || '') as string
-    if (editorRef.current.innerHTML !== html) {
-      isUpdatingRef.current = true
-      editorRef.current.innerHTML = html
-      isUpdatingRef.current = false
-    }
-  }, [value])
+    editorRef.current.innerHTML = html
+    initializedRef.current = true
+  }, [])
 
   const handleInput = () => {
     if (editorRef.current && !isComposingRef.current && !isUpdatingRef.current) {
