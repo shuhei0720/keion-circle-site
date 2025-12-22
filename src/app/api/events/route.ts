@@ -22,11 +22,11 @@ export async function GET() {
     const reportedEventIds = postsWithEventId.map(p => p.eventId).filter(Boolean) as string[]
 
     const events = await prisma.event.findMany({
-      where: {
+      where: reportedEventIds.length > 0 ? {
         id: {
           notIn: reportedEventIds
         }
-      },
+      } : {},
       select: {
         id: true,
         title: true,

@@ -22,11 +22,11 @@ export async function GET() {
     const reportedScheduleIds = postsWithScheduleId.map(p => p.activityScheduleId).filter(Boolean) as string[]
 
     const schedules = await prisma.activitySchedule.findMany({
-      where: {
+      where: reportedScheduleIds.length > 0 ? {
         id: {
           notIn: reportedScheduleIds
         }
-      },
+      } : {},
       select: {
         id: true,
         title: true,
