@@ -13,6 +13,7 @@ interface User {
   id: string
   name: string
   email: string
+  avatar?: string | null
 }
 
 interface Comment {
@@ -642,9 +643,19 @@ export default function PostsPage() {
                 return (
                   <div key={post.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10 hover:bg-white/15 transition-all">
                     <div className="flex items-center gap-2 sm:gap-3 mb-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                      </div>
+                      {post.user.avatar ? (
+                        <Image
+                          src={post.user.avatar}
+                          alt={post.user.name || 'User'}
+                          width={40}
+                          height={40}
+                          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                        </div>
+                      )}
                       <div>
                         <h2 className="text-lg sm:text-2xl font-bold text-white">{post.title}</h2>
                         <p className="text-xs sm:text-sm text-white/60">
