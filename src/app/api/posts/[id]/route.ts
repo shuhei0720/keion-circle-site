@@ -3,6 +3,37 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
 
+// 特定の投稿を取得
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+
+    const post = await prisma.post.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(post)
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch post' }, { status: 500 })
+  }
+}
+
 // 特定の投稿を更新（管理者のみ）
 export async function PUT(
   request: NextRequest,
@@ -22,7 +53,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { title, content, youtubeUrl } = body
+    const { title, content, youtubeUrl, images } = body
 
     // 投稿の存在確認
     const existingPost = await prisma.post.findUnique({
@@ -38,7 +69,8 @@ export async function PUT(
       data: {
         title,
         content,
-        youtubeUrl
+        youtubeUrl,
+        images: images || []
       },
       include: {
         user: {

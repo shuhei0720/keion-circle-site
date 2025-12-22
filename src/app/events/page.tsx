@@ -28,6 +28,19 @@ interface Comment {
   createdAt: string
 }
 
+interface Post {
+  id: string
+  title: string
+  content: string
+  youtubeUrl: string | null
+  images?: string[]
+  user: User
+  participants: { id: string; userId: string; user: User; status: string }[]
+  likes: { userId: string }[]
+  _count?: { comments: number }
+  createdAt: string
+}
+
 interface Event {
   id: string
   title: string
@@ -39,6 +52,7 @@ interface Event {
   user: User
   participants: Participant[]
   comments?: Comment[]
+  posts?: Post[]
   _count?: {
     comments: number
   }
@@ -893,6 +907,86 @@ ${event.content}
                       <FileText className="w-5 h-5 inline mr-2" />
                       イベント報告を作成
                     </button>
+                  )}
+
+                  {/* イベント報告一覧 */}
+                  {event.posts && event.posts.length > 0 && (
+                    <div className="mb-4 border-t border-white/10 pt-4">
+                      <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                        <FileText className="w-5 h-5" />
+                        活動報告
+                      </h3>
+                      <div className="space-y-4">
+                        {event.posts.map((post) => {
+                          const videoId = post.youtubeUrl ? getYoutubeVideoId(post.youtubeUrl) : null
+                          return (
+                            <div key={post.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                              <div className="flex justify-between items-start mb-3">
+                                <div>
+                                  <h4 className="font-medium text-white mb-1">{post.title}</h4>
+                                  <p className="text-xs text-white/50">
+                                    {post.user.name || post.user.email} • {new Date(post.createdAt).toLocaleDateString('ja-JP')}
+                                  </p>
+                                </div>
+                                {session?.user?.role === 'admin' && (
+                                  <button
+                                    onClick={() => router.push(`/posts/${post.id}/edit`)}
+                                    className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all"
+                                  >
+                                    <Edit2 className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                              <div className="prose prose-sm prose-invert max-w-none mb-3 text-white/80 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
+                              
+                              {/* YouTube埋め込み */}
+                              {videoId && (
+                                <div className="mb-3">
+                                  <div className="aspect-video rounded-lg overflow-hidden bg-black/30">
+                                    <YouTube
+                                      videoId={videoId}
+                                      opts={{
+                                        width: '100%',
+                                        height: '100%',
+                                        playerVars: { autoplay: 0 }
+                                      }}
+                                      className="w-full h-full"
+                                    />
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {/* 画像表示 */}
+                              {post.images && post.images.length > 0 && (
+                                <div className="mb-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                  {post.images.map((imageUrl, index) => (
+                                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                                      <img
+                                        src={imageUrl}
+                                        alt={`${post.title} - Image ${index + 1}`}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* いいね・コメント数 */}
+                              <div className="flex items-center gap-4 text-sm text-white/60">
+                                <div className="flex items-center gap-1">
+                                  <Heart className="w-4 h-4" />
+                                  <span>{post.likes.length}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MessageCircle className="w-4 h-4" />
+                                  <span>{post._count?.comments || 0}</span>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
                   )}
 
                   {/* コメント */}

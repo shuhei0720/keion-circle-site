@@ -118,11 +118,7 @@ export default function PostsPage() {
   }
 
   const handleEdit = (post: Post) => {
-    setEditingId(post.id)
-    setTitle(post.title)
-    setContent(post.content || '')
-    setYoutubeUrl(post.youtubeUrl || '')
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+    window.location.href = `/posts/${post.id}/edit`
   }
 
   const handleCancel = () => {
@@ -384,21 +380,6 @@ export default function PostsPage() {
                         </div>
                       )}
 
-                      {/* 画像表示 */}
-                      {post.images && post.images.length > 0 && (
-                        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                          {post.images.map((imageUrl, index) => (
-                            <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                              <img
-                                src={imageUrl}
-                                alt={`${post.title} - Image ${index + 1}`}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
                       {/* 参加者表示（読み取り専用） */}
                       {participatingUsers.length > 0 && (
                         <div className="mt-4 pt-4 border-t">
@@ -419,6 +400,23 @@ export default function PostsPage() {
                                 <User className="w-4 h-4 text-white/60" />
                                 <span className="text-sm text-white">{participant.user.name}</span>
                               </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 画像表示 */}
+                      {post.images && post.images.length > 0 && (
+                        <div className="mt-4 pt-4 border-t">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {post.images.map((imageUrl, index) => (
+                              <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                                <img
+                                  src={imageUrl}
+                                  alt={`${post.title} - Image ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
                             ))}
                           </div>
                         </div>

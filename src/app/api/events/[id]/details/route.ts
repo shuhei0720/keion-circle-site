@@ -49,6 +49,37 @@ export async function GET(
           orderBy: {
             createdAt: 'asc'
           }
+        },
+        posts: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            },
+            participants: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true
+                  }
+                }
+              }
+            },
+            likes: true,
+            _count: {
+              select: {
+                comments: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          }
         }
       }
     })

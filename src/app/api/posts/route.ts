@@ -14,6 +14,7 @@ export async function GET() {
         title: true,
         content: true,
         youtubeUrl: true,
+        images: true,
         createdAt: true,
         userId: true,
         user: {
