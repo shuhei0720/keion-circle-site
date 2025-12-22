@@ -873,10 +873,10 @@ ${event.content}
                   {/* 参加ボタン */}
                   <button
                     onClick={() => handleParticipate(event.id)}
-                    className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 ${
+                    className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 transition-all ${
                       isParticipating(event)
-                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                        ? 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
+                        : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:scale-105 shadow-lg'
                     }`}
                   >
                     {isParticipating(event) ? '参加取り消し' : '参加する'}
@@ -886,7 +886,7 @@ ${event.content}
                   {canCreateReport(event) && (
                     <button
                       onClick={() => handleCreateReport(event)}
-                      className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 mb-4 ml-0 sm:ml-2"
+                      className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:scale-105 mb-4 ml-0 sm:ml-2 transition-all shadow-lg"
                     >
                       <FileText className="w-5 h-5 inline mr-2" />
                       イベント報告を作成
@@ -894,17 +894,17 @@ ${event.content}
                   )}
 
                   {/* コメント */}
-                  <div className="border-t pt-4">
+                  <div className="border-t border-white/10 pt-4">
                     <button
                       onClick={() => toggleComments(event.id)}
-                      className="flex items-center gap-2 mb-3 hover:text-blue-600 transition-colors w-full text-left"
+                      className="flex items-center gap-2 mb-3 text-white hover:text-blue-300 transition-colors w-full text-left"
                     >
-                      <MessageCircle className="w-5 h-5 text-gray-600" />
+                      <MessageCircle className="w-5 h-5 text-white/60" />
                       <span className="font-medium">
                         コメント ({event._count?.comments ?? event.comments?.length ?? 0})
                       </span>
                       {loadingComments[event.id] && (
-                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
                       )}
                     </button>
 
@@ -913,22 +913,22 @@ ${event.content}
                         <div className="space-y-3 mb-3">
                           {event.comments && event.comments.length > 0 ? (
                             event.comments.map((comment) => (
-                              <div key={comment.id} className="flex gap-3 bg-gray-50 p-3 rounded-lg">
+                              <div key={comment.id} className="flex gap-3 bg-white/5 p-3 rounded-lg border border-white/10">
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <span className="font-medium text-sm">
+                                    <span className="font-medium text-sm text-white">
                                       {comment.user.name || comment.user.email}
                                     </span>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-white/50">
                                       {new Date(comment.createdAt).toLocaleString('ja-JP')}
                                     </span>
                                   </div>
-                                  <p className="text-sm text-gray-700">{comment.content}</p>
+                                  <p className="text-sm text-white/80">{comment.content}</p>
                                 </div>
                               </div>
                             ))
                           ) : (
-                            <p className="text-sm text-gray-500">コメントはまだありません</p>
+                            <p className="text-sm text-white/50">コメントはまだありません</p>
                           )}
                         </div>
 
@@ -945,11 +945,11 @@ ${event.content}
                               }
                             }}
                             placeholder="コメントを入力..."
-                            className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                            className="flex-1 px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                           />
                           <button
                             onClick={() => handleCommentSubmit(event.id)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg"
                           >
                             送信
                           </button>
