@@ -20,7 +20,7 @@ export async function POST(
     const { title, content, youtubeUrls, images } = await request.json()
     const { id } = await params
 
-    console.log('Request data:', { title, content, youtubeUrl, images: images?.length || 0 })
+    console.log('Request data:', { title, content, youtubeUrls: youtubeUrls?.length || 0, images: images?.length || 0 })
 
     // イベントを取得
     const event = await prisma.event.findUnique({
