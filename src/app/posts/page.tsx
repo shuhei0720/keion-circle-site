@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
 import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send } from 'lucide-react'
@@ -68,7 +68,7 @@ export default function PostsPage() {
     fetchPosts()
   }, [])
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setFetchingPosts(true)
     try {
       const res = await fetch('/api/posts')
@@ -79,7 +79,7 @@ export default function PostsPage() {
     } finally {
       setFetchingPosts(false)
     }
-  }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -67,7 +67,7 @@ export default function ActivitySchedulesPage() {
     }
   }, [status, router])
 
-  const fetchSchedules = async () => {
+  const fetchSchedules = useCallback(async () => {
     try {
       const res = await fetch('/api/activity-schedules')
       if (res.ok) {
@@ -79,26 +79,26 @@ export default function ActivitySchedulesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const fetchComments = async (scheduleId: string) => {
+  const fetchComments = useCallback(async (scheduleId: string) => {
     if (loadingComments[scheduleId]) return
     
-    setLoadingComments({ ...loadingComments, [scheduleId]: true })
+    setLoadingComments(prev => ({ ...prev, [scheduleId]: true }))
     try {
       const res = await fetch(`/api/activity-schedules/${scheduleId}/details`)
       if (res.ok) {
         const data = await res.json()
-        setSchedules(schedules.map(s => 
+        setSchedules(prev => prev.map(s => 
           s.id === scheduleId ? { ...s, comments: data.comments } : s
         ))
       }
     } catch (error) {
       console.error('コメント取得エラー:', error)
     } finally {
-      setLoadingComments({ ...loadingComments, [scheduleId]: false })
+      setLoadingComments(prev => ({ ...prev, [scheduleId]: false }))
     }
-  }
+  }, [loadingComments])
 
   const toggleComments = (scheduleId: string) => {
     const isExpanded = expandedComments[scheduleId]
@@ -153,7 +153,35 @@ export default function ActivitySchedulesPage() {
       })
 
       if (res.ok) {
-        fetchSchedules()
+        const data = await res.json()
+        const userId = session?.user?.id || ''
+        
+        // 楽観的更新
+        setSchedules(schedules.map(s => {
+          if (s.id === scheduleId) {
+            if (data.participating) {
+              return {
+                ...s,
+                participants: [...s.participants, {
+                  id: 'temp-' + Date.now(),
+                  userId,
+                  user: {
+                    id: userId,
+                    name: session?.user?.name || null,
+                    email: session?.user?.email || null
+                  },
+                  createdAt: new Date().toISOString()
+                }]
+              }
+            } else {
+              return {
+                ...s,
+                participants: s.participants.filter(p => p.userId !== userId)
+              }
+            }
+          }
+          return s
+        }))
       }
     } catch (error) {
       console.error('参加登録エラー:', error)

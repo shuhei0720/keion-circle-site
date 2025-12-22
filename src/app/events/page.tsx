@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -78,7 +78,7 @@ export default function EventsPage() {
     }
   }, [status, router])
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const res = await fetch('/api/events')
       if (res.ok) {
@@ -90,7 +90,7 @@ export default function EventsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const fetchComments = async (eventId: string) => {
     if (loadingComments[eventId]) return
@@ -163,16 +163,51 @@ export default function EventsPage() {
   }
 
   const handleParticipate = async (eventId: string) => {
+    if (!session?.user?.id) return
+
+    const userId = session.user.id
+    const isCurrentlyParticipating = events.find(e => e.id === eventId)?.participants.some(p => p.userId === userId)
+
+    // 楽観的UI更新
+    setEvents(prevEvents => prevEvents.map(e => {
+      if (e.id === eventId) {
+        if (isCurrentlyParticipating) {
+          return {
+            ...e,
+            participants: e.participants.filter(p => p.userId !== userId)
+          }
+        } else {
+          return {
+            ...e,
+            participants: [...e.participants, {
+              id: 'temp-' + Date.now(),
+              userId,
+              user: {
+                id: userId,
+                name: session.user.name || null,
+                email: session.user.email || null
+              },
+              createdAt: new Date().toISOString()
+            }]
+          }
+        }
+      }
+      return e
+    }))
+
     try {
       const res = await fetch(`/api/events/${eventId}/participate`, {
         method: 'POST'
       })
 
-      if (res.ok) {
+      if (!res.ok) {
+        // エラー時は元に戻す
         fetchEvents()
       }
     } catch (error) {
       console.error('参加登録エラー:', error)
+      // エラー時は元に戻す
+      fetchEvents()
     }
   }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import DashboardLayout from '@/components/DashboardLayout'
 import { Paperclip, Send, FileIcon, X, User } from 'lucide-react'
@@ -53,7 +53,7 @@ export default function ChatPage() {
 
   useEffect(() => { scrollToBottom() }, [messages])
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     setFetchingMessages(true)
     try {
       const res = await fetch('/api/messages')
@@ -64,7 +64,7 @@ export default function ChatPage() {
     } finally {
       setFetchingMessages(false)
     }
-  }
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
