@@ -260,18 +260,18 @@ export default function SchedulesPage() {
                   {schedule.dates.map((dateItem) => {
                     const votes = getVoteCount(dateItem)
                     return (
-                      <div key={dateItem.id} className="border rounded-lg p-3 sm:p-4">
+                      <div key={dateItem.id} className="border border-white/20 rounded-lg p-3 sm:p-4 bg-white/5">
                         <div className="flex flex-col xs:flex-row xs:items-center xs:justify-between gap-2 mb-3">
                           <div className="flex items-center gap-2">
-                            <Calendar size={16} className="text-blue-600 flex-shrink-0" />
-                            <span className="font-medium text-sm sm:text-base">
+                            <Calendar size={16} className="text-blue-400 flex-shrink-0" />
+                            <span className="font-medium text-sm sm:text-base text-white">
                               {new Date(dateItem.date).toLocaleString('ja-JP')}
                             </span>
                           </div>
                           <div className="flex gap-3 sm:gap-4 text-xs sm:text-sm">
-                            <span className="text-green-600">○ {votes.available}</span>
-                            <span className="text-yellow-600">△ {votes.maybe}</span>
-                            <span className="text-red-600">× {votes.unavailable}</span>
+                            <span className="text-green-400">○ {votes.available}</span>
+                            <span className="text-yellow-400">△ {votes.maybe}</span>
+                            <span className="text-red-400">× {votes.unavailable}</span>
                           </div>
                         </div>
 
@@ -308,7 +308,7 @@ export default function SchedulesPage() {
                               ...selectedDateComments,
                               [dateItem.id]: e.target.value
                             })}
-                            className="w-full px-3 py-2 border rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
 
@@ -316,14 +316,14 @@ export default function SchedulesPage() {
                         {dateItem.responses.length > 0 && (
                           <div className="space-y-2">
                             {dateItem.responses.map((response) => (
-                              <div key={response.id} className="flex items-start gap-2 text-sm bg-gray-50 p-2 rounded">
+                              <div key={response.id} className="flex items-start gap-2 text-sm bg-white/5 border border-white/10 p-2 rounded">
                                 <span className={`px-2 py-0.5 rounded font-semibold ${getStatusColor(response.status)}`}>
                                   {getStatusText(response.status)}
                                 </span>
                                 <div className="flex-1">
-                                  <span className="font-medium">{response.user.name || response.user.email}</span>
+                                  <span className="font-medium text-white">{response.user.name || response.user.email}</span>
                                   {response.comment && (
-                                    <div className="flex items-start gap-1 mt-1 text-gray-600">
+                                    <div className="flex items-start gap-1 mt-1 text-white/70">
                                       <MessageSquare size={14} className="mt-0.5" />
                                       <span>{response.comment}</span>
                                     </div>
@@ -344,43 +344,43 @@ export default function SchedulesPage() {
 
         {/* スケジュール作成フォーム（管理者のみ） - 最下部 */}
         {isAdmin && (
-          <div className="bg-white rounded-lg shadow-md p-6 mt-8">
-            <h2 className="text-xl font-semibold mb-4">新規スケジュール</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6 mt-8 border border-white/10">
+            <h2 className="text-xl font-semibold mb-4 text-white">新規スケジュール</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">タイトル</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">タイトル</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">詳細</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">詳細</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   rows={3}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">候補日</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">候補日</label>
                 {dates.map((date, index) => (
                   <div key={index} className="flex gap-2 mb-2">
                     <input
                       type="datetime-local"
                       value={date}
                       onChange={(e) => updateDate(index, e.target.value)}
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500"
                     />
                     {dates.length > 1 && (
                       <button
                         type="button"
                         onClick={() => removeDateField(index)}
-                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                        className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                       >
                         削除
                       </button>
@@ -390,7 +390,7 @@ export default function SchedulesPage() {
                 <button
                   type="button"
                   onClick={addDateField}
-                  className="mt-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                  className="mt-2 px-4 py-2 bg-white/10 border border-white/20 text-white rounded hover:bg-white/20 transition-colors"
                 >
                   候補日を追加
                 </button>
@@ -398,7 +398,7 @@ export default function SchedulesPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-400"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:scale-105 disabled:opacity-50 transition-all shadow-lg"
               >
                 {loading ? '作成中...' : '作成する'}
               </button>

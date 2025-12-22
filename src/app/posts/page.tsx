@@ -329,15 +329,15 @@ export default function PostsPage() {
                   const participatingUsers = getParticipatingUsers(post)
 
                   return (
-                    <div key={post.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                    <div key={post.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10">
                       <div className="flex items-start justify-between mb-4 gap-2">
                         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                           <Link href={`/users/${post.userId}`} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 hover:opacity-80 transition">
                             <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                           </Link>
                           <div className="min-w-0 flex-1">
-                            <h2 className="text-lg sm:text-2xl font-bold truncate">{post.title}</h2>
-                            <p className="text-xs sm:text-sm text-gray-500 truncate">
+                            <h2 className="text-lg sm:text-2xl font-bold truncate text-white">{post.title}</h2>
+                            <p className="text-xs sm:text-sm text-white/60 truncate">
                               {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
                             </p>
                           </div>
@@ -363,7 +363,7 @@ export default function PostsPage() {
                       </div>
 
                       {post.content && (
-                        <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
+                        <div className="text-sm sm:text-base text-white/80 mb-4 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                       )}
 
                       {youtubeId && (
@@ -386,9 +386,9 @@ export default function PostsPage() {
                       {participatingUsers.length > 0 && (
                         <div className="mt-4 pt-4 border-t">
                           <div className="flex items-center gap-2 mb-3">
-                            <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
-                            <span className="text-sm sm:text-base font-medium">参加者</span>
-                            <span className="text-xs sm:text-sm text-gray-500">
+                            <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 text-white/60" />
+                            <span className="text-sm sm:text-base font-medium text-white">参加者</span>
+                            <span className="text-xs sm:text-sm text-white/60">
                               ({participatingUsers.length}名)
                             </span>
                           </div>
@@ -397,10 +397,10 @@ export default function PostsPage() {
                               <Link
                                 key={participant.id}
                                 href={`/users/${participant.user.id}`}
-                                className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+                                className="flex items-center gap-2 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full transition-colors border border-white/10"
                               >
-                                <User className="w-4 h-4 text-gray-400" />
-                                <span className="text-sm">{participant.user.name}</span>
+                                <User className="w-4 h-4 text-white/60" />
+                                <span className="text-sm text-white">{participant.user.name}</span>
                               </Link>
                             ))}
                           </div>
@@ -413,14 +413,14 @@ export default function PostsPage() {
                           onClick={() => isLikedByUser(post) ? handleUnlike(post.id) : handleLike(post.id)}
                           className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base rounded-lg transition-colors ${
                             isLikedByUser(post)
-                              ? 'bg-red-100 text-red-600 hover:bg-red-200'
-                              : 'bg-gray-100 hover:bg-gray-200'
+                              ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30 border border-red-400/30'
+                              : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
                           }`}
                         >
                           <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isLikedByUser(post) ? 'fill-current' : ''}`} />
                           <span>{post.likes.length}</span>
                         </button>
-                        <div className="flex items-center gap-2 text-gray-600">
+                        <div className="flex items-center gap-2 text-white/70">
                           <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                           <span className="text-sm sm:text-base">{(post.comments || []).length}</span>
                         </div>
@@ -441,10 +441,10 @@ export default function PostsPage() {
                                   </div>
                                 </Link>
                                 <div className="flex-1 min-w-0">
-                                  <div className="bg-gray-50 rounded-lg p-3">
+                                  <div className="bg-white/5 rounded-lg p-3 border border-white/10">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-sm font-semibold">{comment.user.name}</span>
-                                      <span className="text-xs text-gray-500">
+                                      <span className="text-sm font-semibold text-white">{comment.user.name}</span>
+                                      <span className="text-xs text-white/50">
                                         {new Date(comment.createdAt).toLocaleString('ja-JP', {
                                           month: 'short',
                                           day: 'numeric',
@@ -453,7 +453,7 @@ export default function PostsPage() {
                                         })}
                                       </span>
                                     </div>
-                                    <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                                    <p className="text-sm text-white/80 whitespace-pre-wrap break-words">
                                       {comment.content}
                                     </p>
                                   </div>
@@ -462,7 +462,7 @@ export default function PostsPage() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-gray-500 mb-4">まだコメントがありません</p>
+                          <p className="text-sm text-white/50 mb-4">まだコメントがありません</p>
                         )}
 
                         {/* コメント入力フォーム */}
@@ -482,13 +482,13 @@ export default function PostsPage() {
                                 }
                               }}
                               placeholder="コメントを入力..."
-                              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                              className="flex-1 px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                               disabled={submittingComment === post.id}
                             />
                             <button
                               onClick={() => handleCommentSubmit(post.id)}
                               disabled={!newComment[post.id]?.trim() || submittingComment === post.id}
-                              className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
                             >
                               <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                             </button>
@@ -506,17 +506,17 @@ export default function PostsPage() {
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
-                  <span className="text-sm sm:text-base px-3 sm:px-4">
+                  <span className="text-sm sm:text-base px-3 sm:px-4 text-white">
                     {currentPage} / {totalPages}
                   </span>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronRight className="w-5 h-5" />
                   </button>
@@ -527,21 +527,21 @@ export default function PostsPage() {
 
           {/* 編集フォーム（管理者のみ） */}
           {isAdmin && editingId && (
-            <div className="mt-8 bg-white rounded-lg shadow-md p-4 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-bold mb-4">投稿を編集</h2>
+            <div className="mt-8 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 text-white">投稿を編集</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">タイトル</label>
+                  <label className="block text-sm font-medium mb-2 text-white/80">タイトル</label>
                   <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">内容</label>
+                  <label className="block text-sm font-medium mb-2 text-white/80">内容</label>
                   <RichTextEditor 
                     value={content}
                     onChange={setContent}
@@ -550,27 +550,27 @@ export default function PostsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">YouTube URL</label>
+                  <label className="block text-sm font-medium mb-2 text-white/80">YouTube URL</label>
                   <input
                     type="url"
                     value={youtubeUrl}
                     onChange={(e) => setYoutubeUrl(e.target.value)}
                     placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="flex gap-2">
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 sm:flex-none bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                    className="flex-1 sm:flex-none bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg hover:scale-105 disabled:opacity-50 transition-all shadow-lg"
                   >
                     {loading ? '更新中...' : '更新'}
                   </button>
                   <button
                     type="button"
                     onClick={handleCancel}
-                    className="flex-1 sm:flex-none bg-gray-300 px-6 py-2 rounded-lg hover:bg-gray-400 transition-colors"
+                    className="flex-1 sm:flex-none bg-white/10 border border-white/20 text-white px-6 py-2 rounded-lg hover:bg-white/20 transition-colors"
                   >
                     キャンセル
                   </button>
@@ -733,17 +733,17 @@ export default function PostsPage() {
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <span className="text-sm sm:text-base px-3 sm:px-4">
+                <span className="text-sm sm:text-base px-3 sm:px-4 text-white">
                   {currentPage} / {totalPages}
                 </span>
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="p-2 rounded-lg border border-white/20 bg-white/10 text-white hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>

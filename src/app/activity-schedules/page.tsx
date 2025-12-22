@@ -377,32 +377,32 @@ ${schedule.content}
 
         {/* 作成・編集フォーム */}
         {showCreateForm && session?.user?.role === 'admin' && (
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 mb-6 border border-white/10">
+            <h2 className="text-xl font-bold mb-4 text-white">
               {editingId ? 'スケジュール編集' : '新規スケジュール'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">タイトル</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">タイトル</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   placeholder="例: 定期練習"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">日時</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">日時</label>
                 <input
                   type="date"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">内容</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">内容</label>
                 <RichTextEditor 
                   value={formData.content}
                   onChange={(value) => setFormData({ ...formData, content: value })}
@@ -413,7 +413,7 @@ ${schedule.content}
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:scale-105 transition-all shadow-lg"
                 >
                   {editingId ? '更新' : '作成'}
                 </button>
@@ -424,7 +424,7 @@ ${schedule.content}
                     setEditingId(null)
                     setFormData({ title: '', content: '', date: '' })
                   }}
-                  className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+                  className="px-6 py-2 border border-white/20 bg-white/10 text-white rounded-lg hover:bg-white/20 transition"
                 >
                   キャンセル
                 </button>
@@ -436,16 +436,16 @@ ${schedule.content}
         {/* スケジュール一覧 */}
         <div className="space-y-6">
           {schedules.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-8 text-center text-white/50 border border-white/10">
               活動スケジュールがありません
             </div>
           ) : (
             schedules.map((schedule) => (
-              <div key={schedule.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+              <div key={schedule.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h2 className="text-xl font-bold text-gray-800 mb-2">{schedule.title}</h2>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <h2 className="text-xl font-bold text-white mb-2">{schedule.title}</h2>
+                    <div className="flex items-center gap-2 text-sm text-white/60">
                       <Calendar className="w-4 h-4" />
                       <span>{new Date(schedule.date).toLocaleDateString('ja-JP')}</span>
                     </div>
@@ -454,13 +454,13 @@ ${schedule.content}
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEdit(schedule)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg border border-blue-400/30 transition"
                       >
                         <Edit2 className="w-5 h-5" />
                       </button>
                       <button
                         onClick={() => handleDelete(schedule.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg border border-red-400/30 transition"
                       >
                         <Trash2 className="w-5 h-5" />
                       </button>
@@ -469,21 +469,21 @@ ${schedule.content}
                 </div>
 
                 {/* 内容 */}
-                <div className="prose prose-sm max-w-none mb-4 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: schedule.content }} />
+                <div className="prose prose-sm prose-invert max-w-none mb-4 whitespace-pre-wrap text-white/80" dangerouslySetInnerHTML={{ __html: schedule.content }} />
 
                 {/* 参加者 */}
                 <div className="mb-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Users className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium">参加予定者 ({schedule.participants.length}名)</span>
+                    <Users className="w-5 h-5 text-white/60" />
+                    <span className="font-medium text-white">参加予定者 ({schedule.participants.length}名)</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {schedule.participants.map((p) => (
                       <div
                         key={p.id}
-                        className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full"
+                        className="flex items-center gap-2 bg-blue-500/20 px-3 py-1 rounded-full border border-blue-400/30"
                       >
-                        <span className="text-sm">{p.user.name || p.user.email}</span>
+                        <span className="text-sm text-blue-300">{p.user.name || p.user.email}</span>
                       </div>
                     ))}
                   </div>
@@ -492,10 +492,10 @@ ${schedule.content}
                 {/* 参加ボタン */}
                 <button
                   onClick={() => handleParticipate(schedule.id)}
-                  className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 ${
+                  className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 transition ${
                     isParticipating(schedule)
-                      ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                      ? 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
+                      : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:scale-105 shadow-lg'
                   }`}
                 >
                   {isParticipating(schedule) ? '参加取り消し' : '参加する'}
@@ -505,7 +505,7 @@ ${schedule.content}
                 {canCreateReport(schedule) && (
                   <button
                     onClick={() => handleCreateReport(schedule)}
-                    className="w-full sm:w-auto px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 mb-4 ml-0 sm:ml-2"
+                    className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:scale-105 mb-4 ml-0 sm:ml-2 transition-all shadow-lg">
                   >
                     <FileText className="w-5 h-5 inline mr-2" />
                     活動報告を作成
@@ -516,7 +516,7 @@ ${schedule.content}
                 <div className="border-t pt-4">
                   <button
                     onClick={() => toggleComments(schedule.id)}
-                    className="flex items-center gap-2 mb-3 hover:text-blue-600 transition-colors w-full text-left"
+                    className="flex items-center gap-2 mb-3 text-white hover:text-blue-300 transition-colors w-full text-left"
                   >
                     <MessageCircle className="w-5 h-5 text-gray-600" />
                     <span className="font-medium">
@@ -532,20 +532,20 @@ ${schedule.content}
                       <div className="space-y-3 mb-3">
                         {schedule.comments && schedule.comments.length > 0 ? (
                           schedule.comments.map((comment) => (
-                            <div key={comment.id} className="flex gap-3 bg-gray-50 p-3 rounded-lg">
+                            <div key={comment.id} className="flex gap-3 bg-white/5 border border-white/10 p-3 rounded-lg">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-medium text-sm">{comment.user.name || comment.user.email}</span>
-                                  <span className="text-xs text-gray-500">
+                                  <span className="font-medium text-sm text-white">{comment.user.name || comment.user.email}</span>
+                                  <span className="text-xs text-white/50">
                                     {new Date(comment.createdAt).toLocaleString('ja-JP')}
                                   </span>
                                 </div>
-                                <p className="text-sm text-gray-700">{comment.content}</p>
+                                <p className="text-sm text-white/80">{comment.content}</p>
                               </div>
                             </div>
                           ))
                         ) : (
-                          <p className="text-sm text-gray-500">コメントはまだありません</p>
+                          <p className="text-sm text-white/50">コメントはまだありません</p>
                         )}
                       </div>
 
@@ -560,11 +560,11 @@ ${schedule.content}
                             }
                           }}
                           placeholder="コメントを入力..."
-                          className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                          className="flex-1 px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                         />
                         <button
                           onClick={() => handleCommentSubmit(schedule.id)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg"
                         >
                           送信
                         </button>

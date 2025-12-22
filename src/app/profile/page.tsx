@@ -55,36 +55,36 @@ export default async function ProfilePage() {
 
         {/* 統計情報 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/10">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <FileText className="text-blue-600" size={24} />
+              <div className="p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
+                <FileText className="text-blue-300" size={24} />
               </div>
               <div>
-                <p className="text-gray-600 text-sm">投稿数</p>
-                <p className="text-2xl font-bold">{user._count.posts}</p>
+                <p className="text-white/60 text-sm">投稿数</p>
+                <p className="text-2xl font-bold text-white">{user._count.posts}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/10">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <User className="text-green-600" size={24} />
+              <div className="p-3 bg-green-500/20 rounded-lg border border-green-400/30">
+                <User className="text-green-300" size={24} />
               </div>
               <div>
-                <p className="text-gray-600 text-sm">参加回数</p>
-                <p className="text-2xl font-bold">{user._count.postParticipants}</p>
+                <p className="text-white/60 text-sm">参加回数</p>
+                <p className="text-2xl font-bold text-white">{user._count.postParticipants}</p>
               </div>
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-md p-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/10">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <MessageSquare className="text-purple-600" size={24} />
+              <div className="p-3 bg-purple-500/20 rounded-lg border border-purple-400/30">
+                <MessageSquare className="text-purple-300" size={24} />
               </div>
               <div>
-                <p className="text-gray-600 text-sm">メッセージ数</p>
-                <p className="text-2xl font-bold">{user._count.messages}</p>
+                <p className="text-white/60 text-sm">メッセージ数</p>
+                <p className="text-2xl font-bold text-white">{user._count.messages}</p>
               </div>
             </div>
           </div>
@@ -92,18 +92,18 @@ export default async function ProfilePage() {
 
         {/* 最近の投稿 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-bold mb-4">最近の投稿</h3>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10">
+            <h3 className="text-xl font-bold mb-4 text-white">最近の投稿</h3>
             {user.posts.length > 0 ? (
               <ul className="space-y-3">
                 {user.posts.map((post) => (
                   <li key={post.id}>
                     <Link
                       href={`/posts`}
-                      className="block p-3 border rounded hover:bg-gray-50 transition"
+                      className="block p-3 border border-white/20 rounded-lg bg-white/5 hover:bg-white/10 transition"
                     >
-                      <h4 className="font-semibold">{post.title}</h4>
-                      <p className="text-sm text-gray-500">
+                      <h4 className="font-semibold text-white">{post.title}</h4>
+                      <p className="text-sm text-white/60">
                         {new Date(post.createdAt).toLocaleDateString('ja-JP')}
                       </p>
                     </Link>
@@ -111,22 +111,22 @@ export default async function ProfilePage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500">まだ投稿がありません</p>
+              <p className="text-white/50">まだ投稿がありません</p>
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-bold mb-4">参加している投稿</h3>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10">
+            <h3 className="text-xl font-bold mb-4 text-white">参加している投稿</h3>
             {user.postParticipants.length > 0 ? (
               <ul className="space-y-3">
                 {user.postParticipants.map((participant) => (
                   <li key={participant.id}>
                     <Link
                       href={`/posts`}
-                      className="block p-3 border rounded hover:bg-gray-50 transition"
+                      className="block p-3 border border-white/20 rounded-lg bg-white/5 hover:bg-white/10 transition"
                     >
-                      <h4 className="font-semibold">{participant.post.title}</h4>
-                      <p className="text-sm text-gray-500">
+                      <h4 className="font-semibold text-white">{participant.post.title}</h4>
+                      <p className="text-sm text-white/60">
                         {new Date(participant.createdAt).toLocaleDateString('ja-JP')}に参加
                       </p>
                     </Link>
@@ -134,7 +134,7 @@ export default async function ProfilePage() {
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500">参加している投稿がありません</p>
+              <p className="text-white/50">参加している投稿がありません</p>
             )}
           </div>
         </div>

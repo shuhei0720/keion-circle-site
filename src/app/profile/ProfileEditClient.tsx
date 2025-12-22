@@ -63,13 +63,13 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6 mb-6 border border-white/10">
       <div className="flex justify-between items-start mb-4">
-        <h2 className="text-xl font-bold">プロフィール情報</h2>
+        <h2 className="text-xl font-bold text-white">プロフィール情報</h2>
         {!isEditing && (
           <button
             onClick={() => setIsEditing(true)}
-            className="flex items-center gap-2 px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+            className="flex items-center gap-2 px-3 py-1 text-blue-300 hover:bg-blue-500/20 rounded-lg transition border border-blue-400/30">
           >
             <Edit2 size={16} />
             編集
@@ -86,8 +86,8 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
               <Image src={avatarUrl} alt="Avatar" width={96} height={96} className="object-cover" />
             </div>
           ) : (
-            <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center">
-              <User size={40} className="text-blue-600" />
+            <div className="w-24 h-24 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
+              <User size={40} className="text-blue-300" />
             </div>
           )}
         </div>
@@ -96,12 +96,12 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
           {isEditing ? (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">名前</label>
+                <label className="block text-sm font-medium text-white/80 mb-1">名前</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   disabled={saving}
                 />
               </div>
@@ -109,7 +109,7 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg disabled:opacity-50">
                 >
                   <Save size={16} />
                   {saving ? '保存中...' : '保存'}
@@ -121,7 +121,7 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                     setAvatarUrl(user.avatarUrl)
                   }}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-2 border border-white/20 bg-white/10 text-white rounded-lg hover:bg-white/20 transition disabled:opacity-50">
                 >
                   <X size={16} />
                   キャンセル
@@ -130,20 +130,20 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
             </div>
           ) : (
             <>
-              <h2 className="text-2xl font-bold mb-2">{user.name}</h2>
-              <div className="flex items-center gap-2 text-gray-600 mb-2">
+              <h2 className="text-2xl font-bold mb-2 text-white">{user.name}</h2>
+              <div className="flex items-center gap-2 text-white/60 mb-2">
                 <Mail size={16} />
                 <span>{user.email}</span>
               </div>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-white/60">
                 <Calendar size={16} />
                 <span>登録日: {new Date(user.createdAt).toLocaleDateString('ja-JP')}</span>
               </div>
               <div className="mt-3">
                 <span className={`px-3 py-1 rounded-full text-sm ${
                   user.role === 'admin' 
-                    ? 'bg-purple-100 text-purple-800' 
-                    : 'bg-blue-100 text-blue-800'
+                    ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30' 
+                    : 'bg-blue-500/20 text-blue-300 border border-blue-400/30'
                 }`}>
                   {user.role === 'admin' ? '管理者' : 'メンバー'}
                 </span>
