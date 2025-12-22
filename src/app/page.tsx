@@ -10,7 +10,8 @@ interface Post {
   id: string
   title: string
   content: string
-  youtubeUrl: string | null
+  youtubeUrls: string[]
+  images?: string[]
   userId: string
   createdAt: string
   user: {
@@ -51,7 +52,7 @@ export default function Home() {
   }
 
   const extractYouTubeId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|live\/|shorts\/|embed\/)|youtu\.be\/)([^&\n?#]+)/)
     return match ? match[1] : null
   }
 
@@ -175,7 +176,6 @@ export default function Home() {
           <>
             <div className="space-y-6 max-w-4xl mx-auto">
               {posts.map((post) => {
-                const videoId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
                 return (
                   <div key={post.id} className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 border border-white/10 hover:border-white/20">
                     <div className="flex items-center gap-3 mb-4">
@@ -192,19 +192,27 @@ export default function Home() {
                     <div className="text-white/80 mb-4 whitespace-pre-wrap">
                       {renderContent(post.content)}
                     </div>
-                    {videoId && (
-                      <div className="mb-4 rounded-xl overflow-hidden shadow-2xl">
-                        <YouTube
-                          videoId={videoId}
-                          opts={{
-                            width: '100%',
-                            height: '390',
-                            playerVars: {
-                              autoplay: 0,
-                            },
-                          }}
-                          className="w-full"
-                        />
+                    {post.youtubeUrls && post.youtubeUrls.length > 0 && (
+                      <div className="space-y-4 mb-4">
+                        {post.youtubeUrls.map((url, index) => {
+                          const videoId = extractYouTubeId(url)
+                          if (!videoId) return null
+                          return (
+                            <div key={index} className="rounded-xl overflow-hidden shadow-2xl">
+                              <YouTube
+                                videoId={videoId}
+                                opts={{
+                                  width: '100%',
+                                  height: '390',
+                                  playerVars: {
+                                    autoplay: 0,
+                                  },
+                                }}
+                                className="w-full"
+                              />
+                            </div>
+                          )
+                        })}
                       </div>
                     )}
                     {post.likes.length > 0 && (

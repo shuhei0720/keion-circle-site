@@ -382,7 +382,7 @@ export default function EventsPage() {
       return songSection
     }).join('\n\n')
 
-    const template = `${event.title} - 活動報告
+    const template = `# 活動報告
 
 📅 日時
   ${new Date(event.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
@@ -403,13 +403,13 @@ ${event.content}
 ━━━━━━━━━━━━━━━━━━━
 ✨ 成果・ハイライト
 
-（ここにイベントの成果や印象に残ったことを記入してください）
+（ここに活動の成果や印象に残ったことを記入してください）
 
 
 ━━━━━━━━━━━━━━━━━━━
 💭 次回に向けて
 
-（次回に向けての課題や改善点を記入してください）
+（次回に向けての改善点や課題を記入してください）
 `
 
     router.push(`/events/${event.id}/report?template=${encodeURIComponent(template)}`)
