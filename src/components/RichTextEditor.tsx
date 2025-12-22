@@ -60,11 +60,17 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
     const selection = window.getSelection()
     if (!selection || !editorRef.current) return
 
+    editorRef.current.focus()
+
     switch (format) {
       case 'h1':
+        document.execCommand('formatBlock', false, '<h1>')
+        break
       case 'h2':
+        document.execCommand('formatBlock', false, '<h2>')
+        break
       case 'h3':
-        document.execCommand('formatBlock', false, format)
+        document.execCommand('formatBlock', false, '<h3>')
         break
       case 'bold':
         document.execCommand('bold', false)
@@ -79,13 +85,12 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         document.execCommand('insertOrderedList', false)
         break
       case 'quote':
-        document.execCommand('formatBlock', false, 'blockquote')
+        document.execCommand('formatBlock', false, '<blockquote>')
         break
     }
 
     setTimeout(() => {
       handleInput()
-      editorRef.current?.focus()
     }, 0)
   }
 
