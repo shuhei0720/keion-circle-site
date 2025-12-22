@@ -585,18 +585,18 @@ export default function PostsPage() {
 
   // 未ログインユーザーには公開ビューを表示
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* ヘッダー */}
-      <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
+      <nav className="bg-white/10 backdrop-blur-md border-b border-white/10 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors">
+          <Link href="/" className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors">
             <Home className="w-5 h-5" />
             <span className="font-semibold hidden sm:inline">ホーム</span>
           </Link>
-          <h1 className="text-lg sm:text-xl font-bold">活動一覧</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-white">活動一覧</h1>
           <Link
             href="/auth/signin"
-            className="flex items-center gap-1 sm:gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
+            className="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:scale-105 transition-all shadow-lg text-sm sm:text-base"
           >
             <LogIn className="w-4 h-4" />
             <span>ログイン</span>
@@ -618,21 +618,21 @@ export default function PostsPage() {
                 const participatingUsers = getParticipatingUsers(post)
 
                 return (
-                  <div key={post.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                  <div key={post.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10 hover:bg-white/15 transition-all">
                     <div className="flex items-center gap-2 sm:gap-3 mb-4">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                        <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-lg sm:text-2xl font-bold">{post.title}</h2>
-                        <p className="text-xs sm:text-sm text-gray-500">
+                        <h2 className="text-lg sm:text-2xl font-bold text-white">{post.title}</h2>
+                        <p className="text-xs sm:text-sm text-white/60">
                           {post.user.name} / {new Date(post.createdAt).toLocaleDateString('ja-JP')}
                         </p>
                       </div>
                     </div>
 
                     {post.content && (
-                      <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
+                      <div className="text-sm sm:text-base text-white/80 mb-4 prose prose-sm max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                     )}
 
                     {youtubeId && (

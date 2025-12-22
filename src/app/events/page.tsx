@@ -666,7 +666,7 @@ ${event.content}
         {/* イベント一覧 */}
         <div className="space-y-6">
           {events.length === 0 ? (
-            <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-8 text-center text-white/70 border border-white/10">
               イベントがありません
             </div>
           ) : (
@@ -674,11 +674,11 @@ ${event.content}
               const songs = event.songs ? JSON.parse(event.songs) : []
 
               return (
-                <div key={event.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                <div key={event.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10 hover:bg-white/15 transition-all">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
-                      <h2 className="text-xl font-bold text-gray-800 mb-2">{event.title}</h2>
-                      <div className="space-y-1 text-sm text-gray-600">
+                      <h2 className="text-xl font-bold text-white mb-2">{event.title}</h2>
+                      <div className="space-y-1 text-sm text-white/70">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
                           <span>{new Date(event.date).toLocaleDateString('ja-JP')}</span>
@@ -707,13 +707,13 @@ ${event.content}
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleEdit(event)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all"
                         >
                           <Edit2 className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleDelete(event.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
@@ -722,7 +722,7 @@ ${event.content}
                   </div>
 
                   {/* 内容 */}
-                  <div className="prose prose-sm max-w-none mb-4 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: event.content }} />
+                  <div className="prose prose-sm prose-invert max-w-none mb-4 whitespace-pre-wrap text-white/80" dangerouslySetInnerHTML={{ __html: event.content }} />
 
                   {/* 課題曲 */}
                   {songs.length > 0 && (
@@ -739,8 +739,8 @@ ${event.content}
                         }
                         
                         return (
-                          <div key={songIndex} className="bg-gray-50 p-4 rounded-lg">
-                            <h3 className="font-medium mb-2 flex items-center gap-2">
+                          <div key={songIndex} className="bg-white/5 p-4 rounded-xl border border-white/10">
+                            <h3 className="font-medium mb-2 flex items-center gap-2 text-white">
                               <Music className="w-4 h-4" />
                               {song.title}
                             </h3>
@@ -752,7 +752,7 @@ ${event.content}
                                   href={song.sheetUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                                  className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
                                 >
                                   <FileSpreadsheet className="w-4 h-4" />
                                   楽譜
@@ -763,7 +763,7 @@ ${event.content}
                                   href={song.youtubeUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                                  className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
                                 >
                                   <Youtube className="w-4 h-4" />
                                   YouTube
@@ -774,7 +774,7 @@ ${event.content}
                             {/* YouTube埋め込み */}
                             {videoId && (
                               <div className="mb-3">
-                                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
+                                <div className="aspect-video rounded-xl overflow-hidden bg-black/30 shadow-2xl">
                                   <YouTube
                                     videoId={videoId}
                                     opts={{
@@ -791,12 +791,12 @@ ${event.content}
                             {/* パート担当 */}
                             {song.parts && song.parts.length > 0 && (
                               <div>
-                                <h4 className="text-sm font-medium mb-2">パート担当</h4>
+                                <h4 className="text-sm font-medium mb-2 text-white/80">パート担当</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                                   {song.parts.map((part: any, partIndex: number) => (
                                     <div key={partIndex} className="flex items-center gap-2">
-                                      <span className="text-gray-600">{instrumentNames[part.instrument] || part.instrument}:</span>
-                                      <span className="font-medium">{part.player}</span>
+                                      <span className="text-white/60">{instrumentNames[part.instrument] || part.instrument}:</span>
+                                      <span className="font-medium text-white">{part.player}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -811,16 +811,16 @@ ${event.content}
                   {/* 参加者 */}
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Users className="w-5 h-5 text-gray-600" />
-                      <span className="font-medium">参加予定者 ({event.participants.length}名)</span>
+                      <Users className="w-5 h-5 text-white/70" />
+                      <span className="font-medium text-white">参加予定者 ({event.participants.length}名)</span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {event.participants.map((p) => (
                         <div
                           key={p.id}
-                          className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full"
+                          className="flex items-center gap-2 bg-blue-500/20 px-3 py-1 rounded-full border border-blue-400/30"
                         >
-                          <span className="text-sm">{p.user.name || p.user.email}</span>
+                          <span className="text-sm text-white">{p.user.name || p.user.email}</span>
                         </div>
                       ))}
                     </div>

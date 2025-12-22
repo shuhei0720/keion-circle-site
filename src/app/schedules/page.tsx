@@ -237,14 +237,14 @@ export default function SchedulesPage() {
             const { mostPopular, maxAvailable } = getMostPopularDate(schedule.dates)
             
             return (
-              <div key={schedule.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-                <h3 className="text-lg sm:text-xl font-semibold mb-2">{schedule.title}</h3>
-                <p className="text-sm sm:text-base text-gray-600 mb-4">{schedule.description}</p>
+              <div key={schedule.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10">
+                <h3 className="text-lg sm:text-xl font-semibold mb-2 text-white">{schedule.title}</h3>
+                <p className="text-sm sm:text-base text-white/70 mb-4">{schedule.description}</p>
 
                 {/* 最有力候補 */}
                 {mostPopular && maxAvailable > 0 && (
-                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2 text-green-800 text-sm sm:text-base">
+                  <div className="mb-4 p-3 bg-green-500/20 border border-green-400/30 rounded-xl">
+                    <div className="flex flex-col xs:flex-row xs:items-center gap-1 xs:gap-2 text-green-300 text-sm sm:text-base">
                       <div className="flex items-center gap-2">
                         <Calendar size={18} className="flex-shrink-0" />
                         <span className="font-semibold">最有力候補:</span>

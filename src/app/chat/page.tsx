@@ -163,8 +163,8 @@ export default function ChatPage() {
 
   return (
     <DashboardLayout>
-      <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto bg-white">
-        <div className="bg-blue-600 text-white p-3 sm:p-4 shadow-md">
+      <div className="flex flex-col h-[calc(100vh-4rem)] max-w-5xl mx-auto bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 sm:p-4 shadow-lg">
           <h1 className="text-xl sm:text-2xl font-bold">チャット</h1>
         </div>
 
@@ -174,17 +174,17 @@ export default function ChatPage() {
           </div>
         ) : (
           <>
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-transparent">
               {messages.map((message) => {
             const isOwnMessage = session?.user && (session.user as any).id === message.userId
             return (
               <div key={message.id} className={`flex gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
                 {!isOwnMessage && (
-                  <Link href={`/users/${message.userId}`} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1 hover:bg-gray-300 transition">
-                    <User className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />
+                  <Link href={`/users/${message.userId}`} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 mt-1 hover:scale-110 transition-transform shadow-lg">
+                    <User className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                   </Link>
                 )}
-                <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-lg shadow ${isOwnMessage ? 'bg-blue-600 text-white' : 'bg-white text-gray-800'}`}>
+                <div className={`max-w-[75%] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-xl shadow-lg backdrop-blur-md ${isOwnMessage ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' : 'bg-white/10 text-white border border-white/10'}`}>
                   <div className="text-xs mb-1 opacity-75">{message.user.name || message.user.email}</div>
                   <div className="text-sm sm:text-base break-words">{message.content}</div>
                   {message.fileUrl && (
