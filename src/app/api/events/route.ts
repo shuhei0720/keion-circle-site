@@ -32,6 +32,11 @@ export async function GET() {
         title: true,
         content: true,
         date: true,
+        location: true,
+        songTitle: true,
+        songSheetUrl: true,
+        songYoutubeUrl: true,
+        parts: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -97,7 +102,12 @@ export async function POST(request: Request) {
     const {
       title,
       content,
-      date
+      date,
+      location,
+      songTitle,
+      songSheetUrl,
+      songYoutubeUrl,
+      parts
     } = await request.json()
 
     if (!title || !content) {
@@ -112,6 +122,11 @@ export async function POST(request: Request) {
         title,
         content,
         date: date ? new Date(date) : null,
+        location: location || null,
+        songTitle: songTitle || null,
+        songSheetUrl: songSheetUrl || null,
+        songYoutubeUrl: songYoutubeUrl || null,
+        parts: parts && parts.length > 0 ? JSON.stringify(parts) : null,
         userId: session.user.id
       },
       include: {
