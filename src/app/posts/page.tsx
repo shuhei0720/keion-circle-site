@@ -5,6 +5,7 @@ import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
 import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
 
@@ -32,6 +33,7 @@ interface Post {
   title: string
   content: string
   youtubeUrl: string | null
+  images?: string[]
   createdAt: string
   userId: string
   user: User
@@ -379,6 +381,23 @@ export default function PostsPage() {
                             }}
                             className="w-full h-full"
                           />
+                        </div>
+                      )}
+
+                      {/* 画像表示 */}
+                      {post.images && post.images.length > 0 && (
+                        <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {post.images.map((imageUrl, index) => (
+                            <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                              <Image
+                                src={imageUrl}
+                                alt={`${post.title} - Image ${index + 1}`}
+                                fill
+                                className="object-cover"
+                                sizes="(max-width: 640px) 50vw, 33vw"
+                              />
+                            </div>
+                          ))}
                         </div>
                       )}
 
