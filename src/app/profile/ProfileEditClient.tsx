@@ -70,7 +70,6 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
           <button
             onClick={() => setIsEditing(true)}
             className="flex items-center gap-2 px-3 py-1 text-blue-300 hover:bg-blue-500/20 rounded-lg transition border border-blue-400/30">
-          >
             <Edit2 size={16} />
             編集
           </button>
@@ -110,7 +109,6 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                   onClick={handleSave}
                   disabled={saving}
                   className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg disabled:opacity-50">
-                >
                   <Save size={16} />
                   {saving ? '保存中...' : '保存'}
                 </button>
@@ -122,7 +120,6 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                   }}
                   disabled={saving}
                   className="flex items-center gap-2 px-4 py-2 border border-white/20 bg-white/10 text-white rounded-lg hover:bg-white/20 transition disabled:opacity-50">
-                >
                   <X size={16} />
                   キャンセル
                 </button>
