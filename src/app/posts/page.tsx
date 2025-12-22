@@ -32,7 +32,7 @@ interface Post {
   id: string
   title: string
   content: string
-  youtubeUrl: string | null
+  youtubeUrls: string[]
   images?: string[]
   createdAt: string
   userId: string
@@ -323,7 +323,6 @@ export default function PostsPage() {
               {/* 投稿一覧 */}
               <div className="space-y-4 sm:space-y-6 mb-8">
                 {currentPosts.map((post) => {
-                  const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
                   const participatingUsers = getParticipatingUsers(post)
 
                   return (
@@ -364,19 +363,28 @@ export default function PostsPage() {
                         <div className="text-sm sm:text-base text-white/80 mb-4 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                       )}
 
-                      {youtubeId && (
-                        <div className="mb-4 rounded-lg overflow-hidden aspect-video">
-                          <YouTube
-                            videoId={youtubeId}
-                            opts={{
-                              width: '100%',
-                              height: '100%',
-                              playerVars: {
-                                autoplay: 0,
-                              },
-                            }}
-                            className="w-full h-full"
-                          />
+                      {/* YouTube動画 */}
+                      {post.youtubeUrls && post.youtubeUrls.length > 0 && (
+                        <div className="space-y-4 mb-4">
+                          {post.youtubeUrls.map((url, index) => {
+                            const youtubeId = extractYouTubeId(url)
+                            if (!youtubeId) return null
+                            return (
+                              <div key={index} className="rounded-lg overflow-hidden aspect-video">
+                                <YouTube
+                                  videoId={youtubeId}
+                                  opts={{
+                                    width: '100%',
+                                    height: '100%',
+                                    playerVars: {
+                                      autoplay: 0,
+                                    },
+                                  }}
+                                  className="w-full h-full"
+                                />
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
 

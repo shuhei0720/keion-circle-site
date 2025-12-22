@@ -13,7 +13,7 @@ export async function GET() {
         id: true,
         title: true,
         content: true,
-        youtubeUrl: true,
+        youtubeUrls: true,
         images: true,
         createdAt: true,
         userId: true,

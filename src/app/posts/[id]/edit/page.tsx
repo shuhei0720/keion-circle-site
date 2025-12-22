@@ -19,7 +19,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    youtubeUrl: '',
+    youtubeUrls: [] as string[],
     images: [] as string[]
   })
 
@@ -50,7 +50,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
         setFormData({
           title: data.title,
           content: data.content || '',
-          youtubeUrl: data.youtubeUrl || '',
+          youtubeUrls: data.youtubeUrls || [],
           images: data.images || []
         })
       } else {
@@ -200,13 +200,40 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
             <div>
               <label className="block text-sm font-medium mb-2">YouTube URL（任意）</label>
-              <input
-                type="url"
-                value={formData.youtubeUrl}
-                onChange={(e) => setFormData({ ...formData, youtubeUrl: e.target.value })}
-                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                placeholder="https://www.youtube.com/watch?v=..."
-              />
+              <div className="space-y-3">
+                {formData.youtubeUrls.map((url, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="url"
+                      value={url}
+                      onChange={(e) => {
+                        const newUrls = [...formData.youtubeUrls]
+                        newUrls[index] = e.target.value
+                        setFormData({ ...formData, youtubeUrls: newUrls })
+                      }}
+                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newUrls = formData.youtubeUrls.filter((_, i) => i !== index)
+                        setFormData({ ...formData, youtubeUrls: newUrls })
+                      }}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, youtubeUrls: [...formData.youtubeUrls, ''] })}
+                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-gray-600 hover:text-blue-600"
+                >
+                  + YouTube URLを追加
+                </button>
+              </div>
             </div>
 
             <div>

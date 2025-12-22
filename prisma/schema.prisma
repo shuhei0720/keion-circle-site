@@ -75,7 +75,7 @@ model Post {
   id          String   @id @default(cuid())
   title       String
   content     String?
-  youtubeUrl  String?
+  youtubeUrls String[] // YouTube URL配列
   images      String[] // Supabase Storageの画像URL配列
   userId      String
   eventId     String?  // 報告元のイベントID

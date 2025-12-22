@@ -53,7 +53,7 @@ export async function PUT(
 
     const { id } = await params
     const body = await request.json()
-    const { title, content, youtubeUrl, images } = body
+    const { title, content, youtubeUrls, images } = body
 
     // 投稿の存在確認
     const existingPost = await prisma.post.findUnique({
@@ -69,7 +69,7 @@ export async function PUT(
       data: {
         title,
         content,
-        youtubeUrl: youtubeUrl && youtubeUrl.trim() !== '' ? youtubeUrl.trim() : null,
+        youtubeUrls: (youtubeUrls || []).map((url: string) => url.trim()).filter((url: string) => url !== ''),
         images: images || []
       },
       include: {
