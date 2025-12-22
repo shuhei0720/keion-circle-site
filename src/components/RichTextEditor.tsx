@@ -1,8 +1,7 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
-import { marked } from 'marked'
-import TurndownService from 'turndown'
+import { useRef, useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { 
   Heading1, 
   Heading2, 
@@ -21,115 +20,59 @@ interface Props {
   minHeight?: string
 }
 
-const turndownService = new TurndownService({
-  headingStyle: 'atx',
-  codeBlockStyle: 'fenced',
-  bulletListMarker: '-',
-})
-
-// 見出しと箇条書きのルールを追加
-turndownService.addRule('heading', {
-  filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-  replacement: function(content, node) {
-    const level = Number(node.nodeName.charAt(1))
-    return '\n' + '#'.repeat(level) + ' ' + content + '\n'
-  }
-})
-
-turndownService.addRule('listItem', {
-  filter: 'li',
-  replacement: function(content, node, options) {
-    const parent = node.parentNode
-    const isOrdered = parent?.nodeName === 'OL'
-    const prefix = isOrdered ? '1. ' : '- '
-    return prefix + content + '\n'
-  }
-})
-
 export default function RichTextEditor({ value, onChange, placeholder, minHeight = '300px' }: Props) {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const isComposingRef = useRef(false)
-  const isUpdatingRef = useRef(false)
-  const initializedRef = useRef(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
-    // 初期化時のみHTMLを設定
-    if (!editorRef.current || initializedRef.current) return
+  const insertMarkdown = (before: string, after: string = '') => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = value.substring(start, end)
+    const newText = value.substring(0, start) + before + selectedText + after + value.substring(end)
     
-    if (value) {
-      const html = marked(value) as string
-      editorRef.current.innerHTML = html
-    }
-    initializedRef.current = true
-  }, [])
-
-  const handleInput = () => {
-    if (editorRef.current && !isComposingRef.current && !isUpdatingRef.current) {
-      const html = editorRef.current.innerHTML
-      console.log('HTML:', html)
-      const markdown = turndownService.turndown(html)
-      console.log('Markdown:', markdown)
-      onChange(markdown)
-    }
-  }
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault()
-    const text = e.clipboardData.getData('text/plain')
-    document.execCommand('insertText', false, text)
-  }
-
-  const applyFormat = (format: string) => {
-    const selection = window.getSelection()
-    if (!selection || !editorRef.current) return
-
-    editorRef.current.focus()
+    onChange(newText)
     
-    console.log('Applying format:', format)
-    let success = false
-
-    switch (format) {
-      case 'h1':
-        success = document.execCommand('formatBlock', false, '<h1>')
-        break
-      case 'h2':
-        success = document.execCommand('formatBlock', false, '<h2>')
-        break
-      case 'h3':
-        success = document.execCommand('formatBlock', false, '<h3>')
-        break
-      case 'bold':
-        success = document.execCommand('bold', false)
-        break
-      case 'italic':
-        success = document.execCommand('italic', false)
-        break
-      case 'ul':
-        success = document.execCommand('insertUnorderedList', false)
-        break
-      case 'ol':
-        success = document.execCommand('insertOrderedList', false)
-        break
-      case 'quote':
-        success = document.execCommand('formatBlock', false, '<blockquote>')
-        break
-    }
-
-    console.log('Command success:', success)
-    console.log('HTML after command:', editorRef.current.innerHTML)
-
     setTimeout(() => {
-      handleInput()
+      textarea.focus()
+      const newCursorPos = start + before.length + selectedText.length + after.length
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
+
+  const insertAtLineStart = (prefix: string) => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const lines = value.split('\n')
+    let currentPos = 0
+    let lineIndex = 0
+
+    for (let i = 0; i < lines.length; i++) {
+      if (currentPos + lines[i].length >= start) {
+        lineIndex = i
+        break
+      }
+      currentPos += lines[i].length + 1
+    }
+
+    lines[lineIndex] = prefix + lines[lineIndex]
+    onChange(lines.join('\n'))
+    
+    setTimeout(() => {
+      textarea.focus()
     }, 0)
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg overflow-hidden bg-white">
       {/* ツールバー */}
       <div className="flex gap-1 p-2 bg-gray-50 border-b">
         <button
           type="button"
-          onClick={() => applyFormat('h1')}
+          onClick={() => insertAtLineStart('# ')}
           className="p-2 hover:bg-gray-200 rounded"
           title="見出し1"
         >
@@ -137,7 +80,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('h2')}
+          onClick={() => insertAtLineStart('## ')}
           className="p-2 hover:bg-gray-200 rounded"
           title="見出し2"
         >
@@ -145,7 +88,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('h3')}
+          onClick={() => insertAtLineStart('### ')}
           className="p-2 hover:bg-gray-200 rounded"
           title="見出し3"
         >
@@ -154,7 +97,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         <div className="w-px bg-gray-300 mx-1" />
         <button
           type="button"
-          onClick={() => applyFormat('bold')}
+          onClick={() => insertMarkdown('**', '**')}
           className="p-2 hover:bg-gray-200 rounded"
           title="太字"
         >
@@ -162,7 +105,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('italic')}
+          onClick={() => insertMarkdown('*', '*')}
           className="p-2 hover:bg-gray-200 rounded"
           title="斜体"
         >
@@ -171,7 +114,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         <div className="w-px bg-gray-300 mx-1" />
         <button
           type="button"
-          onClick={() => applyFormat('ul')}
+          onClick={() => insertAtLineStart('- ')}
           className="p-2 hover:bg-gray-200 rounded"
           title="箇条書き"
         >
@@ -179,7 +122,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('ol')}
+          onClick={() => insertAtLineStart('1. ')}
           className="p-2 hover:bg-gray-200 rounded"
           title="番号付きリスト"
         >
@@ -187,7 +130,7 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         </button>
         <button
           type="button"
-          onClick={() => applyFormat('quote')}
+          onClick={() => insertAtLineStart('> ')}
           className="p-2 hover:bg-gray-200 rounded"
           title="引用"
         >
@@ -195,32 +138,27 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
         </button>
       </div>
 
-      {/* エディタ */}
-      <div className="relative">
-        <div
-          ref={editorRef}
-          contentEditable
-          onInput={handleInput}
-          onPaste={handlePaste}
-          onCompositionStart={() => { isComposingRef.current = true }}
-          onCompositionEnd={() => { 
-            isComposingRef.current = false
-            handleInput()
-          }}
-          className="w-full px-4 py-3 focus:outline-none prose prose-sm max-w-none"
-          style={{ minHeight }}
-          suppressContentEditableWarning
-          data-placeholder={placeholder || 'ここに入力...'}
-        />
-        {!value && (
-          <div 
-            className="absolute top-3 left-4 text-gray-400 pointer-events-none"
-            style={{ userSelect: 'none' }}
-          >
-            {placeholder || 'ここに入力...'}
-          </div>
+      {/* プレビュー */}
+      <div className="p-4 prose prose-sm max-w-none" style={{ minHeight: minHeight }}>
+        {value ? (
+          <ReactMarkdown>{value}</ReactMarkdown>
+        ) : (
+          <p className="text-gray-400">{placeholder || 'ここに入力...'}</p>
         )}
+      </div>
+
+      {/* 編集用textarea（下に小さく表示） */}
+      <div className="border-t bg-gray-50 p-2">
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-3 py-2 border rounded text-xs font-mono bg-white"
+          rows={4}
+          placeholder="または、ここで直接編集..."
+        />
       </div>
     </div>
   )
 }
+
