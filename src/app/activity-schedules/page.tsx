@@ -286,23 +286,39 @@ export default function ActivitySchedulesPage() {
 
   const handleCreateReport = (schedule: ActivitySchedule) => {
     // テンプレート作成
-    const template = `# ${schedule.title}
+    const template = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ${schedule.title} - 活動報告
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**日時**: ${new Date(schedule.date).toLocaleDateString('ja-JP')}
+📅 日時
+  ${new Date(schedule.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
 
-**参加者**: ${schedule.participants.map(p => p.user.name || p.user.email).join('、')}
+👥 参加メンバー
+  ${schedule.participants.map(p => p.user.name || p.user.email).join(' / ')}
 
-## 活動内容
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 活動内容
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${schedule.content}
 
-## 成果・気づき
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ 成果・気づき
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 （ここに活動の成果や気づきを記入してください）
 
-## 次回に向けて
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💭 次回に向けて
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 （次回に向けての課題や目標を記入してください）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `
 
     router.push(`/activity-schedules/${schedule.id}/report?template=${encodeURIComponent(template)}`)

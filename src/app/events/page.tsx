@@ -311,39 +311,83 @@ export default function EventsPage() {
 
   const handleCreateReport = (event: Event) => {
     const songs = event.songs ? JSON.parse(event.songs) : []
+    
+    const instrumentNames: { [key: string]: string } = {
+      vocal: 'ボーカル',
+      guitar: 'ギター',
+      bass: 'ベース',
+      drums: 'ドラム',
+      keyboard: 'キーボード',
+      other: 'その他'
+    }
+    
     const songsText = songs.map((song: any, index: number) => {
-      const partsText = song.parts && song.parts.length > 0
-        ? song.parts.map((p: any) => `- ${p.instrument}: ${p.player}`).join('\n')
+      const parts = song.parts && song.parts.length > 0
+        ? '\n    ' + song.parts.map((p: any) => `${instrumentNames[p.instrument] || p.instrument}: ${p.player}`).join(' / ')
         : ''
-      return `## 課題曲${index + 1}: ${song.title}
+      
+      let songSection = `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+♪ 課題曲 ${index + 1}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-${song.sheetUrl ? `**楽譜**: ${song.sheetUrl}\n` : ''}${song.youtubeUrl ? `**YouTube**: ${song.youtubeUrl}\n` : ''}${partsText ? `\n**パート担当**:\n${partsText}` : ''}`
+  曲名: ${song.title}`
+      
+      if (song.sheetUrl) {
+        songSection += `\n  楽譜: ${song.sheetUrl}`
+      }
+      if (song.youtubeUrl) {
+        songSection += `\n  YouTube: ${song.youtubeUrl}`
+      }
+      if (parts) {
+        songSection += `\n  パート担当:${parts}`
+      }
+      
+      return songSection
     }).join('\n\n')
 
-    const template = `# ${event.title}
+    const template = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ${event.title} - 活動報告
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**日時**: ${new Date(event.date).toLocaleDateString('ja-JP')}
-${event.locationName ? `**場所**: ${event.locationName}${event.locationUrl ? ` (${event.locationUrl})` : ''}` : event.locationUrl ? `**場所**: ${event.locationUrl}` : ''}
+📅 日時
+  ${new Date(event.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
+${event.locationName || event.locationUrl ? `
+📍 場所
+  ${event.locationName || ''}${event.locationUrl ? `\n  ${event.locationUrl}` : ''}` : ''}
 
-**参加者**: ${event.participants.map(p => p.user.name || p.user.email).join('、')}
-
+👥 参加メンバー
+  ${event.participants.map(p => p.user.name || p.user.email).join(' / ')}
 ${songsText}
 
-## イベント内容
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 活動内容
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ${event.content}
 
-## 成果・ハイライト
 
-（ここにイベントの成果やハイライトを記入してください）
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ 成果・ハイライト
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-## 写真・動画
+（ここにイベントの成果や印象に残ったことを記入してください）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📷 写真・動画
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 （写真や動画のURLを追加してください）
 
-## 次回に向けて
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💭 次回に向けて
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 （次回に向けての課題や改善点を記入してください）
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `
 
     router.push(`/events/${event.id}/report?template=${encodeURIComponent(template)}`)
