@@ -76,13 +76,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, content, youtubeUrl } = body
+    const { title, content, youtubeUrls, images } = body
 
     const post = await prisma.post.create({
       data: {
         title,
         content,
-        youtubeUrl,
+        youtubeUrls: (youtubeUrls || [])
+          .map((url: string) => url.trim())
+          .filter((url: string) => url !== ''),
+        images: images || [],
         userId: session.user.id
       }
     })
