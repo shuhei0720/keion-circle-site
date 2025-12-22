@@ -45,7 +45,9 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
   const handleInput = () => {
     if (editorRef.current && !isComposingRef.current && !isUpdatingRef.current) {
       const html = editorRef.current.innerHTML
+      console.log('HTML:', html)
       const markdown = turndownService.turndown(html)
+      console.log('Markdown:', markdown)
       onChange(markdown)
     }
   }
@@ -61,33 +63,39 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
     if (!selection || !editorRef.current) return
 
     editorRef.current.focus()
+    
+    console.log('Applying format:', format)
+    let success = false
 
     switch (format) {
       case 'h1':
-        document.execCommand('formatBlock', false, '<h1>')
+        success = document.execCommand('formatBlock', false, '<h1>')
         break
       case 'h2':
-        document.execCommand('formatBlock', false, '<h2>')
+        success = document.execCommand('formatBlock', false, '<h2>')
         break
       case 'h3':
-        document.execCommand('formatBlock', false, '<h3>')
+        success = document.execCommand('formatBlock', false, '<h3>')
         break
       case 'bold':
-        document.execCommand('bold', false)
+        success = document.execCommand('bold', false)
         break
       case 'italic':
-        document.execCommand('italic', false)
+        success = document.execCommand('italic', false)
         break
       case 'ul':
-        document.execCommand('insertUnorderedList', false)
+        success = document.execCommand('insertUnorderedList', false)
         break
       case 'ol':
-        document.execCommand('insertOrderedList', false)
+        success = document.execCommand('insertOrderedList', false)
         break
       case 'quote':
-        document.execCommand('formatBlock', false, '<blockquote>')
+        success = document.execCommand('formatBlock', false, '<blockquote>')
         break
     }
+
+    console.log('Command success:', success)
+    console.log('HTML after command:', editorRef.current.innerHTML)
 
     setTimeout(() => {
       handleInput()
