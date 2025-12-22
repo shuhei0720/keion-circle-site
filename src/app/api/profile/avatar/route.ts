@@ -5,6 +5,15 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   try {
+    // Supabaseクライアントのチェック
+    if (!supabase) {
+      console.error('Supabase client is not configured')
+      return NextResponse.json({ 
+        error: 'Supabase Storageが設定されていません。環境変数を確認してください。',
+        details: 'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required'
+      }, { status: 500 })
+    }
+
     const session = await auth()
     if (!session?.user?.id) {
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
@@ -68,6 +77,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ avatarUrl: updatedUser.avatarUrl })
   } catch (error) {
     console.error('Avatar upload error:', error)
-    return NextResponse.json({ error: 'アップロードに失敗しました' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ 
+      error: 'アップロードに失敗しました',
+      details: errorMessage
+    }, { status: 500 })
   }
 }

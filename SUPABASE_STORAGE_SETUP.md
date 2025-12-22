@@ -73,9 +73,24 @@ Vercel Dashboardで以下の環境変数を追加:
 1. [Vercel Dashboard](https://vercel.com)にアクセス
 2. プロジェクトを選択
 3. 「Settings」→「Environment Variables」
-4. 以下を追加:
-   - `NEXT_PUBLIC_SUPABASE_URL`: `https://your-project.supabase.co`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `your-anon-key`
+4. 以下を**1つずつ**追加:
+
+**変数1: NEXT_PUBLIC_SUPABASE_URL**
+- Name: `NEXT_PUBLIC_SUPABASE_URL`
+- Value: `https://your-project.supabase.co` (実際のSupabase URLを入力)
+- Environment: Production, Preview, Development すべてにチェック
+- 「Save」をクリック
+
+**変数2: NEXT_PUBLIC_SUPABASE_ANON_KEY**
+- Name: `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- Value: `your-anon-key` (実際のAnon Keyを入力)
+- Environment: Production, Preview, Development すべてにチェック
+- 「Save」をクリック
+
+5. 「Deployments」タブに移動
+6. 最新のデプロイメントの「...」メニューから「Redeploy」をクリック
+
+⚠️ **重要**: 環境変数を追加・変更した後は必ず再デプロイが必要です！
 
 ## 3. Supabase認証情報の取得
 
