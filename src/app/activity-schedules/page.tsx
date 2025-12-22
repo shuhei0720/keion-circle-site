@@ -56,7 +56,6 @@ export default function ActivitySchedulesPage() {
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
   const [showTemplateEditor, setShowTemplateEditor] = useState(false)
-  const [participatingLoading, setParticipatingLoading] = useState<{ [key: string]: boolean }>({})
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // フォーム状態
@@ -156,55 +155,51 @@ export default function ActivitySchedulesPage() {
   }
 
   const handleParticipate = async (scheduleId: string) => {
-    // ローディング中は処理しない
-    if (participatingLoading[scheduleId]) return
+    if (!session?.user?.id) return
 
-    setParticipatingLoading({ ...participatingLoading, [scheduleId]: true })
-    
+    const userId = session.user.id
+    const isCurrentlyParticipating = schedules.find(s => s.id === scheduleId)?.participants.some(p => p.userId === userId)
+
+    // 楽観的UI更新（即座に反映）
+    setSchedules(prevSchedules => prevSchedules.map(s => {
+      if (s.id === scheduleId) {
+        if (isCurrentlyParticipating) {
+          return {
+            ...s,
+            participants: s.participants.filter(p => p.userId !== userId)
+          }
+        } else {
+          return {
+            ...s,
+            participants: [...s.participants, {
+              id: 'temp-' + Date.now(),
+              userId,
+              user: {
+                id: userId,
+                name: session.user.name || null,
+                email: session.user.email || null
+              },
+              createdAt: new Date().toISOString()
+            }]
+          }
+        }
+      }
+      return s
+    }))
+
     try {
       const res = await fetch(`/api/activity-schedules/${scheduleId}/participate`, {
         method: 'POST'
       })
 
-      if (res.ok) {
-        const data = await res.json()
-        const userId = session?.user?.id || ''
-        
-        // 楽観的更新
-        setSchedules(schedules.map(s => {
-          if (s.id === scheduleId) {
-            if (data.participating) {
-              // 重複チェック
-              if (s.participants.some(p => p.userId === userId)) {
-                return s
-              }
-              return {
-                ...s,
-                participants: [...s.participants, {
-                  id: 'temp-' + Date.now(),
-                  userId,
-                  user: {
-                    id: userId,
-                    name: session?.user?.name || null,
-                    email: session?.user?.email || null
-                  },
-                  createdAt: new Date().toISOString()
-                }]
-              }
-            } else {
-              return {
-                ...s,
-                participants: s.participants.filter(p => p.userId !== userId)
-              }
-            }
-          }
-          return s
-        }))
+      if (!res.ok) {
+        // エラー時は元に戻す
+        fetchSchedules()
       }
     } catch (error) {
       console.error('参加登録エラー:', error)
-    } finally {
-      setParticipatingLoading({ ...participatingLoading, [scheduleId]: false })
+      // エラー時は元に戻す
+      fetchSchedules()
     }
   }
 
@@ -547,14 +542,13 @@ ${schedule.content}
                 {/* 参加ボタン */}
                 <button
                   onClick={() => handleParticipate(schedule.id)}
-                  disabled={participatingLoading[schedule.id]}
-                  className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                  className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 transition ${
                     isParticipating(schedule)
                       ? 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
                       : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:scale-105 shadow-lg'
                   }`}
                 >
-                  {participatingLoading[schedule.id] ? '処理中...' : isParticipating(schedule) ? '参加取り消し' : '参加する'}
+                  {isParticipating(schedule) ? '参加取り消し' : '参加する'}
                 </button>
 
                 {/* 活動報告作成ボタン */}
