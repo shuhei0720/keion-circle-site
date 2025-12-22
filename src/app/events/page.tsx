@@ -187,7 +187,7 @@ export default function EventsPage() {
               userId,
               user: {
                 id: userId,
-                name: session.user.name || session.user.email || null,
+                name: session.user.name || session.user.email || 'ユーザー',
                 email: session.user.email || null
               },
               createdAt: new Date().toISOString()

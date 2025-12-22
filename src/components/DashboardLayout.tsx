@@ -132,8 +132,9 @@ export default function DashboardLayout({
                   }`}
                 >
                   <User className="w-4 h-4" />
-                  <span className="text-sm max-w-[120px] truncate">
-                    {session.user.name || session.user.email}
+                  <span className="text-sm">プロフィール</span>
+                  <span className="text-sm max-w-[100px] truncate text-white/60">
+                    ({session.user.name || session.user.email})
                   </span>
                   {isActive('/profile') && (
                     <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
@@ -232,9 +233,12 @@ export default function DashboardLayout({
                   }`}
                 >
                   <User className="w-5 h-5" />
-                  <span className="font-medium truncate">
-                    {session.user.name || session.user.email}
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="font-medium">プロフィール</span>
+                    <span className="text-xs text-white/60 truncate">
+                      {session.user.name || session.user.email}
+                    </span>
+                  </div>
                 </Link>
                 <button
                   onClick={() => {
