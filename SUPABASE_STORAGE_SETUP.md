@@ -79,12 +79,16 @@ Vercel Dashboardで以下の環境変数を追加:
 
 ## 3. Supabase認証情報の取得
 
-1. [Supabase Dashboard](https://app.supabase.com)
+1. [Supabase Dashboard](https://app.supabase.com)にアクセス
 2. プロジェクトを選択
-3. 左サイドバーから「Settings」→「API」
-4. 以下をコピー:
-   - **Project URL**: `NEXT_PUBLIC_SUPABASE_URL`に使用
-   - **anon public**: `NEXT_PUBLIC_SUPABASE_ANON_KEY`に使用
+3. 左サイドバーの歯車アイコン「Project Settings」をクリック
+4. 左メニューから「API」を選択
+5. **Configuration**セクションで以下をコピー:
+   - **URL**（Project URLの下に表示）: `NEXT_PUBLIC_SUPABASE_URL`に使用
+   - 例: `https://abcdefghijklmnop.supabase.co`
+6. **Project API keys**セクションで以下をコピー:
+   - **anon public**キー: `NEXT_PUBLIC_SUPABASE_ANON_KEY`に使用
+   - 「Reveal」ボタンをクリックして表示されるキーをコピー
 
 ## 4. デプロイ
 
