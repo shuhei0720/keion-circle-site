@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react'
 import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send } from 'lucide-react'
 import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
+import MarkdownToolbar from '@/components/MarkdownToolbar'
+import ReactMarkdown from 'react-markdown'
 
 interface User {
   id: string
@@ -61,6 +63,7 @@ export default function PostsPage() {
   const [submittingComment, setSubmittingComment] = useState<string | null>(null)
   const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [postId: string]: boolean }>({})
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   const isAdmin = session?.user?.role === 'admin'
 
@@ -127,7 +130,42 @@ export default function PostsPage() {
     setContent('')
     setYoutubeUrl('')
   }
+  const handleMarkdownInsert = (before: string, after?: string) => {
+    const textarea = contentTextareaRef.current
+    if (!textarea) return
 
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = content.substring(start, end)
+    const beforeText = content.substring(0, start)
+    const afterText = content.substring(end)
+
+    let newText: string
+    let newCursorPos: number
+
+    if (after) {
+      // 前後に挿入（太字、斜体など）
+      newText = beforeText + before + selectedText + after + afterText
+      newCursorPos = start + before.length + selectedText.length
+    } else {
+      // 行頭に挿入（見出し、リストなど）
+      const lines = content.split('\n')
+      const currentLineStart = content.lastIndexOf('\n', start - 1) + 1
+      const currentLineEnd = content.indexOf('\n', start)
+      const lineEnd = currentLineEnd === -1 ? content.length : currentLineEnd
+      
+      newText = beforeText + before + content.substring(currentLineStart, lineEnd) + afterText.substring(lineEnd - end)
+      newCursorPos = start + before.length
+    }
+
+    setContent(newText)
+    
+    // カーソル位置を復元
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
   const handleCommentSubmit = async (postId: string) => {
     const commentContent = newComment[postId]?.trim()
     if (!commentContent || submittingComment) return
@@ -297,23 +335,8 @@ export default function PostsPage() {
                       </div>
 
                       {post.content && (
-                        <div className="text-sm sm:text-base text-gray-700 mb-4 whitespace-pre-wrap break-words">
-                          {post.content.split('\n').map((line, index) => {
-                            const imageMatch = line.match(/!\[\]\((.+?)\)/)
-                            if (imageMatch) {
-                              return (
-                                <div key={index} className="my-3 sm:my-4">
-                                  <img
-                                    src={imageMatch[1]}
-                                    alt="投稿画像"
-                                    className="max-w-full h-auto rounded-lg"
-                                    style={{ maxHeight: '400px', objectFit: 'contain' }}
-                                  />
-                                </div>
-                              )
-                            }
-                            return line ? <div key={index}>{line}</div> : <br key={index} />
-                          })}
+                        <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none">
+                          <ReactMarkdown>{post.content}</ReactMarkdown>
                         </div>
                       )}
 
@@ -493,11 +516,17 @@ export default function PostsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">内容</label>
+                  <MarkdownToolbar onInsert={handleMarkdownInsert} />
                   <textarea
+                    ref={contentTextareaRef}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     rows={6}
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
                   />
                 </div>
                 <div>
@@ -583,23 +612,8 @@ export default function PostsPage() {
                     </div>
 
                     {post.content && (
-                      <div className="text-sm sm:text-base text-gray-700 mb-4 whitespace-pre-wrap break-words">
-                        {post.content.split('\n').map((line, index) => {
-                          const imageMatch = line.match(/!\[\]\((.+?)\)/)
-                          if (imageMatch) {
-                            return (
-                              <div key={index} className="my-3 sm:my-4">
-                                <img
-                                  src={imageMatch[1]}
-                                  alt="投稿画像"
-                                  className="max-w-full h-auto rounded-lg"
-                                  style={{ maxHeight: '400px', objectFit: 'contain' }}
-                                />
-                              </div>
-                            )
-                          }
-                          return line ? <div key={index}>{line}</div> : <br key={index} />
-                        })}
+                      <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none">
+                        <ReactMarkdown>{post.content}</ReactMarkdown>
                       </div>
                     )}
 

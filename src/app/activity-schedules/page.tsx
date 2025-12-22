@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
+import MarkdownToolbar from '@/components/MarkdownToolbar'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
@@ -52,6 +53,7 @@ export default function ActivitySchedulesPage() {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // フォーム状態
   const [formData, setFormData] = useState({
@@ -229,6 +231,43 @@ export default function ActivitySchedulesPage() {
     setShowCreateForm(true)
   }
 
+  const handleMarkdownInsert = (before: string, after?: string) => {
+    const textarea = contentTextareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = formData.content.substring(start, end)
+    const beforeText = formData.content.substring(0, start)
+    const afterText = formData.content.substring(end)
+
+    let newText: string
+    let newCursorPos: number
+
+    if (after) {
+      // 前後に挿入（太字、斜体など）
+      newText = beforeText + before + selectedText + after + afterText
+      newCursorPos = start + before.length + selectedText.length
+    } else {
+      // 行頭に挿入（見出し、リストなど）
+      const lines = formData.content.split('\n')
+      const currentLineStart = formData.content.lastIndexOf('\n', start - 1) + 1
+      const currentLineEnd = formData.content.indexOf('\n', start)
+      const lineEnd = currentLineEnd === -1 ? formData.content.length : currentLineEnd
+      
+      newText = beforeText + before + formData.content.substring(currentLineStart, lineEnd) + afterText.substring(lineEnd - end)
+      newCursorPos = start + before.length
+    }
+
+    setFormData({ ...formData, content: newText })
+    
+    // カーソル位置を復元
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
+
   const handleCreateReport = (schedule: ActivitySchedule) => {
     // テンプレート作成
     const template = `# ${schedule.title}
@@ -321,10 +360,12 @@ ${schedule.content}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">内容（マークダウン形式）</label>
+                <MarkdownToolbar onInsert={handleMarkdownInsert} />
                 <textarea
+                  ref={contentTextareaRef}
                   value={formData.content}
                   onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[200px] font-mono text-sm"
+                  className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:ring-2 focus:ring-blue-500 min-h-[200px] font-mono text-sm"
                   placeholder="## 今日の練習内容&#10;&#10;- 課題曲の練習&#10;- パート別練習&#10;- 通し練習"
                 />
               </div>

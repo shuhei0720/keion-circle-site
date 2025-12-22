@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
+import MarkdownToolbar from '@/components/MarkdownToolbar'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
@@ -14,6 +15,7 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
   const [loading, setLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
   const [eventId, setEventId] = useState<string>('')
+  const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   const [formData, setFormData] = useState({
     title: '',
@@ -87,6 +89,43 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
     }
   }
 
+  const handleMarkdownInsert = (before: string, after?: string) => {
+    const textarea = contentTextareaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = formData.content.substring(start, end)
+    const beforeText = formData.content.substring(0, start)
+    const afterText = formData.content.substring(end)
+
+    let newText: string
+    let newCursorPos: number
+
+    if (after) {
+      // 前後に挿入（太字、斜体など）
+      newText = beforeText + before + selectedText + after + afterText
+      newCursorPos = start + before.length + selectedText.length
+    } else {
+      // 行頭に挿入（見出し、リストなど）
+      const lines = formData.content.split('\n')
+      const currentLineStart = formData.content.lastIndexOf('\n', start - 1) + 1
+      const currentLineEnd = formData.content.indexOf('\n', start)
+      const lineEnd = currentLineEnd === -1 ? formData.content.length : currentLineEnd
+      
+      newText = beforeText + before + formData.content.substring(currentLineStart, lineEnd) + afterText.substring(lineEnd - end)
+      newCursorPos = start + before.length
+    }
+
+    setFormData({ ...formData, content: newText })
+    
+    // カーソル位置を復元
+    setTimeout(() => {
+      textarea.focus()
+      textarea.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
+
   if (status === 'loading') {
     return (
       <DashboardLayout>
@@ -151,12 +190,16 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
                   <ReactMarkdown>{formData.content}</ReactMarkdown>
                 </div>
               ) : (
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 min-h-[400px] font-mono text-sm"
-                  placeholder="イベント報告の内容をマークダウン形式で入力してください"
-                />
+                <>
+                  <MarkdownToolbar onInsert={handleMarkdownInsert} />
+                  <textarea
+                    ref={contentTextareaRef}
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:ring-2 focus:ring-blue-500 min-h-[400px] font-mono text-sm"
+                    placeholder="イベント報告の内容をマークダウン形式で入力してください"
+                  />
+                </>
               )}
             </div>
 
