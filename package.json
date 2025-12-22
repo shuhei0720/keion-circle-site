@@ -17,6 +17,7 @@
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "lucide-react": "^0.562.0",
+    "marked": "^17.0.1",
     "multer": "^2.0.2",
     "next": "16.1.0",
     "next-auth": "^5.0.0-beta.30",
@@ -26,7 +27,8 @@
     "react-dom": "19.2.3",
     "react-image-crop": "^11.0.10",
     "react-markdown": "^10.1.0",
-    "react-youtube": "^10.1.0"
+    "react-youtube": "^10.1.0",
+    "turndown": "^7.2.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

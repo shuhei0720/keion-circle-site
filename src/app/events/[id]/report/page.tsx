@@ -4,9 +4,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
-import MarkdownToolbar from '@/components/MarkdownToolbar'
+import RichTextEditor from '@/components/RichTextEditor'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
 
 export default function CreateEventReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
@@ -174,30 +173,12 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
 
             <div>
               <label className="block text-sm font-medium mb-2">内容</label>
-              <MarkdownToolbar onInsert={handleMarkdownInsert} />
-              
-              {/* プレビュー表示（常に表示） */}
-              <div className="relative">
-                <div className="w-full px-4 py-2 border border-t-0 rounded-b-lg bg-white min-h-[400px] prose prose-sm max-w-none">
-                  {formData.content ? (
-                    <ReactMarkdown>{formData.content}</ReactMarkdown>
-                  ) : (
-                    <p className="text-gray-400">ツールバーまたは下の入力エリアで内容を入力...</p>
-                  )}
-                </div>
-                
-                {/* 編集用テキストエリア（下に配置） */}
-                <div className="mt-2">
-                  <textarea
-                    ref={contentTextareaRef}
-                    value={formData.content}
-                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    rows={6}
-                    className="w-full px-3 py-2 border rounded-lg text-xs font-mono text-gray-600 bg-gray-50"
-                    placeholder="直接テキストを入力することもできます（上のプレビューに反映されます）"
-                  />
-                </div>
-              </div>
+              <RichTextEditor
+                value={formData.content}
+                onChange={(value) => setFormData({ ...formData, content: value })}
+                placeholder="イベントの詳細を入力してください..."
+                minHeight="400px"
+              />
             </div>
 
             <div className="flex gap-2">

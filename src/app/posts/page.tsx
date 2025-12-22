@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react'
 import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send } from 'lucide-react'
 import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
-import MarkdownToolbar from '@/components/MarkdownToolbar'
+import RichTextEditor from '@/components/RichTextEditor'
 import ReactMarkdown from 'react-markdown'
 
 interface User {
@@ -516,31 +516,12 @@ export default function PostsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">内容</label>
-                  <MarkdownToolbar onInsert={handleMarkdownInsert} />
-                  
-                  {/* プレビュー表示（常に表示） */}
-                  <div className="relative">
-                    <div className="w-full px-4 py-2 border border-t-0 rounded-b-lg bg-white min-h-[240px] prose prose-sm max-w-none">
-                      {content ? (
-                        <ReactMarkdown>{content}</ReactMarkdown>
-                      ) : (
-                        <p className="text-gray-400">ツールバーまたは下の入力エリアで内容を入力...</p>
-                      )}
-                    </div>
-                    
-                    {/* 編集用テキストエリア（下に配置） */}
-                    <div className="mt-2">
-                      <textarea
-                        ref={contentTextareaRef}
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        rows={4}
-                        className="w-full px-3 py-2 border rounded-lg text-xs font-mono text-gray-600 bg-gray-50"
-                        placeholder="直接テキストを入力することもできます（上のプレビューに反映されます）"
-                        required
-                      />
-                    </div>
-                  </div>
+                  <RichTextEditor 
+                    value={content}
+                    onChange={setContent}
+                    placeholder="ツールバーでフォーマットを適用するか、直接入力してください..."
+                    minHeight="240px"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">YouTube URL</label>

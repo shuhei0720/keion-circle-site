@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
-import MarkdownToolbar from '@/components/MarkdownToolbar'
+import RichTextEditor from '@/components/RichTextEditor'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
@@ -360,30 +360,12 @@ ${schedule.content}
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">内容</label>
-                <MarkdownToolbar onInsert={handleMarkdownInsert} />
-                
-                {/* プレビュー表示（常に表示） */}
-                <div className="relative">
-                  <div className="w-full px-4 py-2 border border-t-0 rounded-b-lg bg-white min-h-[200px] prose prose-sm max-w-none">
-                    {formData.content ? (
-                      <ReactMarkdown>{formData.content}</ReactMarkdown>
-                    ) : (
-                      <p className="text-gray-400">ツールバーまたは下の入力エリアで内容を入力...</p>
-                    )}
-                  </div>
-                  
-                  {/* 編集用テキストエリア（下に配置） */}
-                  <div className="mt-2">
-                    <textarea
-                      ref={contentTextareaRef}
-                      value={formData.content}
-                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                      rows={3}
-                      className="w-full px-3 py-2 border rounded-lg text-xs font-mono text-gray-600 bg-gray-50"
-                      placeholder="直接テキストを入力することもできます"
-                    />
-                  </div>
-                </div>
+                <RichTextEditor 
+                  value={formData.content}
+                  onChange={(value) => setFormData({ ...formData, content: value })}
+                  placeholder="活動の詳細を入力してください..."
+                  minHeight="200px"
+                />
               </div>
               <div className="flex gap-2">
                 <button
