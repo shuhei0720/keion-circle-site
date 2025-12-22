@@ -13,7 +13,7 @@ interface User {
   id: string
   name: string
   email: string
-  avatar?: string | null
+  avatarUrl?: string | null
 }
 
 interface Comment {
@@ -643,9 +643,9 @@ export default function PostsPage() {
                 return (
                   <div key={post.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10 hover:bg-white/15 transition-all">
                     <div className="flex items-center gap-2 sm:gap-3 mb-4">
-                      {post.user.avatar ? (
+                      {post.user.avatarUrl ? (
                         <Image
-                          src={post.user.avatar}
+                          src={post.user.avatarUrl}
                           alt={post.user.name || 'User'}
                           width={40}
                           height={40}
