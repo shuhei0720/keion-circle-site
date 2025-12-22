@@ -389,12 +389,10 @@ export default function PostsPage() {
                         <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 gap-2">
                           {post.images.map((imageUrl, index) => (
                             <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
-                              <Image
+                              <img
                                 src={imageUrl}
                                 alt={`${post.title} - Image ${index + 1}`}
-                                fill
-                                className="object-cover"
-                                sizes="(max-width: 640px) 50vw, 33vw"
+                                className="w-full h-full object-cover"
                               />
                             </div>
                           ))}

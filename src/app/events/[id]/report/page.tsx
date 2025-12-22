@@ -303,11 +303,9 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {formData.images.map((url, index) => (
                       <div key={index} className="relative group">
-                        <Image
+                        <img
                           src={url}
                           alt={`Image ${index + 1}`}
-                          width={200}
-                          height={200}
                           className="w-full h-32 object-cover rounded-lg"
                         />
                         <button
