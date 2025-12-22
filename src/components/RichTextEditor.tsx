@@ -1,7 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
+import { useRef, useEffect } from 'react'
 import { 
   Heading1, 
   Heading2, 
@@ -10,7 +9,9 @@ import {
   Italic, 
   List, 
   ListOrdered, 
-  Quote 
+  Quote,
+  Undo,
+  Redo
 } from 'lucide-react'
 
 interface Props {
@@ -21,142 +22,147 @@ interface Props {
 }
 
 export default function RichTextEditor({ value, onChange, placeholder, minHeight = '300px' }: Props) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const isComposingRef = useRef(false)
+  const isUpdatingRef = useRef(false)
 
-  const insertMarkdown = (before: string, after: string = '') => {
-    const textarea = textareaRef.current
-    if (!textarea) return
+  useEffect(() => {
+    if (editorRef.current && !isUpdatingRef.current && editorRef.current.innerHTML !== value) {
+      isUpdatingRef.current = true
+      editorRef.current.innerHTML = value || ''
+      isUpdatingRef.current = false
+    }
+  }, [value])
 
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = value.substring(start, end)
-    const newText = value.substring(0, start) + before + selectedText + after + value.substring(end)
-    
-    onChange(newText)
-    
-    setTimeout(() => {
-      textarea.focus()
-      const newCursorPos = start + before.length + selectedText.length + after.length
-      textarea.setSelectionRange(newCursorPos, newCursorPos)
-    }, 0)
+  const handleInput = () => {
+    if (editorRef.current && !isComposingRef.current && !isUpdatingRef.current) {
+      const html = editorRef.current.innerHTML
+      onChange(html)
+    }
   }
 
-  const insertAtLineStart = (prefix: string) => {
-    const textarea = textareaRef.current
-    if (!textarea) return
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const text = e.clipboardData.getData('text/plain')
+    document.execCommand('insertText', false, text)
+  }
 
-    const start = textarea.selectionStart
-    const lines = value.split('\n')
-    let currentPos = 0
-    let lineIndex = 0
-
-    for (let i = 0; i < lines.length; i++) {
-      if (currentPos + lines[i].length >= start) {
-        lineIndex = i
-        break
-      }
-      currentPos += lines[i].length + 1
-    }
-
-    lines[lineIndex] = prefix + lines[lineIndex]
-    onChange(lines.join('\n'))
-    
-    setTimeout(() => {
-      textarea.focus()
-    }, 0)
+  const applyFormat = (command: string, value?: string) => {
+    document.execCommand(command, false, value)
+    editorRef.current?.focus()
+    handleInput()
   }
 
   return (
     <div className="border rounded-lg overflow-hidden bg-white">
       {/* ツールバー */}
-      <div className="flex gap-1 p-2 bg-gray-50 border-b">
+      <div className="flex flex-wrap gap-1 p-2 bg-gray-50 border-b">
         <button
           type="button"
-          onClick={() => insertAtLineStart('# ')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('formatBlock', 'h1')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="見出し1"
         >
-          <Heading1 className="w-5 h-5" />
+          <Heading1 className="w-4 h-4" />
         </button>
         <button
           type="button"
-          onClick={() => insertAtLineStart('## ')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('formatBlock', 'h2')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="見出し2"
         >
-          <Heading2 className="w-5 h-5" />
+          <Heading2 className="w-4 h-4" />
         </button>
         <button
           type="button"
-          onClick={() => insertAtLineStart('### ')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('formatBlock', 'h3')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="見出し3"
         >
-          <Heading3 className="w-5 h-5" />
+          <Heading3 className="w-4 h-4" />
         </button>
         <div className="w-px bg-gray-300 mx-1" />
         <button
           type="button"
-          onClick={() => insertMarkdown('**', '**')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('bold')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="太字"
         >
-          <Bold className="w-5 h-5" />
+          <Bold className="w-4 h-4" />
         </button>
         <button
           type="button"
-          onClick={() => insertMarkdown('*', '*')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('italic')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="斜体"
         >
-          <Italic className="w-5 h-5" />
+          <Italic className="w-4 h-4" />
         </button>
         <div className="w-px bg-gray-300 mx-1" />
         <button
           type="button"
-          onClick={() => insertAtLineStart('- ')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('insertUnorderedList')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="箇条書き"
         >
-          <List className="w-5 h-5" />
+          <List className="w-4 h-4" />
         </button>
         <button
           type="button"
-          onClick={() => insertAtLineStart('1. ')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('insertOrderedList')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="番号付きリスト"
         >
-          <ListOrdered className="w-5 h-5" />
+          <ListOrdered className="w-4 h-4" />
         </button>
         <button
           type="button"
-          onClick={() => insertAtLineStart('> ')}
-          className="p-2 hover:bg-gray-200 rounded"
+          onClick={() => applyFormat('formatBlock', 'blockquote')}
+          className="p-2 hover:bg-gray-200 rounded transition"
           title="引用"
         >
-          <Quote className="w-5 h-5" />
+          <Quote className="w-4 h-4" />
+        </button>
+        <div className="w-px bg-gray-300 mx-1" />
+        <button
+          type="button"
+          onClick={() => applyFormat('undo')}
+          className="p-2 hover:bg-gray-200 rounded transition"
+          title="元に戻す"
+        >
+          <Undo className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => applyFormat('redo')}
+          className="p-2 hover:bg-gray-200 rounded transition"
+          title="やり直す"
+        >
+          <Redo className="w-4 h-4" />
         </button>
       </div>
 
-      {/* プレビュー */}
-      <div className="p-4 prose prose-sm max-w-none" style={{ minHeight: minHeight }}>
-        {value ? (
-          <ReactMarkdown>{value}</ReactMarkdown>
-        ) : (
-          <p className="text-gray-400">{placeholder || 'ここに入力...'}</p>
-        )}
-      </div>
-
-      {/* 編集用textarea（下に小さく表示） */}
-      <div className="border-t bg-gray-50 p-2">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3 py-2 border rounded text-xs font-mono bg-white"
-          rows={4}
-          placeholder="または、ここで直接編集..."
+      {/* エディタ */}
+      <div className="relative">
+        <div
+          ref={editorRef}
+          contentEditable
+          onInput={handleInput}
+          onPaste={handlePaste}
+          onCompositionStart={() => { isComposingRef.current = true }}
+          onCompositionEnd={() => { 
+            isComposingRef.current = false
+            handleInput()
+          }}
+          className="w-full px-4 py-3 focus:outline-none prose prose-sm max-w-none overflow-auto"
+          style={{ minHeight }}
+          suppressContentEditableWarning
         />
+        {!value && (
+          <div className="absolute top-3 left-4 text-gray-400 pointer-events-none select-none">
+            {placeholder || 'ここに入力してください...'}
+          </div>
+        )}
       </div>
     </div>
   )
