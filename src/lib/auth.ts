@@ -176,8 +176,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         if (dbUser) {
           session.user.id = dbUser.id
-          session.user.name = dbUser.name
-          session.user.email = dbUser.email
+          session.user.name = dbUser.name || null
+          session.user.email = dbUser.email || ''
           session.user.role = dbUser.role
         }
       }
