@@ -16,21 +16,6 @@ export default async function ProfilePage() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
-      posts: {
-        orderBy: { createdAt: 'desc' },
-        take: 5,
-      },
-      postParticipants: {
-        include: {
-          post: true,
-        },
-        orderBy: {
-          post: {
-            createdAt: 'desc',
-          },
-        },
-        take: 5,
-      },
       _count: {
         select: {
           posts: true,
@@ -87,55 +72,6 @@ export default async function ProfilePage() {
                 <p className="text-2xl font-bold text-white">{user._count.messages}</p>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* 最近の投稿 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10">
-            <h3 className="text-xl font-bold mb-4 text-white">最近の投稿</h3>
-            {user.posts.length > 0 ? (
-              <ul className="space-y-3">
-                {user.posts.map((post) => (
-                  <li key={post.id}>
-                    <Link
-                      href={`/posts`}
-                      className="block p-3 border border-white/20 rounded-lg bg-white/5 hover:bg-white/10 transition"
-                    >
-                      <h4 className="font-semibold text-white">{post.title}</h4>
-                      <p className="text-sm text-white/60">
-                        {new Date(post.createdAt).toLocaleDateString('ja-JP')}
-                      </p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-white/50">まだ投稿がありません</p>
-            )}
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10">
-            <h3 className="text-xl font-bold mb-4 text-white">参加している投稿</h3>
-            {user.postParticipants.length > 0 ? (
-              <ul className="space-y-3">
-                {user.postParticipants.map((participant) => (
-                  <li key={participant.id}>
-                    <Link
-                      href={`/posts`}
-                      className="block p-3 border border-white/20 rounded-lg bg-white/5 hover:bg-white/10 transition"
-                    >
-                      <h4 className="font-semibold text-white">{participant.post.title}</h4>
-                      <p className="text-sm text-white/60">
-                        {new Date(participant.createdAt).toLocaleDateString('ja-JP')}に参加
-                      </p>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-white/50">参加している投稿がありません</p>
-            )}
           </div>
         </div>
       </div>

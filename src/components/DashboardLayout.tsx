@@ -101,21 +101,6 @@ export default function DashboardLayout({
                   <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
                 )}
               </Link>
-              <Link
-                href="/chat"
-                prefetch={true}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all relative ${
-                  isActive('/chat') 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
-                    : 'text-white/80 hover:bg-white/10 hover:scale-105'
-                }`}
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span>チャット</span>
-                {isActive('/chat') && (
-                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
-                )}
-              </Link>
 
               {/* 管理者のみ表示 */}
               {session.user.role === 'admin' && (
@@ -219,19 +204,6 @@ export default function DashboardLayout({
               >
                 <PartyPopper className="w-5 h-5" />
                 <span className="font-medium">イベント</span>
-              </Link>
-              <Link
-                href="/chat"
-                prefetch={true}
-                onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-                  isActive('/chat') 
-                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
-                    : 'text-white/80 hover:bg-white/10'
-                }`}
-              >
-                <MessageCircle className="w-5 h-5" />
-                <span className="font-medium">チャット</span>
               </Link>
 
               {session.user.role === 'admin' && (
