@@ -40,20 +40,22 @@ USING (bucket_id = 'avatars');
 1. `avatars`バケットを選択
 2. 「Policies」タブを開く
 3. 「New policy」をクリック
-4. 「Get started quickly」セクションで以下を選択:
-   - **「Allow public access」**をクリック
-5. 表示されたテンプレートで:
-   - Policy name: `Allow all operations`
+4. テンプレート選択画面が表示されたら、一番下までスクロール
+5. **「Create a policy from scratch」**または**「For full customization」**を選択
+6. 以下を入力:
+   - **Policy name**: `Allow all operations`
+   - **Policy definition**: `true` と入力（すべてのリクエストを許可）
+   - **Target roles**: `public` を選択（認証不要）
    - **Allowed operation**で以下を**すべてチェック**:
      - ✅ SELECT (読み取り)
      - ✅ INSERT (アップロード)
      - ✅ UPDATE (更新)
      - ✅ DELETE (削除)
-6. Policy definition: `true` （すべて許可）
+   - **USING expression**: `bucket_id = 'avatars'` と入力
 7. **「Review」**→**「Save policy」**
 
-⚠️ **「Please allow at least one operation」エラーが出る場合**: 
-上記の4つの操作すべてにチェックが入っているか確認してください。
+⚠️ **テンプレートを使わないでください**: 
+表示されるテンプレート（JPG images, uid folder等）は今回の用途に合いません。必ず「Create a policy from scratch」を選択してください。
 
 ---
 
