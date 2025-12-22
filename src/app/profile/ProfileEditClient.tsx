@@ -75,8 +75,8 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
         )}
       </div>
 
-      <div className="flex items-start gap-6">
-        <div className="flex-shrink-0">
+      <div className="flex flex-col sm:flex-row items-start gap-6">
+        <div className="flex-shrink-0 mx-auto sm:mx-0">
           {isEditing ? (
             <AvatarUpload currentAvatar={avatarUrl} onUpload={handleAvatarUpload} disabled={saving} />
           ) : avatarUrl ? (
@@ -90,7 +90,7 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
           )}
         </div>
 
-        <div className="flex-1">
+        <div className="flex-1 w-full">
           {isEditing ? (
             <div className="space-y-4">
               <div>
@@ -103,11 +103,11 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                   disabled={saving}
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg disabled:opacity-50">
+                  className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg disabled:opacity-50">
                   <Save size={16} />
                   {saving ? '保存中...' : '保存'}
                 </button>
@@ -118,7 +118,7 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                     setAvatarUrl(user.avatarUrl)
                   }}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 border border-white/20 bg-white/10 text-white rounded-lg hover:bg-white/20 transition disabled:opacity-50">
+                  className="flex items-center justify-center gap-2 px-4 py-2 border border-white/20 bg-white/10 text-white rounded-lg hover:bg-white/20 transition disabled:opacity-50">
                   <X size={16} />
                   キャンセル
                 </button>

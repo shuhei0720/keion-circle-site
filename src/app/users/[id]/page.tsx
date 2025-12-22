@@ -47,8 +47,8 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     return (
       <DashboardLayout>
         <div className="max-w-4xl mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-4">ユーザーが見つかりません</h1>
-          <Link href="/" className="text-blue-600 hover:underline">
+          <h1 className="text-2xl font-bold mb-4 text-white">ユーザーが見つかりません</h1>
+          <Link href="/" className="text-blue-400 hover:text-blue-300 hover:underline">
             ホームに戻る
           </Link>
         </div>
@@ -63,26 +63,26 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/10 p-6 mb-6">
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
-              <div className="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center">
-                <User size={48} className="text-gray-400" />
+              <div className="w-32 h-32 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
+                <User size={48} className="text-blue-300" />
               </div>
             </div>
             <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2">{user.name}</h1>
-              <p className="text-gray-600 mb-4">{user.email}</p>
+              <h1 className="text-3xl font-bold mb-2 text-white">{user.name}</h1>
+              <p className="text-white/60 mb-4">{user.email}</p>
               
               {/* 統計情報 */}
               <div className="flex gap-4 mb-4">
-                <div className="bg-blue-50 px-4 py-2 rounded-lg">
-                  <p className="text-sm text-gray-600">投稿数</p>
-                  <p className="text-2xl font-bold text-blue-600">{totalPosts}</p>
+                <div className="bg-blue-500/20 border border-blue-400/30 px-4 py-2 rounded-lg">
+                  <p className="text-sm text-blue-300">投稿数</p>
+                  <p className="text-2xl font-bold text-blue-200">{totalPosts}</p>
                 </div>
-                <div className="bg-green-50 px-4 py-2 rounded-lg">
-                  <p className="text-sm text-gray-600">参加回数</p>
-                  <p className="text-2xl font-bold text-green-600">{totalParticipations}</p>
+                <div className="bg-green-500/20 border border-green-400/30 px-4 py-2 rounded-lg">
+                  <p className="text-sm text-green-300">参加回数</p>
+                  <p className="text-2xl font-bold text-green-200">{totalParticipations}</p>
                 </div>
               </div>
             </div>
@@ -90,18 +90,18 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">作成した投稿</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/10 p-6">
+            <h2 className="text-xl font-bold mb-4 text-white">作成した投稿</h2>
             {user.posts.length > 0 ? (
               <ul className="space-y-3">
                 {user.posts.map((post) => (
                   <li key={post.id}>
                     <Link
                       href={`/posts`}
-                      className="block p-3 border rounded hover:bg-gray-50 transition"
+                      className="block p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition"
                     >
-                      <h3 className="font-semibold">{post.title}</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-semibold text-white">{post.title}</h3>
+                      <p className="text-sm text-white/60">
                         {new Date(post.createdAt).toLocaleDateString('ja-JP')}
                       </p>
                     </Link>
@@ -109,22 +109,22 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500">まだ投稿がありません</p>
+              <p className="text-white/60">まだ投稿がありません</p>
             )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4">参加している投稿</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/10 p-6">
+            <h2 className="text-xl font-bold mb-4 text-white">参加している投稿</h2>
             {user.postParticipants.length > 0 ? (
               <ul className="space-y-3">
                 {user.postParticipants.map((participant) => (
                   <li key={participant.id}>
                     <Link
                       href={`/posts`}
-                      className="block p-3 border rounded hover:bg-gray-50 transition"
+                      className="block p-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition"
                     >
-                      <h3 className="font-semibold">{participant.post.title}</h3>
-                      <p className="text-sm text-gray-500">
+                      <h3 className="font-semibold text-white">{participant.post.title}</h3>
+                      <p className="text-sm text-white/60">
                         {new Date(participant.createdAt).toLocaleDateString('ja-JP')}に参加
                       </p>
                     </Link>
@@ -132,7 +132,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
                 ))}
               </ul>
             ) : (
-              <p className="text-gray-500">参加している投稿がありません</p>
+              <p className="text-white/60">参加している投稿がありません</p>
             )}
           </div>
         </div>
