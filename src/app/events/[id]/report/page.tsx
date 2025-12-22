@@ -13,7 +13,6 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
-  const [showPreview, setShowPreview] = useState(true)
   const [eventId, setEventId] = useState<string>('')
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -174,40 +173,31 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
             </div>
 
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium">内容</label>
-                <button
-                  type="button"
-                  onClick={() => setShowPreview(!showPreview)}
-                  className="text-sm text-blue-600 hover:text-blue-700"
-                >
-                  {showPreview ? '編集' : 'プレビュー'}
-                </button>
-              </div>
-
-              {showPreview ? (
-                <div 
-                  className="w-full px-4 py-2 border rounded-lg bg-gray-50 min-h-[400px] prose prose-sm max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
-                  onClick={() => setShowPreview(false)}
-                >
+              <label className="block text-sm font-medium mb-2">内容</label>
+              <MarkdownToolbar onInsert={handleMarkdownInsert} />
+              
+              {/* プレビュー表示（常に表示） */}
+              <div className="relative">
+                <div className="w-full px-4 py-2 border border-t-0 rounded-b-lg bg-white min-h-[400px] prose prose-sm max-w-none">
                   {formData.content ? (
                     <ReactMarkdown>{formData.content}</ReactMarkdown>
                   ) : (
-                    <p className="text-gray-400">クリックして内容を入力...</p>
+                    <p className="text-gray-400">ツールバーまたは下の入力エリアで内容を入力...</p>
                   )}
                 </div>
-              ) : (
-                <>
-                  <MarkdownToolbar onInsert={handleMarkdownInsert} />
+                
+                {/* 編集用テキストエリア（下に配置） */}
+                <div className="mt-2">
                   <textarea
                     ref={contentTextareaRef}
                     value={formData.content}
                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                    className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:ring-2 focus:ring-blue-500 min-h-[400px] font-mono text-sm"
-                    placeholder="イベント報告の内容をマークダウン形式で入力してください"
+                    rows={6}
+                    className="w-full px-3 py-2 border rounded-lg text-xs font-mono text-gray-600 bg-gray-50"
+                    placeholder="直接テキストを入力することもできます（上のプレビューに反映されます）"
                   />
-                </>
-              )}
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-2">
