@@ -44,28 +44,44 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
 
   const fetchEventAndTemplate = async () => {
     try {
-      // イベント情報を取得
-      const eventRes = await fetch(`/api/events/${eventId}/details`)
-      let eventTitle = ''
-      if (eventRes.ok) {
-        const eventData = await eventRes.json()
-        eventTitle = eventData.title || ''
-      }
-
-      // テンプレートを取得
-      const templateRes = await fetch('/api/templates')
-      if (templateRes.ok) {
-        const templateData = await templateRes.json()
+      // URLパラメータからテンプレートを取得
+      const templateParam = searchParams.get('template')
+      
+      if (templateParam) {
+        // URLパラメータにテンプレートがある場合はそれを使用
+        const decodedTemplate = decodeURIComponent(templateParam)
+        const lines = decodedTemplate.split('\n')
+        const title = lines[0].replace(/^#\s*/, '') // 最初の行からタイトルを抽出
+        
         setFormData({
-          title: eventTitle,
-          content: templateData.content || '',
+          title: title || '',
+          content: decodedTemplate,
           youtubeUrl: ''
         })
       } else {
-        setFormData(prev => ({
-          ...prev,
-          title: eventTitle
-        }))
+        // テンプレートがない場合は従来通りイベント情報を取得
+        const eventRes = await fetch(`/api/events/${eventId}/details`)
+        let eventTitle = ''
+        if (eventRes.ok) {
+          const eventData = await eventRes.json()
+          eventTitle = eventData.title || ''
+        }
+
+        // デフォルトテンプレートを取得
+        const templateRes = await fetch('/api/templates')
+        if (templateRes.ok) {
+          const templateData = await templateRes.json()
+          setFormData({
+            title: eventTitle,
+            content: templateData.content || '',
+            youtubeUrl: ''
+          })
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            title: eventTitle
+          }))
+        }
       }
     } catch (error) {
       console.error('データ取得エラー:', error)
