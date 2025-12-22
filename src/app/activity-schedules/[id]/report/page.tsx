@@ -7,18 +7,24 @@ import DashboardLayout from '@/components/DashboardLayout'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
-export default function CreateReportPage({ params }: { params: { id: string } }) {
+export default function CreateReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
+  const [scheduleId, setScheduleId] = useState<string>('')
 
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     youtubeUrl: ''
   })
+
+  useEffect(() => {
+    // paramsを解決
+    params.then(p => setScheduleId(p.id))
+  }, [params])
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -53,10 +59,15 @@ export default function CreateReportPage({ params }: { params: { id: string } })
       return
     }
 
+    if (!scheduleId) {
+      alert('スケジュールIDが見つかりません')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const res = await fetch(`/api/activity-schedules/${params.id}/report`, {
+      const res = await fetch(`/api/activity-schedules/${scheduleId}/report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
