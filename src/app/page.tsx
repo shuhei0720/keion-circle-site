@@ -75,170 +75,216 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700">
-      <div className="container mx-auto px-4 py-16">
-        {/* ヘッダー */}
-        <div className="text-center mb-16 animate-slide-down">
-          <div className="flex items-center justify-center mb-4 animate-bounce-slow">
-            <Music className="w-16 h-16 text-white" />
-          </div>
-          <h1 className="text-5xl font-bold text-white mb-4 animate-fade-in">
-            <span className="font-extrabold">BOLD 軽音</span> メンバーサイト
-          </h1>
-          <p className="text-xl text-white/80 animate-fade-in-delay">
-            音楽を楽しむ仲間たちのコミュニティ
-          </p>
-          {!session && (
-            <div className="mt-6">
-              <Link 
-                href="/auth/signin"
-                className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-              >
-                ログイン
-              </Link>
-              <Link 
-                href="/auth/signup"
-                className="inline-block ml-4 bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors"
-              >
-                新規登録
-              </Link>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
+        <div className="container mx-auto px-4 py-20 relative">
+          <div className="text-center mb-12 space-y-6">
+            <div className="inline-flex items-center justify-center mb-6 relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 blur-2xl opacity-50 animate-pulse"></div>
+              <Music className="w-20 h-20 text-white relative z-10" />
             </div>
-          )}
-        </div>
-
-        {/* 機能カード（投稿、スケジュール、チャット） */}
-        <div className="max-w-6xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">サービス</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Link href="/posts" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow group">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
-                  <FileText className="w-8 h-8 text-blue-600" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">投稿</h3>
-                <p className="text-gray-600">活動報告やYouTube動画を共有</p>
-              </div>
-            </Link>
-            <Link href="/schedules" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow group">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
-                  <Calendar className="w-8 h-8 text-green-600" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">スケジュール</h3>
-                <p className="text-gray-600">練習や演奏会の日程調整</p>
-              </div>
-            </Link>
-            <Link href="/chat" className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow group">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
-                  <MessageCircle className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold mb-2">チャット</h3>
-                <p className="text-gray-600">メンバー同士でリアルタイム会話</p>
-              </div>
-            </Link>
-          </div>
-        </div>
-
-        {/* 最新の投稿 */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-white mb-8 text-center">最新の活動</h2>
-          {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
-            </div>
-          ) : posts.length > 0 ? (
-            <>
-              <div className="space-y-6">
-                {posts.map((post) => {
-                  const videoId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
-                  return (
-                    <div key={post.id} className="bg-white rounded-xl shadow-lg p-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Link href={`/users/${post.userId}`} className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:opacity-80 transition">
-                          <User className="w-5 h-5 text-gray-400" />
-                        </Link>
-                        <div>
-                          <h3 className="text-xl font-semibold">{post.title}</h3>
-                          <p className="text-sm text-gray-500">
-                            {post.user.name || post.user.email}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-gray-600 mb-4 whitespace-pre-wrap">
-                        {renderContent(post.content)}
-                      </div>
-                      {videoId && (
-                        <div className="mb-4">
-                          <YouTube
-                            videoId={videoId}
-                            opts={{
-                              width: '100%',
-                              height: '390',
-                              playerVars: {
-                                autoplay: 0,
-                              },
-                            }}
-                          />
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-500">
-                        {new Date(post.createdAt).toLocaleString('ja-JP')}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-              <div className="text-center mt-6">
+            <h1 className="text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient">
+              BOLD 軽音
+            </h1>
+            <p className="text-2xl md:text-3xl text-white/90 font-light">
+              メンバーサイト
+            </p>
+            <p className="text-lg text-white/70 max-w-2xl mx-auto">
+              音楽を愛する仲間たちが集う、創造と交流の場
+            </p>
+            {!session && (
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                 <Link 
-                  href="/posts"
-                  className="inline-block bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+                  href="/auth/signin"
+                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full overflow-hidden shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-purple-500/50"
                 >
-                  すべての投稿を見る
+                  <span className="relative z-10">ログイン</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </Link>
+                <Link 
+                  href="/auth/signup"
+                  className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white border-2 border-white/30 backdrop-blur-sm rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:border-white/60"
+                >
+                  <span className="relative z-10">新規登録</span>
                 </Link>
               </div>
-            </>
-          ) : (
-            <div className="text-center text-white">
-              <p>まだ投稿がありません</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+      </div>
 
-        {/* 人気の投稿 */}
-        {!isLoading && popularPosts.length > 0 && (
-          <div className="max-w-4xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold text-white mb-8 text-center">人気の投稿</h2>
-            <div className="grid md:grid-cols-3 gap-6">
-              {popularPosts.map((post) => (
-                <Link
-                  key={post.id}
-                  href="/posts"
-                  className="bg-white rounded-xl shadow-lg p-6 hover:shadow-2xl transition-shadow"
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="w-4 h-4 text-gray-400" />
-                    </div>
-                    <span className="text-sm text-gray-600">{post.user.name}</span>
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2 line-clamp-2">{post.title}</h3>
-                  <div className="flex items-center gap-2 text-red-600">
-                    <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
-                    <span className="font-semibold">{post.likes.length}</span>
-                  </div>
-                </Link>
-              ))}
+      {/* Features Section */}
+      <div className="container mx-auto px-4 py-16">
+        <h2 className="text-4xl font-bold text-white mb-12 text-center">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+            機能
+          </span>
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+          <Link href="/posts" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/50">
+                <FileText className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">活動報告</h3>
+              <p className="text-white/70">練習の成果や演奏動画を共有</p>
             </div>
+          </Link>
+          
+          <Link href="/events" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-purple-500/50">
+                <Music className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">イベント</h3>
+              <p className="text-white/70">ライブや発表会の準備と管理</p>
+            </div>
+          </Link>
+
+          <Link href="/schedules" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-green-500/50">
+                <Calendar className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">スケジュール</h3>
+              <p className="text-white/70">練習日程を簡単に調整</p>
+            </div>
+          </Link>
+
+          <Link href="/chat" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative">
+              <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-pink-500/50">
+                <MessageCircle className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-3">チャット</h3>
+              <p className="text-white/70">リアルタイムで会話</p>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* 最新の投稿 */}
+      <div className="container mx-auto px-4 py-16">
+        <h2 className="text-4xl font-bold text-white mb-12 text-center">
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+            最新の活動
+          </span>
+        </h2>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+            </div>
+          </div>
+        ) : posts.length > 0 ? (
+          <>
+            <div className="space-y-6 max-w-4xl mx-auto">
+              {posts.map((post) => {
+                const videoId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
+                return (
+                  <div key={post.id} className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 border border-white/10 hover:border-white/20">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Link href={`/users/${post.userId}`} className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
+                        <User className="w-6 h-6 text-white" />
+                      </Link>
+                      <div>
+                        <h3 className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors">{post.title}</h3>
+                        <p className="text-sm text-white/60">
+                          {post.user.name || post.user.email} • {new Date(post.createdAt).toLocaleDateString('ja-JP')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-white/80 mb-4 whitespace-pre-wrap">
+                      {renderContent(post.content)}
+                    </div>
+                    {videoId && (
+                      <div className="mb-4 rounded-xl overflow-hidden shadow-2xl">
+                        <YouTube
+                          videoId={videoId}
+                          opts={{
+                            width: '100%',
+                            height: '390',
+                            playerVars: {
+                              autoplay: 0,
+                            },
+                          }}
+                          className="w-full"
+                        />
+                      </div>
+                    )}
+                    {post.likes.length > 0 && (
+                      <div className="flex items-center gap-2 text-pink-400">
+                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        </svg>
+                        <span className="font-semibold">{post.likes.length}</span>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <div className="text-center mt-8">
+              <Link 
+                href="/posts"
+                className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-purple-600 rounded-full hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-purple-500/50"
+              >
+                すべての活動を見る
+              </Link>
+            </div>
+          </>
+        ) : (
+          <div className="text-center text-white/70 py-12">
+            <p className="text-xl">まだ投稿がありません</p>
           </div>
         )}
+      </div>
 
-        {/* フッター */}
-        <div className="text-center mt-16 text-white/60">
-          <p>&copy; 2025 BOLD 軽音. All rights reserved.</p>
+      {/* 人気の投稿 */}
+      {!isLoading && popularPosts.length > 0 && (
+        <div className="container mx-auto px-4 py-16">
+          <h2 className="text-4xl font-bold text-white mb-12 text-center">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
+              人気の投稿
+            </span>
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {popularPosts.map((post) => (
+              <Link
+                key={post.id}
+                href="/posts"
+                className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20"
+              >
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <User className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="text-sm text-white/80 font-medium">{post.user.name}</span>
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 line-clamp-2 group-hover:text-pink-300 transition-colors">{post.title}</h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-pink-400">
+                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                      <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                    <span className="font-bold text-lg">{post.likes.length}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
+      )}
+
+      {/* フッター */}
+      <div className="text-center py-12 text-white/40 border-t border-white/10">
+        <p className="text-sm">&copy; 2025 BOLD 軽音. All rights reserved.</p>
       </div>
     </div>
   )
