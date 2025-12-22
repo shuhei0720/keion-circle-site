@@ -189,7 +189,17 @@ export default function EventsPage() {
 
       if (res.ok) {
         setNewComment({ ...newComment, [eventId]: '' })
-        fetchEvents()
+        // コメントが展開されている場合のみ再取得
+        if (expandedComments[eventId]) {
+          fetchComments(eventId)
+        } else {
+          // コメント数を更新
+          setEvents(events.map(e => 
+            e.id === eventId && e._count
+              ? { ...e, _count: { comments: e._count.comments + 1 } }
+              : e
+          ))
+        }
       }
     } catch (error) {
       console.error('コメント投稿エラー:', error)
@@ -617,51 +627,67 @@ ${event.content}
 
                   {/* コメント */}
                   <div className="border-t pt-4">
-                    <div className="flex items-center gap-2 mb-3">
+                    <button
+                      onClick={() => toggleComments(event.id)}
+                      className="flex items-center gap-2 mb-3 hover:text-blue-600 transition-colors w-full text-left"
+                    >
                       <MessageCircle className="w-5 h-5 text-gray-600" />
-                      <span className="font-medium">コメント ({event.comments.length})</span>
-                    </div>
+                      <span className="font-medium">
+                        コメント ({event._count?.comments ?? event.comments?.length ?? 0})
+                      </span>
+                      {loadingComments[event.id] && (
+                        <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                      )}
+                    </button>
 
-                    <div className="space-y-3 mb-3">
-                      {event.comments.map((comment) => (
-                        <div key={comment.id} className="flex gap-3 bg-gray-50 p-3 rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-sm">
-                                {comment.user.name || comment.user.email}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {new Date(comment.createdAt).toLocaleString('ja-JP')}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-700">{comment.content}</p>
-                          </div>
+                    {expandedComments[event.id] && (
+                      <>
+                        <div className="space-y-3 mb-3">
+                          {event.comments && event.comments.length > 0 ? (
+                            event.comments.map((comment) => (
+                              <div key={comment.id} className="flex gap-3 bg-gray-50 p-3 rounded-lg">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="font-medium text-sm">
+                                      {comment.user.name || comment.user.email}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(comment.createdAt).toLocaleString('ja-JP')}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-700">{comment.content}</p>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-sm text-gray-500">コメントはまだありません</p>
+                          )}
                         </div>
-                      ))}
-                    </div>
 
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newComment[event.id] || ''}
-                        onChange={(e) =>
-                          setNewComment({ ...newComment, [event.id]: e.target.value })
-                        }
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            handleCommentSubmit(event.id)
-                          }
-                        }}
-                        placeholder="コメントを入力..."
-                        className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      />
-                      <button
-                        onClick={() => handleCommentSubmit(event.id)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                      >
-                        送信
-                      </button>
-                    </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={newComment[event.id] || ''}
+                            onChange={(e) =>
+                              setNewComment({ ...newComment, [event.id]: e.target.value })
+                            }
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                handleCommentSubmit(event.id)
+                              }
+                            }}
+                            placeholder="コメントを入力..."
+                            className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                          />
+                          <button
+                            onClick={() => handleCommentSubmit(event.id)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                          >
+                            送信
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )
