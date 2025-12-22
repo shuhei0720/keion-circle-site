@@ -68,10 +68,15 @@ export async function GET() {
     })
 
     return NextResponse.json(events)
-  } catch (error) {
+  } catch (error: any) {
     console.error('イベント取得エラー:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
     return NextResponse.json(
-      { error: 'イベントの取得に失敗しました' },
+      { 
+        error: 'イベントの取得に失敗しました',
+        details: error?.message || String(error)
+      },
       { status: 500 }
     )
   }

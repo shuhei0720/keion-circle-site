@@ -68,10 +68,15 @@ export async function GET() {
     })
 
     return NextResponse.json(schedules)
-  } catch (error) {
-    console.error('活動スケジュール取得エラー:', error)
+  } catch (error: any) {
+    console.error('スケジュール取得エラー:', error)
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
     return NextResponse.json(
-      { error: '活動スケジュールの取得に失敗しました' },
+      { 
+        error: 'スケジュールの取得に失敗しました',
+        details: error?.message || String(error)
+      },
       { status: 500 }
     )
   }
