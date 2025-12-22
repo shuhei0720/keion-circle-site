@@ -59,42 +59,62 @@ export default function DashboardLayout({
               <Link
                 href="/posts"
                 prefetch={true}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/posts') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all relative ${
+                  isActive('/posts') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
+                    : 'text-white/80 hover:bg-white/10 hover:scale-105'
                 }`}
               >
                 <FileText className="w-5 h-5" />
                 <span>活動一覧</span>
+                {isActive('/posts') && (
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
+                )}
               </Link>
               <Link
                 href="/activity-schedules"
                 prefetch={true}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/activity-schedules') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all relative ${
+                  isActive('/activity-schedules') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
+                    : 'text-white/80 hover:bg-white/10 hover:scale-105'
                 }`}
               >
                 <CalendarDays className="w-5 h-5" />
                 <span>活動スケジュール</span>
+                {isActive('/activity-schedules') && (
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
+                )}
               </Link>
               <Link
                 href="/events"
                 prefetch={true}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/events') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all relative ${
+                  isActive('/events') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
+                    : 'text-white/80 hover:bg-white/10 hover:scale-105'
                 }`}
               >
                 <PartyPopper className="w-5 h-5" />
                 <span>イベント</span>
+                {isActive('/events') && (
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
+                )}
               </Link>
               <Link
                 href="/chat"
                 prefetch={true}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/chat') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all relative ${
+                  isActive('/chat') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
+                    : 'text-white/80 hover:bg-white/10 hover:scale-105'
                 }`}
               >
                 <MessageCircle className="w-5 h-5" />
                 <span>チャット</span>
+                {isActive('/chat') && (
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
+                )}
               </Link>
 
               {/* 管理者のみ表示 */}
@@ -102,12 +122,17 @@ export default function DashboardLayout({
                 <>
                   <Link
                     href="/users"
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                      isActive('/users') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all relative ${
+                      isActive('/users') 
+                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
+                        : 'text-white/80 hover:bg-white/10 hover:scale-105'
                     }`}
                   >
                     <Users className="w-5 h-5" />
                     <span>管理</span>
+                    {isActive('/users') && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
+                    )}
                   </Link>
                 </>
               )}
@@ -115,14 +140,19 @@ export default function DashboardLayout({
               <div className="flex items-center gap-2 ml-4 pl-4 border-l border-white/20">
                 <Link
                   href="/profile"
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    isActive('/profile') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all relative ${
+                    isActive('/profile') 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
+                      : 'text-white/80 hover:bg-white/10 hover:scale-105'
                   }`}
                 >
                   <User className="w-4 h-4" />
                   <span className="text-sm max-w-[120px] truncate">
                     {session.user.name || session.user.email}
                   </span>
+                  {isActive('/profile') && (
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1/2 h-1 bg-white rounded-full"></div>
+                  )}
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: '/' })}
@@ -155,8 +185,10 @@ export default function DashboardLayout({
                 href="/posts"
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/posts') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  isActive('/posts') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                    : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <FileText className="w-5 h-5" />
@@ -166,8 +198,10 @@ export default function DashboardLayout({
                 href="/activity-schedules"
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/activity-schedules') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  isActive('/activity-schedules') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                    : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <CalendarDays className="w-5 h-5" />
@@ -177,8 +211,10 @@ export default function DashboardLayout({
                 href="/events"
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/events') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  isActive('/events') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                    : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <PartyPopper className="w-5 h-5" />
@@ -188,8 +224,10 @@ export default function DashboardLayout({
                 href="/chat"
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/chat') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                  isActive('/chat') 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                    : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <MessageCircle className="w-5 h-5" />
@@ -200,8 +238,10 @@ export default function DashboardLayout({
                 <Link
                   href="/users"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive('/users') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    isActive('/users') 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                      : 'text-white/80 hover:bg-white/10'
                   }`}
                 >
                   <Users className="w-5 h-5" />
@@ -213,8 +253,10 @@ export default function DashboardLayout({
                 <Link
                   href="/profile"
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive('/profile') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+                    isActive('/profile') 
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg' 
+                      : 'text-white/80 hover:bg-white/10'
                   }`}
                 >
                   <User className="w-5 h-5" />
