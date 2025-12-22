@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2 } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
 
 interface User {
   id: string
