@@ -58,6 +58,7 @@ export default function DashboardLayout({
             <div className="hidden md:flex items-center gap-1">
               <Link
                 href="/posts"
+                prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   isActive('/posts') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
                 }`}
@@ -67,6 +68,7 @@ export default function DashboardLayout({
               </Link>
               <Link
                 href="/activity-schedules"
+                prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   isActive('/activity-schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
                 }`}
@@ -76,6 +78,7 @@ export default function DashboardLayout({
               </Link>
               <Link
                 href="/events"
+                prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   isActive('/events') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
                 }`}
@@ -85,6 +88,7 @@ export default function DashboardLayout({
               </Link>
               <Link
                 href="/chat"
+                prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   isActive('/chat') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
                 }`}
@@ -147,6 +151,7 @@ export default function DashboardLayout({
             <div className="md:hidden border-t py-4 space-y-2">
               <Link
                 href="/posts"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive('/posts') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
@@ -157,6 +162,7 @@ export default function DashboardLayout({
               </Link>
               <Link
                 href="/activity-schedules"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive('/activity-schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
@@ -167,6 +173,7 @@ export default function DashboardLayout({
               </Link>
               <Link
                 href="/events"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive('/events') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
@@ -177,6 +184,7 @@ export default function DashboardLayout({
               </Link>
               <Link
                 href="/chat"
+                prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   isActive('/chat') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
