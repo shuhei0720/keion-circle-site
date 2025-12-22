@@ -297,7 +297,7 @@ export default function PostsPage() {
   }
 
   const extractYouTubeId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
+    const match = url.match(/(?:youtube\.com\/(?:watch\?v=|live\/|shorts\/|embed\/)|youtu\.be\/)([^&\n?#]+)/)
     return match ? match[1] : null
   }
 
@@ -325,9 +325,6 @@ export default function PostsPage() {
                 {currentPosts.map((post) => {
                   const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
                   const participatingUsers = getParticipatingUsers(post)
-                  
-                  // デバッグログ
-                  console.log('Post:', post.id, 'youtubeUrl:', post.youtubeUrl, 'youtubeId:', youtubeId)
 
                   return (
                     <div key={post.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10">
@@ -365,14 +362,6 @@ export default function PostsPage() {
 
                       {post.content && (
                         <div className="text-sm sm:text-base text-white/80 mb-4 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
-                      )}
-                      
-                      {/* デバッグ情報 */}
-                      {post.youtubeUrl && (
-                        <div className="mb-4 p-4 bg-yellow-500/20 border border-yellow-500 rounded-lg text-sm">
-                          <p className="text-white">YouTube URL: {post.youtubeUrl}</p>
-                          <p className="text-white">YouTube ID: {youtubeId || 'null'}</p>
-                        </div>
                       )}
 
                       {youtubeId && (
