@@ -209,7 +209,15 @@ export default function ChatPage() {
                       )}
                     </div>
                   )}
-                  <div className="text-xs mt-1 opacity-75">{new Date(message.createdAt).toLocaleTimeString('ja-JP')}</div>
+                  <div className="text-xs mt-1 opacity-75">
+                    {new Date(message.createdAt).toLocaleDateString('ja-JP', { 
+                      month: 'short', 
+                      day: 'numeric' 
+                    })} {new Date(message.createdAt).toLocaleTimeString('ja-JP', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
+                  </div>
                 </div>
                 {isOwnMessage && (
                   <Link href={`/users/${(session.user as any).id}`} className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 mt-1 hover:bg-gray-300 transition">
