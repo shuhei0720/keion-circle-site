@@ -69,7 +69,7 @@ export async function PUT(
       data: {
         title,
         content,
-        youtubeUrl,
+        youtubeUrl: youtubeUrl && youtubeUrl.trim() !== '' ? youtubeUrl.trim() : null,
         images: images || []
       },
       include: {
