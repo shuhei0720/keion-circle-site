@@ -325,6 +325,9 @@ export default function PostsPage() {
                 {currentPosts.map((post) => {
                   const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
                   const participatingUsers = getParticipatingUsers(post)
+                  
+                  // デバッグログ
+                  console.log('Post:', post.id, 'youtubeUrl:', post.youtubeUrl, 'youtubeId:', youtubeId)
 
                   return (
                     <div key={post.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10">
