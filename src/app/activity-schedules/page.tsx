@@ -5,7 +5,8 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
-import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2 } from 'lucide-react'
+import TemplateEditor from '@/components/TemplateEditor'
+import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, FilePenLine } from 'lucide-react'
 
 interface User {
   id: string
@@ -52,6 +53,7 @@ export default function ActivitySchedulesPage() {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // フォーム状態
@@ -316,19 +318,30 @@ ${schedule.content}
       <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">活動スケジュール</h1>
-          {session?.user?.role === 'admin' && !showCreateForm && (
-            <button
-              onClick={() => {
-                setShowCreateForm(true)
-                setEditingId(null)
-                setFormData({ title: '', content: '', date: '' })
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              <Plus className="w-5 h-5" />
-              <span className="hidden sm:inline">新規作成</span>
-            </button>
-          )}
+          <div className="flex gap-2">
+            {session?.user?.role === 'admin' && !showCreateForm && (
+              <button
+                onClick={() => {
+                  setShowCreateForm(true)
+                  setEditingId(null)
+                  setFormData({ title: '', content: '', date: '' })
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <Plus className="w-5 h-5" />
+                <span className="hidden sm:inline">新規作成</span>
+              </button>
+            )}
+            {session?.user?.role === 'admin' && (
+              <button
+                onClick={() => setShowTemplateEditor(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                <FilePenLine className="w-5 h-5" />
+                <span className="hidden sm:inline">テンプレート編集</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 作成・編集フォーム */}
@@ -525,6 +538,13 @@ ${schedule.content}
           )}
         </div>
       </div>
+
+      {/* テンプレート編集モーダル */}
+      <TemplateEditor
+        isOpen={showTemplateEditor}
+        onClose={() => setShowTemplateEditor(false)}
+        onSave={() => {}}
+      />
     </DashboardLayout>
   )
 }

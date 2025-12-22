@@ -36,20 +36,24 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
       }
       
       // テンプレートを取得
-      const template = searchParams.get('template')
-      if (template) {
-        const decoded = decodeURIComponent(template)
-        const titleMatch = decoded.match(/^# (.+)/)
-        const title = titleMatch ? titleMatch[1] : ''
-        
-        setFormData({
-          title,
-          content: decoded,
-          youtubeUrl: ''
-        })
-      }
+      fetchTemplate()
     }
-  }, [status, session, router, searchParams])
+  }, [status, session, router])
+
+  const fetchTemplate = async () => {
+    try {
+      const res = await fetch('/api/templates')
+      if (res.ok) {
+        const data = await res.json()
+        setFormData(prev => ({
+          ...prev,
+          content: data.content || ''
+        }))
+      }
+    } catch (error) {
+      console.error('テンプレート取得エラー:', error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

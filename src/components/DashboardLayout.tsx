@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useSession, signOut } from 'next-auth/react'
-import { Home, FileText, Calendar, MessageCircle, LogOut, User, Users, Menu, X, CalendarDays, PartyPopper, FilePenLine } from 'lucide-react'
+import { Home, FileText, Calendar, MessageCircle, LogOut, User, Users, Menu, X, CalendarDays, PartyPopper } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
@@ -100,15 +100,6 @@ export default function DashboardLayout({
               {/* 管理者のみ表示 */}
               {session.user.role === 'admin' && (
                 <>
-                  <Link
-                    href="/templates"
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                      isActive('/templates') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
-                    }`}
-                  >
-                    <FilePenLine className="w-5 h-5" />
-                    <span>テンプレート</span>
-                  </Link>
                   <Link
                     href="/users"
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
