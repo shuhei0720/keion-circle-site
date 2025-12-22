@@ -27,12 +27,12 @@ export default function DashboardLayout({
 
   if (!session) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">ログインが必要です</h2>
+          <h2 className="text-2xl font-bold mb-4 text-white">ログインが必要です</h2>
           <Link
             href="/auth/signin"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg inline-block"
           >
             ログイン画面へ
           </Link>
@@ -42,13 +42,13 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* ナビゲーションバー */}
-      <nav className="bg-white shadow-md sticky top-0 z-50">
+      <nav className="bg-white/10 backdrop-blur-md border-b border-white/10 sticky top-0 z-50">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             {/* ロゴ */}
-            <Link href="/" className="flex items-center gap-2 text-lg sm:text-xl font-bold text-blue-600">
+            <Link href="/" className="flex items-center gap-2 text-lg sm:text-xl font-bold text-white">
               <Home className="w-5 h-5 sm:w-6 sm:h-6" />
               <span className="hidden xs:inline">BOLD 軽音</span>
               <span className="xs:hidden">BOLD</span>
@@ -60,7 +60,7 @@ export default function DashboardLayout({
                 href="/posts"
                 prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/posts') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/posts') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <FileText className="w-5 h-5" />
@@ -70,7 +70,7 @@ export default function DashboardLayout({
                 href="/activity-schedules"
                 prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/activity-schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/activity-schedules') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <CalendarDays className="w-5 h-5" />
@@ -80,7 +80,7 @@ export default function DashboardLayout({
                 href="/events"
                 prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/events') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/events') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <PartyPopper className="w-5 h-5" />
@@ -90,7 +90,7 @@ export default function DashboardLayout({
                 href="/chat"
                 prefetch={true}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                  isActive('/chat') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/chat') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <MessageCircle className="w-5 h-5" />
@@ -103,7 +103,7 @@ export default function DashboardLayout({
                   <Link
                     href="/users"
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                      isActive('/users') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                      isActive('/users') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                     }`}
                   >
                     <Users className="w-5 h-5" />
@@ -112,11 +112,11 @@ export default function DashboardLayout({
                 </>
               )}
 
-              <div className="flex items-center gap-2 ml-4 pl-4 border-l">
+              <div className="flex items-center gap-2 ml-4 pl-4 border-l border-white/20">
                 <Link
                   href="/profile"
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    isActive('/profile') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                    isActive('/profile') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                   }`}
                 >
                   <User className="w-4 h-4" />
@@ -126,7 +126,7 @@ export default function DashboardLayout({
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:scale-105 transition-all shadow-lg"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>ログアウト</span>
@@ -137,7 +137,7 @@ export default function DashboardLayout({
             {/* モバイルメニューボタン */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors text-white"
               aria-label="メニュー"
             >
               {mobileMenuOpen ? (
@@ -150,13 +150,13 @@ export default function DashboardLayout({
 
           {/* モバイルメニュー */}
           {mobileMenuOpen && (
-            <div className="md:hidden border-t py-4 space-y-2">
+            <div className="md:hidden border-t border-white/10 py-4 space-y-2">
               <Link
                 href="/posts"
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/posts') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/posts') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <FileText className="w-5 h-5" />
@@ -167,7 +167,7 @@ export default function DashboardLayout({
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/activity-schedules') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/activity-schedules') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <CalendarDays className="w-5 h-5" />
@@ -178,7 +178,7 @@ export default function DashboardLayout({
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/events') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/events') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <PartyPopper className="w-5 h-5" />
@@ -189,7 +189,7 @@ export default function DashboardLayout({
                 prefetch={true}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive('/chat') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                  isActive('/chat') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                 }`}
               >
                 <MessageCircle className="w-5 h-5" />
@@ -201,7 +201,7 @@ export default function DashboardLayout({
                   href="/users"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive('/users') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                    isActive('/users') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                   }`}
                 >
                   <Users className="w-5 h-5" />
@@ -209,12 +209,12 @@ export default function DashboardLayout({
                 </Link>
               )}
 
-              <div className="border-t my-2 pt-2">
+              <div className="border-t border-white/10 my-2 pt-2">
                 <Link
                   href="/profile"
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                    isActive('/profile') ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'
+                    isActive('/profile') ? 'bg-blue-500/30 text-blue-300' : 'text-white/80 hover:bg-white/10'
                   }`}
                 >
                   <User className="w-5 h-5" />
@@ -227,7 +227,7 @@ export default function DashboardLayout({
                     setMobileMenuOpen(false)
                     signOut({ callbackUrl: '/' })
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors mt-2"
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:scale-105 transition-all shadow-lg mt-2"
                 >
                   <LogOut className="w-5 h-5" />
                   <span className="font-medium">ログアウト</span>

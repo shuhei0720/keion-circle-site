@@ -454,57 +454,57 @@ ${event.content}
 
         {/* 作成・編集フォーム */}
         {showCreateForm && session?.user?.role === 'admin' && (
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 mb-6 border border-white/10">
+            <h2 className="text-xl font-bold mb-4 text-white">
               {editingId ? 'イベント編集' : '新規イベント'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">タイトル</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">タイトル</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   placeholder="例: 学園祭ライブ"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">日時</label>
+                  <label className="block text-sm font-medium mb-2 text-white/80">日時</label>
                   <input
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">開催場所名（任意）</label>
+                  <label className="block text-sm font-medium mb-2 text-white/80">開催場所名（任意）</label>
                   <input
                     type="text"
                     value={formData.locationName}
                     onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
-                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                     placeholder="例: 第一体育館"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">開催場所URL（任意）</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">開催場所URL（任意）</label>
                 <input
                   type="url"
                   value={formData.locationUrl}
                   onChange={(e) => setFormData({ ...formData, locationUrl: e.target.value })}
-                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   placeholder="例: https://maps.app.goo.gl/..."
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">内容</label>
+                <label className="block text-sm font-medium mb-2 text-white/80">内容</label>
                 <RichTextEditor 
                   value={formData.content}
                   onChange={(value) => setFormData({ ...formData, content: value })}
@@ -514,30 +514,30 @@ ${event.content}
               </div>
 
               {/* 課題曲セクション */}
-              <div className="border-t pt-4">
+              <div className="border-t border-white/10 pt-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-medium">課題曲（任意）</h3>
+                  <h3 className="text-lg font-medium text-white">課題曲（任意）</h3>
                   <button
                     type="button"
                     onClick={addSong}
-                    className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    className="text-sm px-3 py-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded hover:scale-105 transition-all shadow-lg"
                   >
                     + 課題曲追加
                   </button>
                 </div>
                 
                 {formData.songs.length === 0 ? (
-                  <p className="text-sm text-gray-500">課題曲を追加してください</p>
+                  <p className="text-sm text-white/60">課題曲を追加してください</p>
                 ) : (
                   <div className="space-y-4">
                     {formData.songs.map((song, songIndex) => (
-                      <div key={songIndex} className="border rounded-lg p-4 bg-gray-50">
+                      <div key={songIndex} className="border border-white/10 rounded-xl p-4 bg-white/5">
                         <div className="flex justify-between items-center mb-3">
-                          <h4 className="font-medium">課題曲 {songIndex + 1}</h4>
+                          <h4 className="font-medium text-white">課題曲 {songIndex + 1}</h4>
                           <button
                             type="button"
                             onClick={() => removeSong(songIndex)}
-                            className="text-sm text-red-600 hover:text-red-700"
+                            className="text-sm text-red-400 hover:text-red-300"
                           >
                             削除
                           </button>
@@ -545,52 +545,52 @@ ${event.content}
                         
                         <div className="space-y-3">
                           <div>
-                            <label className="block text-sm font-medium mb-1">曲名</label>
+                            <label className="block text-sm font-medium mb-1 text-white/80">曲名</label>
                             <input
                               type="text"
                               value={song.title}
                               onChange={(e) => updateSong(songIndex, 'title', e.target.value)}
-                              className="w-full px-3 py-2 border rounded-lg text-sm"
+                              className="w-full px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white placeholder-white/40"
                               placeholder="例: 青と夏"
                             />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-sm font-medium mb-1">楽譜URL</label>
+                              <label className="block text-sm font-medium mb-1 text-white/80">楽譜URL</label>
                               <input
                                 type="url"
                                 value={song.sheetUrl}
                                 onChange={(e) => updateSong(songIndex, 'sheetUrl', e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg text-sm"
+                                className="w-full px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white placeholder-white/40"
                                 placeholder="https://..."
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium mb-1">YouTube URL</label>
+                              <label className="block text-sm font-medium mb-1 text-white/80">YouTube URL</label>
                               <input
                                 type="url"
                                 value={song.youtubeUrl}
                                 onChange={(e) => updateSong(songIndex, 'youtubeUrl', e.target.value)}
-                                className="w-full px-3 py-2 border rounded-lg text-sm"
+                                className="w-full px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white placeholder-white/40"
                                 placeholder="https://youtube.com/..."
                               />
                             </div>
                           </div>
                           
                           {/* パート担当 */}
-                          <div className="border-t pt-3 mt-3">
+                          <div className="border-t border-white/10 pt-3 mt-3">
                             <div className="flex justify-between items-center mb-2">
-                              <label className="text-sm font-medium">パート担当</label>
+                              <label className="text-sm font-medium text-white/80">パート担当</label>
                               <button
                                 type="button"
                                 onClick={() => addPart(songIndex)}
-                                className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                                className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-all"
                               >
                                 + パート追加
                               </button>
                             </div>
                             {song.parts.length === 0 ? (
-                              <p className="text-xs text-gray-500">パートを追加してください</p>
+                              <p className="text-xs text-white/60">パートを追加してください</p>
                             ) : (
                               <div className="space-y-2">
                                 {song.parts.map((part, partIndex) => (
@@ -598,7 +598,7 @@ ${event.content}
                                     <select
                                       value={part.instrument}
                                       onChange={(e) => updatePart(songIndex, partIndex, 'instrument', e.target.value)}
-                                      className="px-3 py-2 border rounded-lg text-sm"
+                                      className="px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white"
                                     >
                                       <option value="vocal">ボーカル</option>
                                       <option value="guitar">ギター</option>
@@ -611,13 +611,13 @@ ${event.content}
                                       type="text"
                                       value={part.player}
                                       onChange={(e) => updatePart(songIndex, partIndex, 'player', e.target.value)}
-                                      className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                                      className="flex-1 px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white placeholder-white/40"
                                       placeholder="担当者名"
                                     />
                                     <button
                                       type="button"
                                       onClick={() => removePart(songIndex, partIndex)}
-                                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+                                      className="px-3 py-2 text-red-400 hover:bg-red-500/20 rounded-lg text-sm transition-all"
                                     >
                                       削除
                                     </button>
@@ -636,7 +636,7 @@ ${event.content}
               <div className="flex gap-2 pt-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:scale-105 transition-all shadow-lg"
                 >
                   {editingId ? '更新' : '作成'}
                 </button>
@@ -654,7 +654,7 @@ ${event.content}
                       songs: []
                     })
                   }}
-                  className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+                  className="px-6 py-2 border border-white/20 rounded-lg hover:bg-white/10 text-white transition-all"
                 >
                   キャンセル
                 </button>
