@@ -280,21 +280,21 @@ export default function SchedulesPage() {
                           <div className="grid grid-cols-3 gap-1.5 sm:gap-2 mb-2">
                             <button
                               onClick={() => handleResponse(dateItem.id, 'available')}
-                              className="px-2 sm:px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-xs sm:text-sm font-medium touch-manipulation"
+                              className="px-2 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg text-xs sm:text-sm font-medium"
                             >
                               <span className="hidden xs:inline">○ 参加可能</span>
                               <span className="xs:hidden">○</span>
                             </button>
                             <button
                               onClick={() => handleResponse(dateItem.id, 'maybe')}
-                              className="px-2 sm:px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs sm:text-sm font-medium touch-manipulation"
+                              className="px-2 sm:px-4 py-2 bg-gradient-to-r from-yellow-600 to-orange-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg text-xs sm:text-sm font-medium"
                             >
                               <span className="hidden xs:inline">△ 未定</span>
                               <span className="xs:hidden">△</span>
                             </button>
                             <button
                               onClick={() => handleResponse(dateItem.id, 'unavailable')}
-                              className="px-2 sm:px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-xs sm:text-sm font-medium touch-manipulation"
+                              className="px-2 sm:px-4 py-2 bg-gradient-to-r from-red-600 to-pink-600 text-white rounded-lg hover:scale-105 transition-all shadow-lg text-xs sm:text-sm font-medium"
                             >
                               <span className="hidden xs:inline">× 参加不可</span>
                               <span className="xs:hidden">×</span>
@@ -311,6 +311,25 @@ export default function SchedulesPage() {
                             className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                           />
                         </div>
+
+                        {/* 参加予定者 */}
+                        {votes.available > 0 && (
+                          <div className="mb-3 p-3 bg-green-500/10 border border-green-400/30 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users size={16} className="text-green-400" />
+                              <span className="font-medium text-green-300 text-sm">参加予定者 ({votes.available}人)</span>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {dateItem.responses
+                                .filter(r => r.status === 'available')
+                                .map((response) => (
+                                  <span key={response.id} className="px-3 py-1 bg-green-500/20 text-green-200 rounded-full text-xs border border-green-400/30">
+                                    {response.user.name || response.user.email}
+                                  </span>
+                                ))}
+                            </div>
+                          </div>
+                        )}
 
                         {/* 回答一覧 */}
                         {dateItem.responses.length > 0 && (

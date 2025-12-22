@@ -36,16 +36,27 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'avatars')
-    await mkdir(uploadsDir, { recursive: true })
-
+    // Vercel環境では /tmp を使用、開発環境では public/uploads を使用
+    const isProduction = process.env.VERCEL === '1'
+    
     const ext = path.extname(file.name)
     const filename = `${session.user.id.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}${ext}`
-    const filepath = path.join(uploadsDir, filename)
+    
+    let avatarUrl: string
 
-    await writeFile(filepath, buffer)
-
-    const avatarUrl = `/uploads/avatars/${filename}`
+    if (isProduction) {
+      // 本番環境: Base64エンコードしてDBに保存（一時的な対応）
+      const base64 = buffer.toString('base64')
+      const mimeType = file.type
+      avatarUrl = `data:${mimeType};base64,${base64}`
+    } else {
+      // 開発環境: ファイルシステムに保存
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'avatars')
+      await mkdir(uploadsDir, { recursive: true })
+      const filepath = path.join(uploadsDir, filename)
+      await writeFile(filepath, buffer)
+      avatarUrl = `/uploads/avatars/${filename}`
+    }
 
     // データベース更新
     const updatedUser = await prisma.user.update({
