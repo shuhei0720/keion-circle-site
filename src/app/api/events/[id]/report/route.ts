@@ -20,6 +20,8 @@ export async function POST(
     const { title, content, youtubeUrl, images } = await request.json()
     const { id } = await params
 
+    console.log('Request data:', { title, content, youtubeUrl, images: images?.length || 0 })
+
     // イベントを取得
     const event = await prisma.event.findUnique({
       where: { id },
@@ -42,6 +44,15 @@ export async function POST(
     // トランザクションで投稿作成
     const result = await prisma.$transaction(async (tx) => {
       // 投稿を作成
+      console.log('Creating post with data:', {
+        title,
+        content: content?.substring(0, 50),
+        youtubeUrl,
+        images: images || [],
+        userId: session.user.id,
+        eventId: id
+      })
+      
       const post = await tx.post.create({
         data: {
           title,
@@ -70,12 +81,21 @@ export async function POST(
     return NextResponse.json(result, { status: 201 })
   } catch (error: any) {
     console.error('イベント報告作成エラー:', error)
+    console.error('Error name:', error?.name)
     console.error('Error message:', error?.message)
+    console.error('Error code:', error?.code)
     console.error('Error stack:', error?.stack)
+    
+    // Prismaエラーの詳細を返す
+    const errorMessage = error?.message || String(error)
+    const errorCode = error?.code || 'UNKNOWN'
+    
     return NextResponse.json(
       { 
         error: 'イベント報告の作成に失敗しました',
-        details: error?.message || String(error)
+        details: errorMessage,
+        code: errorCode,
+        hint: errorCode === 'P2010' ? 'データベースのimagesカラムが存在しません。DB_MIGRATION_POST_IMAGES.sqlを実行してください。' : undefined
       },
       { status: 500 }
     )
