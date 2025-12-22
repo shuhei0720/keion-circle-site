@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
 export async function PUT(
@@ -8,7 +7,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     if (!session || session.user.role !== 'admin') {
       return NextResponse.json({ error: '権限がありません' }, { status: 403 })
@@ -41,7 +40,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     if (!session || session.user.role !== 'admin') {
       return NextResponse.json({ error: '権限がありません' }, { status: 403 })
