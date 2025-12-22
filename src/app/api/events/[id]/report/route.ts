@@ -47,7 +47,7 @@ export async function POST(
       console.log('Creating post with data:', {
         title,
         content: content?.substring(0, 50),
-        youtubeUrl,
+        youtubeUrls: youtubeUrls?.length || 0,
         images: images || [],
         userId: session.user.id,
         eventId: id
