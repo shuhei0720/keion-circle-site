@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
-import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send } from 'lucide-react'
+import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
@@ -129,6 +129,26 @@ export default function PostsPage() {
     setContent('')
     setYoutubeUrl('')
   }
+
+  const handleDelete = async (postId: string) => {
+    if (!confirm('この投稿を削除しますか？')) return
+
+    try {
+      const res = await fetch(`/api/posts/${postId}`, {
+        method: 'DELETE'
+      })
+
+      if (res.ok) {
+        fetchPosts()
+      } else {
+        alert('削除に失敗しました')
+      }
+    } catch (error) {
+      console.error('削除エラー:', error)
+      alert('削除に失敗しました')
+    }
+  }
+
   const handleMarkdownInsert = (before: string, after?: string) => {
     const textarea = contentTextareaRef.current
     if (!textarea) return
@@ -323,18 +343,27 @@ export default function PostsPage() {
                           </div>
                         </div>
                         {isAdmin && (
-                          <button
-                            onClick={() => handleEdit(post)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
-                            aria-label="編集"
-                          >
-                            <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </button>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEdit(post)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+                              aria-label="編集"
+                            >
+                              <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(post.id)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                              aria-label="削除"
+                            >
+                              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                          </div>
                         )}
                       </div>
 
                       {post.content && (
-                        <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+                        <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                       )}
 
                       {youtubeId && (
