@@ -637,7 +637,6 @@ export default function PostsPage() {
           <>
             <div className="space-y-4 sm:space-y-6 mb-8">
               {currentPosts.map((post) => {
-                const youtubeId = post.youtubeUrl ? extractYouTubeId(post.youtubeUrl) : null
                 const participatingUsers = getParticipatingUsers(post)
 
                 return (
