@@ -39,7 +39,10 @@ interface Event {
   parts: string | null
   user: User
   participants: Participant[]
-  comments: Comment[]
+  comments?: Comment[]
+  _count?: {
+    comments: number
+  }
   createdAt: string
   updatedAt: string
 }
@@ -52,6 +55,8 @@ export default function EventsPage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
+  const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
+  const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
 
   // フォーム状態
   const [formData, setFormData] = useState({
@@ -84,6 +89,35 @@ export default function EventsPage() {
       console.error('イベント取得エラー:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchComments = async (eventId: string) => {
+    if (loadingComments[eventId]) return
+    
+    setLoadingComments({ ...loadingComments, [eventId]: true })
+    try {
+      const res = await fetch(`/api/events/${eventId}/details`)
+      if (res.ok) {
+        const data = await res.json()
+        setEvents(events.map(e => 
+          e.id === eventId ? { ...e, comments: data.comments } : e
+        ))
+      }
+    } catch (error) {
+      console.error('コメント取得エラー:', error)
+    } finally {
+      setLoadingComments({ ...loadingComments, [eventId]: false })
+    }
+  }
+
+  const toggleComments = (eventId: string) => {
+    const isExpanded = expandedComments[eventId]
+    setExpandedComments({ ...expandedComments, [eventId]: !isExpanded })
+    
+    const event = events.find(e => e.id === eventId)
+    if (!isExpanded && (!event?.comments || event.comments.length === 0)) {
+      fetchComments(eventId)
     }
   }
 

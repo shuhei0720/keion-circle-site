@@ -12,7 +12,13 @@ export async function GET() {
 
     const schedules = await prisma.activitySchedule.findMany({
       where: {},
-      include: {
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        date: true,
+        createdAt: true,
+        updatedAt: true,
         user: {
           select: {
             id: true,
@@ -21,7 +27,10 @@ export async function GET() {
           }
         },
         participants: {
-          include: {
+          select: {
+            id: true,
+            userId: true,
+            createdAt: true,
             user: {
               select: {
                 id: true,
@@ -31,24 +40,16 @@ export async function GET() {
             }
           }
         },
-        comments: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true
-              }
-            }
-          },
-          orderBy: {
-            createdAt: 'asc'
+        _count: {
+          select: {
+            comments: true
           }
         }
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: 50
     })
 
     return NextResponse.json(schedules)

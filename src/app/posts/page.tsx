@@ -40,6 +40,9 @@ interface Post {
     createdAt: string
   }[]
   comments?: Comment[]
+  _count?: {
+    comments: number
+  }
 }
 
 const POSTS_PER_PAGE = 5
@@ -56,6 +59,8 @@ export default function PostsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newComment, setNewComment] = useState<{ [postId: string]: string }>({})
   const [submittingComment, setSubmittingComment] = useState<string | null>(null)
+  const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({})
+  const [loadingComments, setLoadingComments] = useState<{ [postId: string]: boolean }>({})
 
   const isAdmin = session?.user?.role === 'admin'
 

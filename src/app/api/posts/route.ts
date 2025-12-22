@@ -9,7 +9,13 @@ export const runtime = 'nodejs'
 export async function GET() {
   try {
     const posts = await prisma.post.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        youtubeUrl: true,
+        createdAt: true,
+        userId: true,
         user: {
           select: {
             id: true,
@@ -18,7 +24,9 @@ export async function GET() {
           }
         },
         participants: {
-          include: {
+          select: {
+            id: true,
+            status: true,
             user: {
               select: {
                 id: true,
@@ -33,11 +41,17 @@ export async function GET() {
             userId: true,
             createdAt: true
           }
+        },
+        _count: {
+          select: {
+            comments: true
+          }
         }
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: 50
     })
     return NextResponse.json(posts)
   } catch (error) {

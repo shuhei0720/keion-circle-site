@@ -33,7 +33,10 @@ interface ActivitySchedule {
   date: string
   user: User
   participants: Participant[]
-  comments: Comment[]
+  comments?: Comment[]
+  _count?: {
+    comments: number
+  }
   createdAt: string
   updatedAt: string
 }
@@ -46,6 +49,8 @@ export default function ActivitySchedulesPage() {
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
+  const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
+  const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
 
   // フォーム状態
   const [formData, setFormData] = useState({
@@ -73,6 +78,36 @@ export default function ActivitySchedulesPage() {
       console.error('スケジュール取得エラー:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchComments = async (scheduleId: string) => {
+    if (loadingComments[scheduleId]) return
+    
+    setLoadingComments({ ...loadingComments, [scheduleId]: true })
+    try {
+      const res = await fetch(`/api/activity-schedules/${scheduleId}/details`)
+      if (res.ok) {
+        const data = await res.json()
+        setSchedules(schedules.map(s => 
+          s.id === scheduleId ? { ...s, comments: data.comments } : s
+        ))
+      }
+    } catch (error) {
+      console.error('コメント取得エラー:', error)
+    } finally {
+      setLoadingComments({ ...loadingComments, [scheduleId]: false })
+    }
+  }
+
+  const toggleComments = (scheduleId: string) => {
+    const isExpanded = expandedComments[scheduleId]
+    setExpandedComments({ ...expandedComments, [scheduleId]: !isExpanded })
+    
+    // コメントがまだ読み込まれていない場合のみ取得
+    const schedule = schedules.find(s => s.id === scheduleId)
+    if (!isExpanded && (!schedule?.comments || schedule.comments.length === 0)) {
+      fetchComments(scheduleId)
     }
   }
 
@@ -138,7 +173,17 @@ export default function ActivitySchedulesPage() {
 
       if (res.ok) {
         setNewComment({ ...newComment, [scheduleId]: '' })
-        fetchSchedules()
+        // コメントが展開されている場合のみ再取得
+        if (expandedComments[scheduleId]) {
+          fetchComments(scheduleId)
+        } else {
+          // コメント数を更新
+          setSchedules(schedules.map(s => 
+            s.id === scheduleId && s._count
+              ? { ...s, _count: { comments: s._count.comments + 1 } }
+              : s
+          ))
+        }
       }
     } catch (error) {
       console.error('コメント投稿エラー:', error)
@@ -352,47 +397,63 @@ ${schedule.content}
 
                 {/* コメント */}
                 <div className="border-t pt-4">
-                  <div className="flex items-center gap-2 mb-3">
+                  <button
+                    onClick={() => toggleComments(schedule.id)}
+                    className="flex items-center gap-2 mb-3 hover:text-blue-600 transition-colors w-full text-left"
+                  >
                     <MessageCircle className="w-5 h-5 text-gray-600" />
-                    <span className="font-medium">コメント ({schedule.comments.length})</span>
-                  </div>
+                    <span className="font-medium">
+                      コメント ({schedule._count?.comments ?? schedule.comments?.length ?? 0})
+                    </span>
+                    {loadingComments[schedule.id] && (
+                      <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                    )}
+                  </button>
                   
-                  <div className="space-y-3 mb-3">
-                    {schedule.comments.map((comment) => (
-                      <div key={comment.id} className="flex gap-3 bg-gray-50 p-3 rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-medium text-sm">{comment.user.name || comment.user.email}</span>
-                            <span className="text-xs text-gray-500">
-                              {new Date(comment.createdAt).toLocaleString('ja-JP')}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-700">{comment.content}</p>
-                        </div>
+                  {expandedComments[schedule.id] && (
+                    <>
+                      <div className="space-y-3 mb-3">
+                        {schedule.comments && schedule.comments.length > 0 ? (
+                          schedule.comments.map((comment) => (
+                            <div key={comment.id} className="flex gap-3 bg-gray-50 p-3 rounded-lg">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="font-medium text-sm">{comment.user.name || comment.user.email}</span>
+                                  <span className="text-xs text-gray-500">
+                                    {new Date(comment.createdAt).toLocaleString('ja-JP')}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-700">{comment.content}</p>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500">コメントはまだありません</p>
+                        )}
                       </div>
-                    ))}
-                  </div>
 
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newComment[schedule.id] || ''}
-                      onChange={(e) => setNewComment({ ...newComment, [schedule.id]: e.target.value })}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleCommentSubmit(schedule.id)
-                        }
-                      }}
-                      placeholder="コメントを入力..."
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    />
-                    <button
-                      onClick={() => handleCommentSubmit(schedule.id)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                      送信
-                    </button>
-                  </div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newComment[schedule.id] || ''}
+                          onChange={(e) => setNewComment({ ...newComment, [schedule.id]: e.target.value })}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              handleCommentSubmit(schedule.id)
+                            }
+                          }}
+                          placeholder="コメントを入力..."
+                          className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                          onClick={() => handleCommentSubmit(schedule.id)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                        >
+                          送信
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             ))
