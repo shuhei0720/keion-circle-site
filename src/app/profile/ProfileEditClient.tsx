@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { User, Mail, Calendar, Edit2, Save, X } from 'lucide-react'
 import AvatarUpload from '@/components/AvatarUpload'
 
@@ -82,7 +81,7 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
             <AvatarUpload currentAvatar={avatarUrl} onUpload={handleAvatarUpload} disabled={saving} />
           ) : avatarUrl ? (
             <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200">
-              <Image src={avatarUrl} alt="Avatar" width={96} height={96} className="object-cover" />
+              <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
             </div>
           ) : (
             <div className="w-24 h-24 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">

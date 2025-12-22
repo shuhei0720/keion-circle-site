@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Upload, X } from 'lucide-react'
-import Image from 'next/image'
 
 interface AvatarUploadProps {
   currentAvatar?: string | null
@@ -50,11 +49,10 @@ export default function AvatarUpload({ currentAvatar, onUpload, disabled }: Avat
       <div className="relative">
         {preview ? (
           <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gray-200">
-            <Image
+            <img
               src={preview}
               alt="Avatar"
-              fill
-              className="object-cover"
+              className="w-full h-full object-cover"
             />
           </div>
         ) : (
