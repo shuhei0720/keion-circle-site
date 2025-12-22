@@ -2,44 +2,54 @@
 
 ## プロジェクト概要
 
-Next.js 16 + TypeScript で構築されたBOLD 軽音のメンバー専用 Web サイトです。
+Next.js 16 + TypeScript で構築された BOLD 軽音のメンバー専用 Web サイトです。
 
 ## 実装済み機能
 
 1. **認証システム**
    - NextAuth.js v5 による認証
-   - Google OAuth ログイン（Google のメールアドレスと名前を自動登録）
+   - Google OAuth ログイン（Google のメールアドレス、名前、アバター画像を自動登録）
    - メールアドレス + パスワードログイン（bcryptjs でハッシュ化）
 
 2. **役割ベースアクセス制御**
    - 管理者（admin）: 投稿・スケジュールの作成/編集/削除
    - 一般メンバー（member）: 閲覧・参加・コメント
 
-3. **投稿機能**
-   - YouTube 動画の埋め込み表示
+3. **投稿機能（活動報告）**
+   - YouTube 動画の複数埋め込み表示（/watch, /live/, /shorts/, /embed/, youtu.be）
+   - 画像アップロード（Supabase Storage）
    - 管理者のみ作成・編集・削除
    - 公開アクセス可能（ログイン不要で閲覧）
+   - 参加状況管理、いいね、コメント機能
 
 4. **スケジュール調整**
    - 複数候補日の設定
    - メンバーの投票（参加可能/未定/参加不可）
    - コメント機能
    - 最有力候補の自動表示
+   - 楽観的UI によるリアルタイム更新
 
-5. **リアルタイムチャット**
-   - Socket.io によるリアルタイムメッセージング
+5. **イベント管理**
+   - イベントからの活動報告作成（テンプレート機能）
+   - 参加者管理
 
-6. **レスポンシブ UI**
+6. **ユーザー管理**
+   - プロフィール編集（アバター画像、自己紹介、担当楽器）
+   - 管理者によるユーザー管理（役割変更）
+
+7. **レスポンシブ UI**
    - Tailwind CSS v4
    - Lucide React アイコン
+   - モバイルファーストデザイン
 
 ## 技術スタック
 
 - **フレームワーク**: Next.js 16 (App Router)
-- **言語**: TypeScript
+- **言語**: TypeScript 5
 - **スタイリング**: Tailwind CSS v4
 - **認証**: NextAuth.js v5
-- **データベース**: Prisma + PostgreSQL (本番) / SQLite (開発)
+- **データベース**: Prisma + PostgreSQL (本番: Supabase) / SQLite (開発)
+- **ストレージ**: Supabase Storage (画像)
 - **デプロイ**: Vercel
 
 ## ローカル開発環境のセットアップ
@@ -52,7 +62,13 @@ npm install
 
 ### 2. 環境変数の設定
 
-`.env.local` ファイルを作成し、以下を設定：
+`.env.local` ファイルを作成（`.env.example` をコピー）：
+
+```bash
+cp .env.example .env.local
+```
+
+以下を設定：
 
 ```env
 AUTH_URL=http://localhost:3000
@@ -61,6 +77,8 @@ AUTH_TRUST_HOST=true
 DATABASE_URL="file:./dev.db"
 GOOGLE_CLIENT_ID=<Google Cloud Console で取得>
 GOOGLE_CLIENT_SECRET=<Google Cloud Console で取得>
+NEXT_PUBLIC_SUPABASE_URL=<Supabase Project URL>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 ```
 
 ### 3. データベースの初期化
@@ -69,6 +87,13 @@ GOOGLE_CLIENT_SECRET=<Google Cloud Console で取得>
 export DATABASE_URL="file:./dev.db"
 npx prisma generate
 npx prisma db push
+```
+
+### 4. 管理者ユーザーの作成
+
+```bash
+export DATABASE_URL="file:./dev.db"
+node scripts/create-admin.js admin@example.com admin123 "管理者名"
 ```
 
 ### 5. 開発サーバーの起動
@@ -94,9 +119,77 @@ NEXTAUTH_SECRET=<AUTH_SECRETと同じ値>
 DATABASE_URL=postgresql://user:password@host:port/database
 GOOGLE_CLIENT_ID=<Google Cloud Console で取得>
 GOOGLE_CLIENT_SECRET=<Google Cloud Console で取得>
+NEXT_PUBLIC_SUPABASE_URL=<Supabase Project URL>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 ```
 
 ### Google Cloud Console の設定
+
+1. OAuth 2.0 クライアント ID を作成
+2. 承認済みのリダイレクト URI に追加：
+   - `http://localhost:3000/api/auth/callback/google`（開発）
+   - `https://your-domain.vercel.app/api/auth/callback/google`（本番）
+3. OAuth 同意画面を設定
+
+### Supabase の設定
+
+1. Project Settings → API で URL と Anon Key を取得
+2. Storage → Create bucket で `avatars` バケットを作成（Public）
+
+## 主要な変更点（最新アップデート）
+
+1. **Google OAuth**: Google アカウントでログイン可能、メールアドレス、名前、アバター画像を自動登録
+2. **複数 YouTube URL**: 1つの投稿に複数の YouTube 動画を添付可能
+3. **アバター画像表示**: ユーザープロフィール画像を活動一覧に表示
+4. **テンプレート機能**: 活動スケジュールからも投稿作成時にテンプレートを利用可能
+5. **楽観的UI**: 投票、いいねなどが即座に画面に反映
+
+## データベーススキーマ管理
+
+### 開発環境
+
+```bash
+# スキーマを変更したら
+npx prisma generate
+npx prisma db push
+```
+
+### 本番環境
+
+Vercel のビルドコマンド `npm run build` で自動的に `prisma db push` が実行されます。
+
+## 有用なコマンド
+
+```bash
+# 開発サーバー起動
+npm run dev
+
+# 本番ビルド
+npm run build
+
+# Prisma Studio でデータベース確認
+npm run db:studio
+
+# Prisma Client 再生成
+npm run db:generate
+
+# データベーススキーマ適用
+npm run db:push
+```
+
+## プロジェクト構成
+
+```
+keion-circle-site/
+├── src/
+│   ├── app/          # Next.js App Router
+│   ├── components/   # 共通コンポーネント
+│   └── lib/          # ユーティリティ
+├── prisma/           # データベーススキーマ
+├── scripts/          # ユーティリティスクリプト
+├── archive/          # 古いスクリプト・移行ファイル
+└── public/           # 静的ファイル
+```
 
 1. OAuth 2.0 クライアント ID を作成
 2. 承認済みのリダイレクト URI に追加：

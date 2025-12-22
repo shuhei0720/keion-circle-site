@@ -1,14 +1,19 @@
 {
   "name": "keion-circle-site",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
+  "description": "BOLD 軽音 メンバー専用サイト",
+  "author": "BOLD 軽音",
   "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && prisma db push --skip-generate --accept-data-loss && next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@auth/core": "^0.41.0",
