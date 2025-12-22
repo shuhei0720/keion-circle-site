@@ -11,6 +11,13 @@ const nextConfig: NextConfig = {
   // 画像最適化
   images: {
     formats: ['image/avif', 'image/webp'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
   },
   
   // 実験的機能
