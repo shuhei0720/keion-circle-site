@@ -7,7 +7,6 @@ import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, Me
 import Link from 'next/link'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
-import ReactMarkdown from 'react-markdown'
 
 interface User {
   id: string
@@ -335,9 +334,7 @@ export default function PostsPage() {
                       </div>
 
                       {post.content && (
-                        <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none">
-                          <ReactMarkdown>{post.content}</ReactMarkdown>
-                        </div>
+                        <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
                       )}
 
                       {youtubeId && (
@@ -606,9 +603,7 @@ export default function PostsPage() {
                     </div>
 
                     {post.content && (
-                      <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none">
-                        <ReactMarkdown>{post.content}</ReactMarkdown>
-                      </div>
+                      <div className="text-sm sm:text-base text-gray-700 mb-4 prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
                     )}
 
                     {youtubeId && (

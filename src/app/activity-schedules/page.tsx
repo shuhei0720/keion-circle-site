@@ -418,9 +418,7 @@ ${schedule.content}
                 </div>
 
                 {/* 内容 */}
-                <div className="prose prose-sm max-w-none mb-4">
-                  <ReactMarkdown>{schedule.content}</ReactMarkdown>
-                </div>
+                <div className="prose prose-sm max-w-none mb-4" dangerouslySetInnerHTML={{ __html: schedule.content }} />
 
                 {/* 参加者 */}
                 <div className="mb-4">

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube } from 'lucide-react'
-import ReactMarkdown from 'react-markdown'
 import YouTube from 'react-youtube'
 
 interface User {
@@ -611,9 +610,7 @@ ${event.content}
                   </div>
 
                   {/* 内容 */}
-                  <div className="prose prose-sm max-w-none mb-4">
-                    <ReactMarkdown>{event.content}</ReactMarkdown>
-                  </div>
+                  <div className="prose prose-sm max-w-none mb-4" dangerouslySetInnerHTML={{ __html: event.content }} />
 
                   {/* 楽譜リンク */}
                   {event.songSheetUrl && (
