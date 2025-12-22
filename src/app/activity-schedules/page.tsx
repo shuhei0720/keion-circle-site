@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
 import TemplateEditor from '@/components/TemplateEditor'
-import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, FilePenLine } from 'lucide-react'
+import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, FilePenLine, Trash2 } from 'lucide-react'
 
 interface User {
   id: string
@@ -232,6 +232,21 @@ export default function ActivitySchedulesPage() {
     setShowCreateForm(true)
   }
 
+  const handleDelete = async (scheduleId: string) => {
+    if (!confirm('この活動スケジュールを削除しますか？')) return
+    try {
+      const res = await fetch(`/api/activity-schedules/${scheduleId}`, { method: 'DELETE' })
+      if (res.ok) {
+        fetchSchedules()
+      } else {
+        alert('削除に失敗しました')
+      }
+    } catch (error) {
+      console.error('削除エラー:', error)
+      alert('削除に失敗しました')
+    }
+  }
+
   const handleMarkdownInsert = (before: string, after?: string) => {
     const textarea = contentTextareaRef.current
     if (!textarea) return
@@ -420,12 +435,20 @@ ${schedule.content}
                     </div>
                   </div>
                   {session?.user?.role === 'admin' && (
-                    <button
-                      onClick={() => handleEdit(schedule)}
-                      className="p-2 hover:bg-gray-100 rounded-lg"
-                    >
-                      <Edit2 className="w-5 h-5 text-gray-600" />
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(schedule)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                      >
+                        <Edit2 className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(schedule.id)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   )}
                 </div>
 

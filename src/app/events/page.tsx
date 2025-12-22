@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
 import TemplateEditor from '@/components/TemplateEditor'
-import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube, FilePenLine } from 'lucide-react'
+import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube, FilePenLine, Trash2 } from 'lucide-react'
 import YouTube from 'react-youtube'
 
 interface User {
@@ -258,6 +258,21 @@ export default function EventsPage() {
     })
     setEditingId(event.id)
     setShowCreateForm(true)
+  }
+
+  const handleDelete = async (eventId: string) => {
+    if (!confirm('このイベントを削除しますか？')) return
+    try {
+      const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' })
+      if (res.ok) {
+        fetchEvents()
+      } else {
+        alert('削除に失敗しました')
+      }
+    } catch (error) {
+      console.error('削除エラー:', error)
+      alert('削除に失敗しました')
+    }
   }
 
   const handleMarkdownInsert = (before: string, after?: string) => {
@@ -613,12 +628,20 @@ ${event.content}
                       </div>
                     </div>
                     {session?.user?.role === 'admin' && (
-                      <button
-                        onClick={() => handleEdit(event)}
-                        className="p-2 hover:bg-gray-100 rounded-lg"
-                      >
-                        <Edit2 className="w-5 h-5 text-gray-600" />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleEdit(event)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(event.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     )}
                   </div>
 
