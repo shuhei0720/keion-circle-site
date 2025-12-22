@@ -64,12 +64,13 @@ export async function POST(
         }
       })
 
-      // 参加者を投稿の参加者として登録
+      // 参加者を投稿の参加者として登録（重複を除去）
       if (event.participants.length > 0) {
+        const uniqueUserIds = [...new Set(event.participants.map(p => p.userId))]
         await tx.postParticipant.createMany({
-          data: event.participants.map(p => ({
+          data: uniqueUserIds.map(userId => ({
             postId: post.id,
-            userId: p.userId,
+            userId: userId,
             status: 'participating'
           }))
         })
