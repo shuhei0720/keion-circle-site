@@ -361,12 +361,6 @@ export default function EventsPage() {
       
       let songSection = `\n♪ 課題曲 ${index + 1}\n\n  曲名: ${song.title}`
       
-      if (song.sheetUrl) {
-        songSection += `\n  楽譜: ${song.sheetUrl}`
-      }
-      if (song.youtubeUrl) {
-        songSection += `\n  YouTube: ${song.youtubeUrl}`
-      }
       if (parts) {
         songSection += `\n  パート担当:${parts}`
       }
@@ -386,25 +380,19 @@ ${event.locationName || event.locationUrl ? `
   ${event.participants.map(p => p.user.name || p.user.email).join(' / ')}
 ${songsText}
 
-━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━
 📝 活動内容
 
 ${event.content}
 
 
-━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━
 ✨ 成果・ハイライト
 
 （ここにイベントの成果や印象に残ったことを記入してください）
 
 
-━━━━━━━━━━━━━━━━━━━━
-📷 写真・動画
-
-（写真や動画のURLを追加してください）
-
-
-━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━
 💭 次回に向けて
 
 （次回に向けての課題や改善点を記入してください）
