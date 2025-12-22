@@ -60,7 +60,7 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
         setFormData({
           title: title || '',
           content: decodedTemplate,
-          youtubeUrl: '',
+          youtubeUrls: [],
           images: []
         })
       } else {
@@ -79,7 +79,7 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
           setFormData({
             title: eventTitle,
             content: templateData.content || '',
-            youtubeUrl: '',
+            youtubeUrls: [],
             images: []
           })
         } else {
