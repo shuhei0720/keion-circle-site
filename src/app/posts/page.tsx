@@ -330,8 +330,20 @@ export default function PostsPage() {
                     <div key={post.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 border border-white/10">
                       <div className="flex items-start justify-between mb-4 gap-2">
                         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-                          <Link href={`/users/${post.userId}`} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 hover:opacity-80 transition">
-                            <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                          <Link href={`/users/${post.userId}`} className="flex-shrink-0 hover:opacity-80 transition">
+                            {post.user.avatarUrl ? (
+                              <Image
+                                src={post.user.avatarUrl}
+                                alt={post.user.name || 'User'}
+                                width={40}
+                                height={40}
+                                className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover shadow-lg"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center shadow-lg">
+                                <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                              </div>
+                            )}
                           </Link>
                           <div className="min-w-0 flex-1">
                             <h2 className="text-lg sm:text-2xl font-bold truncate text-white">{post.title}</h2>
