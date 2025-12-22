@@ -24,6 +24,26 @@ interface Props {
 const turndownService = new TurndownService({
   headingStyle: 'atx',
   codeBlockStyle: 'fenced',
+  bulletListMarker: '-',
+})
+
+// 見出しと箇条書きのルールを追加
+turndownService.addRule('heading', {
+  filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
+  replacement: function(content, node) {
+    const level = Number(node.nodeName.charAt(1))
+    return '\n' + '#'.repeat(level) + ' ' + content + '\n'
+  }
+})
+
+turndownService.addRule('listItem', {
+  filter: 'li',
+  replacement: function(content, node, options) {
+    const parent = node.parentNode
+    const isOrdered = parent?.nodeName === 'OL'
+    const prefix = isOrdered ? '1. ' : '- '
+    return prefix + content + '\n'
+  }
 })
 
 export default function RichTextEditor({ value, onChange, placeholder, minHeight = '300px' }: Props) {
@@ -36,8 +56,10 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
     // 初期化時のみHTMLを設定
     if (!editorRef.current || initializedRef.current) return
     
-    const html = marked(value || '') as string
-    editorRef.current.innerHTML = html
+    if (value) {
+      const html = marked(value) as string
+      editorRef.current.innerHTML = html
+    }
     initializedRef.current = true
   }, [])
 
