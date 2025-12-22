@@ -218,16 +218,23 @@ export default function ActivitySchedulesPage() {
 
     // 即座にUIを更新
     if (expandedComments[scheduleId]) {
-      setComments(prev => ({
-        ...prev,
-        [scheduleId]: [...(prev[scheduleId] || []), tempComment]
+      setSchedules(prev => prev.map(s => {
+        if (s.id === scheduleId) {
+          return {
+            ...s,
+            comments: [...(s.comments || []), tempComment],
+            _count: s._count ? { comments: s._count.comments + 1 } : { comments: 1 }
+          }
+        }
+        return s
       }))
+    } else {
+      setSchedules(prev => prev.map(s => 
+        s.id === scheduleId && s._count
+          ? { ...s, _count: { comments: s._count.comments + 1 } }
+          : s
+      ))
     }
-    setSchedules(schedules.map(s => 
-      s.id === scheduleId && s._count
-        ? { ...s, _count: { comments: s._count.comments + 1 } }
-        : s
-    ))
     setNewComment({ ...newComment, [scheduleId]: '' })
 
     try {

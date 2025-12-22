@@ -229,16 +229,23 @@ export default function EventsPage() {
 
     // 即座にUIを更新
     if (expandedComments[eventId]) {
-      setComments(prev => ({
-        ...prev,
-        [eventId]: [...(prev[eventId] || []), tempComment]
+      setEvents(prev => prev.map(e => {
+        if (e.id === eventId) {
+          return {
+            ...e,
+            comments: [...(e.comments || []), tempComment],
+            _count: e._count ? { comments: e._count.comments + 1 } : { comments: 1 }
+          }
+        }
+        return e
       }))
+    } else {
+      setEvents(prev => prev.map(e => 
+        e.id === eventId && e._count
+          ? { ...e, _count: { comments: e._count.comments + 1 } }
+          : e
+      ))
     }
-    setEvents(events.map(e => 
-      e.id === eventId && e._count
-        ? { ...e, _count: { comments: e._count.comments + 1 } }
-        : e
-    ))
     setNewComment({ ...newComment, [eventId]: '' })
 
     try {
