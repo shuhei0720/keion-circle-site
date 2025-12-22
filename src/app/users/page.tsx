@@ -180,8 +180,8 @@ export default function UsersPage() {
                             disabled={user.id === session.user.id}
                             className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
                               user.role === 'admin'
-                                ? 'bg-purple-100 text-purple-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
+                                : 'bg-white/10 text-white/80 border border-white/20'
                             } ${user.id !== session.user.id ? 'hover:opacity-75 cursor-pointer' : 'opacity-50'}`}
                           >
                             {user.role === 'admin' ? (

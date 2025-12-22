@@ -29,7 +29,6 @@ export default async function ProfilePage() {
         select: {
           posts: true,
           postParticipants: true,
-          messages: true,
         },
       },
     },
@@ -48,7 +47,7 @@ export default async function ProfilePage() {
         <ProfileEditClient user={user} />
 
         {/* 統計情報 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/10">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-blue-500/20 rounded-lg border border-blue-400/30">
@@ -68,17 +67,6 @@ export default async function ProfilePage() {
               <div>
                 <p className="text-white/60 text-sm">参加回数</p>
                 <p className="text-2xl font-bold text-white">{user._count.postParticipants}</p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-purple-500/20 rounded-lg border border-purple-400/30">
-                <MessageSquare className="text-purple-300" size={24} />
-              </div>
-              <div>
-                <p className="text-white/60 text-sm">メッセージ数</p>
-                <p className="text-2xl font-bold text-white">{user._count.messages}</p>
               </div>
             </div>
           </div>

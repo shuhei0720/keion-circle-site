@@ -50,8 +50,7 @@ export default function DashboardLayout({
             {/* ロゴ */}
             <Link href="/" className="flex items-center gap-2 text-lg sm:text-xl font-bold text-white">
               <Home className="w-5 h-5 sm:w-6 sm:h-6" />
-              <span className="hidden xs:inline">BOLD 軽音</span>
-              <span className="xs:hidden">BOLD</span>
+              <span>BOLD軽音</span>
             </Link>
 
             {/* デスクトップメニュー */}

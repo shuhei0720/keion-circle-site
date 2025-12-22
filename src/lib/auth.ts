@@ -95,6 +95,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signOut: '/',
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // ログイン後は常に活動一覧(/posts)に遷移
+      if (url === baseUrl || url === `${baseUrl}/`) {
+        return `${baseUrl}/posts`
+      }
+      // サインイン後も活動一覧に
+      if (url.startsWith(baseUrl)) {
+        return url
+      }
+      return `${baseUrl}/posts`
+    },
+  callbacks: {
     async signIn({ user, account, profile }) {
       console.log('[NextAuth SignIn] Provider:', account?.provider)
       console.log('[NextAuth SignIn] User email:', user.email)
@@ -157,8 +169,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       console.log('[NextAuth Session] Session before:', JSON.stringify(session, null, 2))
       
       if (token.sub) {
-        session.user.id = token.sub
-        session.user.role = (token.role as string) || 'member'
+        // データベースから最新のユーザー情報を取得
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { id: true, name: true, email: true, role: true }
+        })
+        
+        if (dbUser) {
+          session.user.id = dbUser.id
+          session.user.name = dbUser.name
+          session.user.email = dbUser.email
+          session.user.role = dbUser.role
+        }
       }
       
       console.log('[NextAuth Session] Session after:', JSON.stringify(session, null, 2))

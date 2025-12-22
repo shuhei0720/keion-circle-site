@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import DashboardLayout from '@/components/DashboardLayout';
-import { User } from 'lucide-react';
+import { User, Music } from 'lucide-react';
 import Link from 'next/link';
 
 interface UserProfilePageProps {
@@ -59,6 +59,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   const isOwnProfile = currentUser?.id === user.id;
   const totalParticipations = user.postParticipants.length;
   const totalPosts = user.posts.length;
+  const instruments = user.instruments ? JSON.parse(user.instruments) : [];
 
   return (
     <DashboardLayout>
@@ -66,13 +67,44 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/10 p-6 mb-6">
           <div className="flex items-start gap-6">
             <div className="flex-shrink-0">
-              <div className="w-32 h-32 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
-                <User size={48} className="text-blue-300" />
-              </div>
+              {user.avatarUrl ? (
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200">
+                  <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-32 h-32 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
+                  <User size={48} className="text-blue-300" />
+                </div>
+              )}
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2 text-white">{user.name}</h1>
               <p className="text-white/60 mb-4">{user.email}</p>
+              
+              {user.bio && (
+                <div className="mb-4 p-3 bg-white/5 rounded-lg border border-white/10">
+                  <p className="text-white/80 whitespace-pre-wrap">{user.bio}</p>
+                </div>
+              )}
+
+              {instruments.length > 0 && (
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Music size={16} className="text-white/60" />
+                    <span className="text-sm text-white/60">演奏できる楽器</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {instruments.map((instrument: string) => (
+                      <span
+                        key={instrument}
+                        className="px-3 py-1 bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 rounded-full text-sm border border-blue-400/30"
+                      >
+                        {instrument}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               {/* 統計情報 */}
               <div className="flex gap-4 mb-4">
