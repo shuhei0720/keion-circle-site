@@ -400,7 +400,7 @@ ${event.content}
   }
 
   const getYoutubeVideoId = (url: string) => {
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/)
+    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
     return match ? match[1] : null
   }
 
@@ -782,6 +782,7 @@ ${event.content}
                                       height: '100%',
                                       playerVars: { autoplay: 0 }
                                     }}
+                                    className="w-full h-full"
                                   />
                                 </div>
                               </div>
