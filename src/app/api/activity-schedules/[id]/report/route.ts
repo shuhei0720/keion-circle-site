@@ -17,7 +17,7 @@ export async function POST(
       return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
     }
 
-    const { title, content, youtubeUrl } = await request.json()
+    const { title, content, youtubeUrls, images } = await request.json()
     const { id } = await params
 
     // 活動スケジュールを取得
@@ -46,7 +46,10 @@ export async function POST(
         data: {
           title,
           content,
-          youtubeUrl,
+          youtubeUrls: (youtubeUrls || [])
+            .map((url: string) => url.trim())
+            .filter((url: string) => url !== ''),
+          images: images || [],
           userId: session.user.id,
           activityScheduleId: id
         }
