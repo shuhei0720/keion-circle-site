@@ -21,11 +21,8 @@ export async function PUT(
       title,
       content,
       date,
-      location,
-      songTitle,
-      songSheetUrl,
-      songYoutubeUrl,
-      parts
+      locationUrl,
+      songs
     } = await request.json()
     const { id } = await params
 
@@ -35,11 +32,8 @@ export async function PUT(
         title,
         content,
         date: date ? new Date(date) : null,
-        location: location || null,
-        songTitle: songTitle || null,
-        songSheetUrl: songSheetUrl || null,
-        songYoutubeUrl: songYoutubeUrl || null,
-        parts: parts && parts.length > 0 ? JSON.stringify(parts) : null
+        locationUrl: locationUrl || null,
+        songs: songs && songs.length > 0 ? JSON.stringify(songs) : null
       },
       include: {
         user: {

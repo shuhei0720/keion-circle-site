@@ -1,0 +1,8 @@
+-- AlterTable
+ALTER TABLE "Event" DROP COLUMN IF EXISTS "location";
+ALTER TABLE "Event" DROP COLUMN IF EXISTS "songTitle";
+ALTER TABLE "Event" DROP COLUMN IF EXISTS "songSheetUrl";
+ALTER TABLE "Event" DROP COLUMN IF EXISTS "songYoutubeUrl";
+ALTER TABLE "Event" DROP COLUMN IF EXISTS "parts";
+ALTER TABLE "Event" ADD COLUMN "locationUrl" TEXT;
+ALTER TABLE "Event" ADD COLUMN "songs" TEXT;

@@ -34,11 +34,8 @@ interface Event {
   title: string
   content: string
   date: string
-  location: string | null
-  songTitle: string | null
-  songSheetUrl: string | null
-  songYoutubeUrl: string | null
-  parts: string | null
+  locationUrl: string | null
+  songs: string | null
   user: User
   participants: Participant[]
   comments?: Comment[]
@@ -67,11 +64,13 @@ export default function EventsPage() {
     title: '',
     content: '',
     date: '',
-    location: '',
-    songTitle: '',
-    songSheetUrl: '',
-    songYoutubeUrl: '',
-    parts: [] as { instrument: string; player: string }[]
+    locationUrl: '',
+    songs: [] as {
+      title: string
+      sheetUrl: string
+      youtubeUrl: string
+      parts: { instrument: string; player: string }[]
+    }[]
   })
 
   useEffect(() => {
@@ -148,11 +147,8 @@ export default function EventsPage() {
           title: '',
           content: '',
           date: '',
-          location: '',
-          songTitle: '',
-          songSheetUrl: '',
-          songYoutubeUrl: '',
-          parts: []
+          locationUrl: '',
+          songs: []
         })
         setShowCreateForm(false)
         setEditingId(null)
@@ -250,11 +246,8 @@ export default function EventsPage() {
       title: event.title,
       content: event.content,
       date: new Date(event.date).toISOString().split('T')[0],
-      location: event.location || '',
-      songTitle: event.songTitle || '',
-      songSheetUrl: event.songSheetUrl || '',
-      songYoutubeUrl: event.songYoutubeUrl || '',
-      parts: event.parts ? JSON.parse(event.parts) : []
+      locationUrl: event.locationUrl || '',
+      songs: event.songs ? JSON.parse(event.songs) : []
     })
     setEditingId(event.id)
     setShowCreateForm(true)
@@ -313,21 +306,24 @@ export default function EventsPage() {
   }
 
   const handleCreateReport = (event: Event) => {
-    const partsText = event.parts
-      ? JSON.parse(event.parts)
-          .map((p: any) => `- ${p.instrument}: ${p.player}`)
-          .join('\n')
-      : ''
+    const songs = event.songs ? JSON.parse(event.songs) : []
+    const songsText = songs.map((song: any, index: number) => {
+      const partsText = song.parts && song.parts.length > 0
+        ? song.parts.map((p: any) => `- ${p.instrument}: ${p.player}`).join('\n')
+        : ''
+      return `## 課題曲${index + 1}: ${song.title}
+
+${song.sheetUrl ? `**楽譜**: ${song.sheetUrl}\n` : ''}${song.youtubeUrl ? `**YouTube**: ${song.youtubeUrl}\n` : ''}${partsText ? `\n**パート担当**:\n${partsText}` : ''}`
+    }).join('\n\n')
 
     const template = `# ${event.title}
 
 **日時**: ${new Date(event.date).toLocaleDateString('ja-JP')}
-${event.location ? `**場所**: ${event.location}` : ''}
-${event.songTitle ? `**課題曲**: ${event.songTitle}` : ''}
+${event.locationUrl ? `**場所**: ${event.locationUrl}` : ''}
 
 **参加者**: ${event.participants.map(p => p.user.name || p.user.email).join('、')}
 
-${partsText ? `## パート担当\n\n${partsText}` : ''}
+${songsText}
 
 ## イベント内容
 
@@ -349,24 +345,44 @@ ${event.content}
     router.push(`/events/${event.id}/report?template=${encodeURIComponent(template)}`)
   }
 
-  const addPart = () => {
+  // 課題曲管理
+  const addSong = () => {
     setFormData({
       ...formData,
-      parts: [...formData.parts, { instrument: '', player: '' }]
+      songs: [...formData.songs, { title: '', sheetUrl: '', youtubeUrl: '', parts: [] }]
     })
   }
 
-  const updatePart = (index: number, field: 'instrument' | 'player', value: string) => {
-    const newParts = [...formData.parts]
-    newParts[index][field] = value
-    setFormData({ ...formData, parts: newParts })
+  const updateSong = (index: number, field: 'title' | 'sheetUrl' | 'youtubeUrl', value: string) => {
+    const newSongs = [...formData.songs]
+    newSongs[index][field] = value
+    setFormData({ ...formData, songs: newSongs })
   }
 
-  const removePart = (index: number) => {
+  const removeSong = (index: number) => {
     setFormData({
       ...formData,
-      parts: formData.parts.filter((_, i) => i !== index)
+      songs: formData.songs.filter((_, i) => i !== index)
     })
+  }
+
+  // パート管理
+  const addPart = (songIndex: number) => {
+    const newSongs = [...formData.songs]
+    newSongs[songIndex].parts.push({ instrument: 'vocal', player: '' })
+    setFormData({ ...formData, songs: newSongs })
+  }
+
+  const updatePart = (songIndex: number, partIndex: number, field: 'instrument' | 'player', value: string) => {
+    const newSongs = [...formData.songs]
+    newSongs[songIndex].parts[partIndex][field] = value
+    setFormData({ ...formData, songs: newSongs })
+  }
+
+  const removePart = (songIndex: number, partIndex: number) => {
+    const newSongs = [...formData.songs]
+    newSongs[songIndex].parts = newSongs[songIndex].parts.filter((_, i) => i !== partIndex)
+    setFormData({ ...formData, songs: newSongs })
   }
 
   const isParticipating = (event: Event) => {
@@ -409,11 +425,8 @@ ${event.content}
                     title: '',
                     content: '',
                     date: '',
-                    location: '',
-                    songTitle: '',
-                    songSheetUrl: '',
-                    songYoutubeUrl: '',
-                    parts: []
+                    locationUrl: '',
+                    songs: []
                   })
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -463,13 +476,13 @@ ${event.content}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">開催場所（任意）</label>
+                  <label className="block text-sm font-medium mb-2">開催場所URL（任意）</label>
                   <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    type="url"
+                    value={formData.locationUrl}
+                    onChange={(e) => setFormData({ ...formData, locationUrl: e.target.value })}
                     className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                    placeholder="例: 体育館"
+                    placeholder="例: https://maps.app.goo.gl/..."
                   />
                 </div>
               </div>
@@ -484,80 +497,124 @@ ${event.content}
                 />
               </div>
 
-              <div className="border-t pt-4">
-                <h3 className="text-lg font-medium mb-3">課題曲情報（任意）</h3>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">課題曲タイトル</label>
-                    <input
-                      type="text"
-                      value={formData.songTitle}
-                      onChange={(e) => setFormData({ ...formData, songTitle: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="例: 青と夏"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">楽譜URL</label>
-                    <input
-                      type="url"
-                      value={formData.songSheetUrl}
-                      onChange={(e) => setFormData({ ...formData, songSheetUrl: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="https://..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">YouTube URL</label>
-                    <input
-                      type="url"
-                      value={formData.songYoutubeUrl}
-                      onChange={(e) => setFormData({ ...formData, songYoutubeUrl: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="https://www.youtube.com/watch?v=..."
-                    />
-                  </div>
-                </div>
-              </div>
-
+              {/* 課題曲セクション */}
               <div className="border-t pt-4">
                 <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-medium">パート担当（任意）</h3>
+                  <h3 className="text-lg font-medium">課題曲（任意）</h3>
                   <button
                     type="button"
-                    onClick={addPart}
-                    className="text-sm text-blue-600 hover:text-blue-700"
+                    onClick={addSong}
+                    className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
-                    + パート追加
+                    + 課題曲追加
                   </button>
                 </div>
-                <div className="space-y-2">
-                  {formData.parts.map((part, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={part.instrument}
-                        onChange={(e) => updatePart(index, 'instrument', e.target.value)}
-                        className="flex-1 px-3 py-2 border rounded-lg text-sm"
-                        placeholder="楽器名（例: ボーカル）"
-                      />
-                      <input
-                        type="text"
-                        value={part.player}
-                        onChange={(e) => updatePart(index, 'player', e.target.value)}
-                        className="flex-1 px-3 py-2 border rounded-lg text-sm"
-                        placeholder="担当者名"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removePart(index)}
-                        className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg"
-                      >
-                        削除
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                
+                {formData.songs.length === 0 ? (
+                  <p className="text-sm text-gray-500">課題曲を追加してください</p>
+                ) : (
+                  <div className="space-y-4">
+                    {formData.songs.map((song, songIndex) => (
+                      <div key={songIndex} className="border rounded-lg p-4 bg-gray-50">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="font-medium">課題曲 {songIndex + 1}</h4>
+                          <button
+                            type="button"
+                            onClick={() => removeSong(songIndex)}
+                            className="text-sm text-red-600 hover:text-red-700"
+                          >
+                            削除
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">曲名</label>
+                            <input
+                              type="text"
+                              value={song.title}
+                              onChange={(e) => updateSong(songIndex, 'title', e.target.value)}
+                              className="w-full px-3 py-2 border rounded-lg text-sm"
+                              placeholder="例: 青と夏"
+                            />
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">楽譜URL</label>
+                              <input
+                                type="url"
+                                value={song.sheetUrl}
+                                onChange={(e) => updateSong(songIndex, 'sheetUrl', e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg text-sm"
+                                placeholder="https://..."
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">YouTube URL</label>
+                              <input
+                                type="url"
+                                value={song.youtubeUrl}
+                                onChange={(e) => updateSong(songIndex, 'youtubeUrl', e.target.value)}
+                                className="w-full px-3 py-2 border rounded-lg text-sm"
+                                placeholder="https://youtube.com/..."
+                              />
+                            </div>
+                          </div>
+                          
+                          {/* パート担当 */}
+                          <div className="border-t pt-3 mt-3">
+                            <div className="flex justify-between items-center mb-2">
+                              <label className="text-sm font-medium">パート担当</label>
+                              <button
+                                type="button"
+                                onClick={() => addPart(songIndex)}
+                                className="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                              >
+                                + パート追加
+                              </button>
+                            </div>
+                            {song.parts.length === 0 ? (
+                              <p className="text-xs text-gray-500">パートを追加してください</p>
+                            ) : (
+                              <div className="space-y-2">
+                                {song.parts.map((part, partIndex) => (
+                                  <div key={partIndex} className="flex gap-2">
+                                    <select
+                                      value={part.instrument}
+                                      onChange={(e) => updatePart(songIndex, partIndex, 'instrument', e.target.value)}
+                                      className="px-3 py-2 border rounded-lg text-sm"
+                                    >
+                                      <option value="vocal">ボーカル</option>
+                                      <option value="guitar">ギター</option>
+                                      <option value="bass">ベース</option>
+                                      <option value="drums">ドラム</option>
+                                      <option value="keyboard">キーボード</option>
+                                      <option value="other">その他</option>
+                                    </select>
+                                    <input
+                                      type="text"
+                                      value={part.player}
+                                      onChange={(e) => updatePart(songIndex, partIndex, 'player', e.target.value)}
+                                      className="flex-1 px-3 py-2 border rounded-lg text-sm"
+                                      placeholder="担当者名"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => removePart(songIndex, partIndex)}
+                                      className="px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm"
+                                    >
+                                      削除
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-2 pt-4">
@@ -576,11 +633,8 @@ ${event.content}
                       title: '',
                       content: '',
                       date: '',
-                      location: '',
-                      songTitle: '',
-                      songSheetUrl: '',
-                      songYoutubeUrl: '',
-                      parts: []
+                      locationUrl: '',
+                      songs: []
                     })
                   }}
                   className="px-6 py-2 border rounded-lg hover:bg-gray-50"
@@ -600,8 +654,7 @@ ${event.content}
             </div>
           ) : (
             events.map((event) => {
-              const parts = event.parts ? JSON.parse(event.parts) : []
-              const videoId = event.songYoutubeUrl ? getYoutubeVideoId(event.songYoutubeUrl) : null
+              const songs = event.songs ? JSON.parse(event.songs) : []
 
               return (
                 <div key={event.id} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
@@ -613,16 +666,18 @@ ${event.content}
                           <Calendar className="w-4 h-4" />
                           <span>{new Date(event.date).toLocaleDateString('ja-JP')}</span>
                         </div>
-                        {event.location && (
+                        {event.locationUrl && (
                           <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4" />
-                            <span>{event.location}</span>
+                            <a href={event.locationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                              開催場所を見る
+                            </a>
                           </div>
                         )}
-                        {event.songTitle && (
+                        {songs.length > 0 && (
                           <div className="flex items-center gap-2">
                             <Music className="w-4 h-4" />
-                            <span>課題曲: {event.songTitle}</span>
+                            <span>課題曲: {songs.map((s: any) => s.title).join('、')}</span>
                           </div>
                         )}
                       </div>
@@ -648,47 +703,86 @@ ${event.content}
                   {/* 内容 */}
                   <div className="prose prose-sm max-w-none mb-4 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: event.content }} />
 
-                  {/* 楽譜リンク */}
-                  {event.songSheetUrl && (
-                    <a
-                      href={event.songSheetUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-3"
-                    >
-                      <FileSpreadsheet className="w-4 h-4" />
-                      <span className="text-sm">楽譜を見る</span>
-                    </a>
-                  )}
+                  {/* 課題曲 */}
+                  {songs.length > 0 && (
+                    <div className="mb-4 space-y-4">
+                      {songs.map((song: any, songIndex: number) => {
+                        const videoId = song.youtubeUrl ? getYoutubeVideoId(song.youtubeUrl) : null
+                        const instrumentNames: { [key: string]: string } = {
+                          vocal: 'ボーカル',
+                          guitar: 'ギター',
+                          bass: 'ベース',
+                          drums: 'ドラム',
+                          keyboard: 'キーボード',
+                          other: 'その他'
+                        }
+                        
+                        return (
+                          <div key={songIndex} className="bg-gray-50 p-4 rounded-lg">
+                            <h3 className="font-medium mb-2 flex items-center gap-2">
+                              <Music className="w-4 h-4" />
+                              {song.title}
+                            </h3>
+                            
+                            {/* 楽譜・YouTube リンク */}
+                            <div className="flex gap-3 mb-3">
+                              {song.sheetUrl && (
+                                <a
+                                  href={song.sheetUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                                >
+                                  <FileSpreadsheet className="w-4 h-4" />
+                                  楽譜
+                                </a>
+                              )}
+                              {song.youtubeUrl && (
+                                <a
+                                  href={song.youtubeUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+                                >
+                                  <Youtube className="w-4 h-4" />
+                                  YouTube
+                                </a>
+                              )}
+                            </div>
 
-                  {/* YouTube動画 */}
-                  {videoId && (
-                    <div className="mb-4">
-                      <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
-                        <YouTube
-                          videoId={videoId}
-                          opts={{
-                            width: '100%',
-                            height: '100%',
-                            playerVars: { autoplay: 0 }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
+                            {/* YouTube埋め込み */}
+                            {videoId && (
+                              <div className="mb-3">
+                                <div className="aspect-video rounded-lg overflow-hidden bg-gray-100">
+                                  <YouTube
+                                    videoId={videoId}
+                                    opts={{
+                                      width: '100%',
+                                      height: '100%',
+                                      playerVars: { autoplay: 0 }
+                                    }}
+                                  />
+                                </div>
+                              </div>
+                            )}
 
-                  {/* パート担当 */}
-                  {parts.length > 0 && (
-                    <div className="mb-4 bg-gray-50 p-3 rounded-lg">
-                      <h3 className="font-medium mb-2 text-sm">パート担当</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                        {parts.map((part: any, index: number) => (
-                          <div key={index} className="flex items-center gap-2">
-                            <span className="text-gray-600">{part.instrument}:</span>
-                            <span className="font-medium">{part.player}</span>
+                            {/* パート担当 */}
+                            {song.parts && song.parts.length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-medium mb-2">パート担当</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                                  {song.parts.map((part: any, partIndex: number) => (
+                                    <div key={partIndex} className="flex items-center gap-2">
+                                      <span className="text-gray-600">{instrumentNames[part.instrument] || part.instrument}:</span>
+                                      <span className="font-medium">{part.player}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        ))}
-                      </div>
+                        )
+                      })}
                     </div>
                   )}
 
