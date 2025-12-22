@@ -2,14 +2,10 @@
 
 import { useRef, useEffect } from 'react'
 import { 
-  Heading1, 
-  Heading2, 
-  Heading3, 
   Bold, 
   Italic, 
   List, 
-  ListOrdered, 
-  Quote,
+  ListOrdered,
   Undo,
   Redo
 } from 'lucide-react'
@@ -59,31 +55,6 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
       <div className="flex flex-wrap gap-1 p-2 bg-gray-50 border-b">
         <button
           type="button"
-          onClick={() => applyFormat('formatBlock', 'h1')}
-          className="p-2 hover:bg-gray-200 rounded transition"
-          title="見出し1"
-        >
-          <Heading1 className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('formatBlock', 'h2')}
-          className="p-2 hover:bg-gray-200 rounded transition"
-          title="見出し2"
-        >
-          <Heading2 className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('formatBlock', 'h3')}
-          className="p-2 hover:bg-gray-200 rounded transition"
-          title="見出し3"
-        >
-          <Heading3 className="w-4 h-4" />
-        </button>
-        <div className="w-px bg-gray-300 mx-1" />
-        <button
-          type="button"
           onClick={() => applyFormat('bold')}
           className="p-2 hover:bg-gray-200 rounded transition"
           title="太字"
@@ -114,14 +85,6 @@ export default function RichTextEditor({ value, onChange, placeholder, minHeight
           title="番号付きリスト"
         >
           <ListOrdered className="w-4 h-4" />
-        </button>
-        <button
-          type="button"
-          onClick={() => applyFormat('formatBlock', 'blockquote')}
-          className="p-2 hover:bg-gray-200 rounded transition"
-          title="引用"
-        >
-          <Quote className="w-4 h-4" />
         </button>
         <div className="w-px bg-gray-300 mx-1" />
         <button
