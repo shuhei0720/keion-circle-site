@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
-import TemplateEditor from '@/components/TemplateEditor'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, FilePenLine, Trash2 } from 'lucide-react'
 
 interface User {
@@ -299,39 +298,42 @@ export default function ActivitySchedulesPage() {
 
   const handleCreateReport = (schedule: ActivitySchedule) => {
     // テンプレート作成
-    const template = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ${schedule.title} - 活動報告
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const template = `━━━━━━━━━━━━━━━━━━━━
+${schedule.title} - 活動報告
+━━━━━━━━━━━━━━━━━━━━
 
 📅 日時
   ${new Date(schedule.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
+${schedule.location || schedule.locationUrl ? `
+📍 場所
+  ${schedule.location || ''}${schedule.locationUrl ? `\n  ${schedule.locationUrl}` : ''}` : ''}
 
 👥 参加メンバー
   ${schedule.participants.map(p => p.user.name || p.user.email).join(' / ')}
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 📝 活動内容
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
 ${schedule.content}
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 ✨ 成果・気づき
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
 （ここに活動の成果や気づきを記入してください）
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 💭 次回に向けて
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
 （次回に向けての課題や目標を記入してください）
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 `
 
     router.push(`/activity-schedules/${schedule.id}/report?template=${encodeURIComponent(template)}`)

@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
-import TemplateEditor from '@/components/TemplateEditor'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube, FilePenLine, Trash2 } from 'lucide-react'
 import YouTube from 'react-youtube'
 
@@ -57,7 +56,6 @@ export default function EventsPage() {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
-  const [showTemplateEditor, setShowTemplateEditor] = useState(false)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // フォーム状態
@@ -326,9 +324,9 @@ export default function EventsPage() {
         ? '\n    ' + song.parts.map((p: any) => `${instrumentNames[p.instrument] || p.instrument}: ${p.player}`).join(' / ')
         : ''
       
-      let songSection = `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+      let songSection = `\n━━━━━━━━━━━━━━━━━━━━
 ♪ 課題曲 ${index + 1}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
   曲名: ${song.title}`
       
@@ -345,9 +343,9 @@ export default function EventsPage() {
       return songSection
     }).join('\n\n')
 
-    const template = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ${event.title} - 活動報告
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const template = `━━━━━━━━━━━━━━━━━━━━
+${event.title} - 活動報告
+━━━━━━━━━━━━━━━━━━━━
 
 📅 日時
   ${new Date(event.date).toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' })}
@@ -359,35 +357,35 @@ ${event.locationName || event.locationUrl ? `
   ${event.participants.map(p => p.user.name || p.user.email).join(' / ')}
 ${songsText}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 📝 活動内容
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
 ${event.content}
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 ✨ 成果・ハイライト
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
 （ここにイベントの成果や印象に残ったことを記入してください）
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 📷 写真・動画
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
 （写真や動画のURLを追加してください）
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 💭 次回に向けて
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
 （次回に向けての課題や改善点を記入してください）
 
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 `
 
     router.push(`/events/${event.id}/report?template=${encodeURIComponent(template)}`)
@@ -482,15 +480,6 @@ ${event.content}
               >
                 <Plus className="w-5 h-5" />
                 <span className="hidden sm:inline">新規作成</span>
-              </button>
-            )}
-            {session?.user?.role === 'admin' && (
-              <button
-                onClick={() => setShowTemplateEditor(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
-              >
-                <FilePenLine className="w-5 h-5" />
-                <span className="hidden sm:inline">テンプレート編集</span>
               </button>
             )}
           </div>
@@ -963,13 +952,6 @@ ${event.content}
           )}
         </div>
       </div>
-
-      {/* テンプレート編集モーダル */}
-      <TemplateEditor
-        isOpen={showTemplateEditor}
-        onClose={() => setShowTemplateEditor(false)}
-        onSave={() => {}}
-      />
     </DashboardLayout>
   )
 }
