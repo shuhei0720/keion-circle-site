@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { supabase } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,31 +31,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ファイルサイズは5MB以下にしてください' }, { status: 400 })
     }
 
-    // ファイル保存
+    // ファイルをバイト配列に変換
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Vercel環境では /tmp を使用、開発環境では public/uploads を使用
-    const isProduction = process.env.VERCEL === '1'
-    
-    const ext = path.extname(file.name)
-    const filename = `${session.user.id.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}${ext}`
-    
-    let avatarUrl: string
+    // Supabase Storageにアップロード
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${session.user.id}_${Date.now()}.${fileExt}`
+    const filePath = `avatars/${fileName}`
 
-    if (isProduction) {
-      // 本番環境: Base64エンコードしてDBに保存（一時的な対応）
-      const base64 = buffer.toString('base64')
-      const mimeType = file.type
-      avatarUrl = `data:${mimeType};base64,${base64}`
-    } else {
-      // 開発環境: ファイルシステムに保存
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'avatars')
-      await mkdir(uploadsDir, { recursive: true })
-      const filepath = path.join(uploadsDir, filename)
-      await writeFile(filepath, buffer)
-      avatarUrl = `/uploads/avatars/${filename}`
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        upsert: true,
+      })
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError)
+      return NextResponse.json({ error: 'アップロードに失敗しました: ' + uploadError.message }, { status: 500 })
     }
+
+    // 公開URLを取得
+    const { data: urlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath)
+
+    const avatarUrl = urlData.publicUrl
 
     // データベース更新
     const updatedUser = await prisma.user.update({
