@@ -251,8 +251,8 @@ export default function UsersPage() {
                         <User className="h-6 w-6 text-blue-600" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-gray-900 text-lg">{user.name || 'Unknown'}</div>
-                        <div className="flex items-center gap-1 text-sm text-gray-500 truncate">
+                        <div className="font-semibold text-white text-lg">{user.name || 'Unknown'}</div>
+                        <div className="flex items-center gap-1 text-sm text-white/60 truncate">
                           <Mail className="h-3 w-3 flex-shrink-0" />
                           <span className="truncate">{user.email}</span>
                         </div>
