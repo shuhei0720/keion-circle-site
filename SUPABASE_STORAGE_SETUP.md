@@ -16,24 +16,44 @@
 
 ### ポリシーの設定（重要！）
 
-Public bucketを作成しても、書き込みにはポリシーが必要です。以下の手順で設定してください。
+Public bucketを作成しても、書き込みにはポリシーが必要です。
 
-**簡単な方法（推奨）:**
+**最も簡単な方法（SQL Editorを使用）:**
 
-1. `avatars`バケットを選択
-2. 「Policies」タブを開く
-3. 「New policy」をクリック
-4. 「For full customization」を選択
-5. 以下のポリシーを**1つずつ**作成:
+1. Supabase Dashboard左サイドバーの**「SQL Editor」**をクリック
+2. **「New query」**をクリック
+3. 以下のSQLをコピー&ペースト:
 
-**すべての操作を許可（開発用・最も簡単）:**
 ```sql
-CREATE POLICY "Allow all operations"
+CREATE POLICY "Allow all operations on avatars"
 ON storage.objects FOR ALL
 USING (bucket_id = 'avatars');
 ```
 
-このポリシー1つで、すべてのユーザー（認証済み・未認証）がアップロード・更新・削除・読み取りを行えます。
+4. **「Run」**ボタン（または Ctrl+Enter）をクリック
+5. 成功メッセージが表示されればOK
+
+---
+
+**UI経由での設定方法:**
+
+1. `avatars`バケットを選択
+2. 「Policies」タブを開く
+3. 「New policy」をクリック
+4. 「Get started quickly」セクションで以下を選択:
+   - **「Allow public access」**をクリック
+5. 表示されたテンプレートで:
+   - Policy name: `Allow all operations`
+   - **Allowed operation**で以下を**すべてチェック**:
+     - ✅ SELECT (読み取り)
+     - ✅ INSERT (アップロード)
+     - ✅ UPDATE (更新)
+     - ✅ DELETE (削除)
+6. Policy definition: `true` （すべて許可）
+7. **「Review」**→**「Save policy」**
+
+⚠️ **「Please allow at least one operation」エラーが出る場合**: 
+上記の4つの操作すべてにチェックが入っているか確認してください。
 
 ---
 
