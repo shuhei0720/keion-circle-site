@@ -32,6 +32,8 @@ export async function GET() {
         title: true,
         content: true,
         date: true,
+        location: true,
+        locationUrl: true,
         createdAt: true,
         updatedAt: true,
         user: {
@@ -94,7 +96,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
     }
 
-    const { title, content, date } = await request.json()
+    const { title, content, date, location, locationUrl } = await request.json()
 
     if (!title || !content) {
       return NextResponse.json(
@@ -108,6 +110,8 @@ export async function POST(request: Request) {
         title,
         content,
         date: date ? new Date(date) : null,
+        location: location || null,
+        locationUrl: locationUrl || null,
         userId: session.user.id
       },
       include: {

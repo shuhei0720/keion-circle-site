@@ -16,6 +16,15 @@ export default async function ProfilePage() {
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
+      postParticipants: {
+        include: {
+          post: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: 5,
+      },
       _count: {
         select: {
           posts: true,
@@ -73,6 +82,30 @@ export default async function ProfilePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* 参加した活動履歴 */}
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6 border border-white/10">
+          <h3 className="text-xl font-bold mb-4 text-white">参加した活動履歴</h3>
+          {user.postParticipants.length > 0 ? (
+            <ul className="space-y-3">
+              {user.postParticipants.map((participant) => (
+                <li key={participant.id}>
+                  <Link
+                    href={`/posts`}
+                    className="block p-3 border border-white/20 rounded-lg bg-white/5 hover:bg-white/10 transition"
+                  >
+                    <h4 className="font-semibold text-white">{participant.post.title}</h4>
+                    <p className="text-sm text-white/60">
+                      {new Date(participant.createdAt).toLocaleDateString('ja-JP')}に参加
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-white/50">まだ参加した活動がありません</p>
+          )}
         </div>
       </div>
     </DashboardLayout>

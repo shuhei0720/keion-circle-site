@@ -33,6 +33,8 @@ interface ActivitySchedule {
   title: string
   content: string
   date: string
+  location: string | null
+  locationUrl: string | null
   user: User
   participants: Participant[]
   comments?: Comment[]
@@ -54,13 +56,16 @@ export default function ActivitySchedulesPage() {
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
   const [showTemplateEditor, setShowTemplateEditor] = useState(false)
+  const [participatingLoading, setParticipatingLoading] = useState<{ [key: string]: boolean }>({})
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // フォーム状態
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    date: ''
+    date: '',
+    location: '',
+    locationUrl: ''
   })
 
   useEffect(() => {
@@ -137,7 +142,7 @@ export default function ActivitySchedulesPage() {
       })
 
       if (res.ok) {
-        setFormData({ title: '', content: '', date: '' })
+        setFormData({ title: '', content: '', date: '', location: '', locationUrl: '' })
         setShowCreateForm(false)
         setEditingId(null)
         fetchSchedules()
@@ -151,6 +156,11 @@ export default function ActivitySchedulesPage() {
   }
 
   const handleParticipate = async (scheduleId: string) => {
+    // ローディング中は処理しない
+    if (participatingLoading[scheduleId]) return
+
+    setParticipatingLoading({ ...participatingLoading, [scheduleId]: true })
+    
     try {
       const res = await fetch(`/api/activity-schedules/${scheduleId}/participate`, {
         method: 'POST'
@@ -164,6 +174,10 @@ export default function ActivitySchedulesPage() {
         setSchedules(schedules.map(s => {
           if (s.id === scheduleId) {
             if (data.participating) {
+              // 重複チェック
+              if (s.participants.some(p => p.userId === userId)) {
+                return s
+              }
               return {
                 ...s,
                 participants: [...s.participants, {
@@ -189,6 +203,8 @@ export default function ActivitySchedulesPage() {
       }
     } catch (error) {
       console.error('参加登録エラー:', error)
+    } finally {
+      setParticipatingLoading({ ...participatingLoading, [scheduleId]: false })
     }
   }
 
@@ -226,7 +242,9 @@ export default function ActivitySchedulesPage() {
     setFormData({
       title: schedule.title,
       content: schedule.content,
-      date: new Date(schedule.date).toISOString().split('T')[0]
+      date: new Date(schedule.date).toISOString().split('T')[0],
+      location: schedule.location || '',
+      locationUrl: schedule.locationUrl || ''
     })
     setEditingId(schedule.id)
     setShowCreateForm(true)
@@ -355,7 +373,7 @@ ${schedule.content}
                 onClick={() => {
                   setShowCreateForm(true)
                   setEditingId(null)
-                  setFormData({ title: '', content: '', date: '' })
+                  setFormData({ title: '', content: '', date: '', location: '', locationUrl: '' })
                 }}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
               >
@@ -402,6 +420,26 @@ ${schedule.content}
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium mb-2 text-white/80">場所</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
+                  placeholder="例: スタジオ A"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2 text-white/80">場所URL（Google Mapsなど）</label>
+                <input
+                  type="url"
+                  value={formData.locationUrl}
+                  onChange={(e) => setFormData({ ...formData, locationUrl: e.target.value })}
+                  className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
+                  placeholder="https://maps.google.com/..."
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium mb-2 text-white/80">内容</label>
                 <RichTextEditor 
                   value={formData.content}
@@ -422,7 +460,7 @@ ${schedule.content}
                   onClick={() => {
                     setShowCreateForm(false)
                     setEditingId(null)
-                    setFormData({ title: '', content: '', date: '' })
+                    setFormData({ title: '', content: '', date: '', location: '', locationUrl: '' })
                   }}
                   className="px-6 py-2 border border-white/20 bg-white/10 text-white rounded-lg hover:bg-white/20 transition"
                 >
@@ -445,9 +483,26 @@ ${schedule.content}
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <h2 className="text-xl font-bold text-white mb-2">{schedule.title}</h2>
-                    <div className="flex items-center gap-2 text-sm text-white/60">
-                      <Calendar className="w-4 h-4" />
-                      <span>{new Date(schedule.date).toLocaleDateString('ja-JP')}</span>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-sm text-white/60">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(schedule.date).toLocaleDateString('ja-JP')}</span>
+                      </div>
+                      {schedule.location && (
+                        <div className="flex items-center gap-2 text-sm text-white/60">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {schedule.locationUrl ? (
+                            <a href={schedule.locationUrl} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline">
+                              {schedule.location}
+                            </a>
+                          ) : (
+                            <span>{schedule.location}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   {session?.user?.role === 'admin' && (
@@ -492,13 +547,14 @@ ${schedule.content}
                 {/* 参加ボタン */}
                 <button
                   onClick={() => handleParticipate(schedule.id)}
-                  className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 transition ${
+                  disabled={participatingLoading[schedule.id]}
+                  className={`w-full sm:w-auto px-6 py-2 rounded-lg mb-4 transition disabled:opacity-50 disabled:cursor-not-allowed ${
                     isParticipating(schedule)
                       ? 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
                       : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:scale-105 shadow-lg'
                   }`}
                 >
-                  {isParticipating(schedule) ? '参加取り消し' : '参加する'}
+                  {participatingLoading[schedule.id] ? '処理中...' : isParticipating(schedule) ? '参加取り消し' : '参加する'}
                 </button>
 
                 {/* 活動報告作成ボタン */}
