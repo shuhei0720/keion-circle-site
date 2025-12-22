@@ -14,46 +14,67 @@
 6. **Public bucket**にチェックを入れる（重要！）
 7. 「Create bucket」をクリック
 
-### ポリシーの設定（必要に応じて）
+### ポリシーの設定（重要！）
 
-デフォルトでは公開バケットは読み取り可能ですが、書き込みにはポリシーが必要です。
+Public bucketを作成しても、書き込みにはポリシーが必要です。以下の手順で設定してください。
+
+**簡単な方法（推奨）:**
 
 1. `avatars`バケットを選択
 2. 「Policies」タブを開く
 3. 「New policy」をクリック
-4. 以下のポリシーを作成:
+4. 「For full customization」を選択
+5. 以下のポリシーを**1つずつ**作成:
 
-**アップロードを許可（認証済みユーザー）:**
+**すべての操作を許可（開発用・最も簡単）:**
 ```sql
-CREATE POLICY "Authenticated users can upload avatars"
+CREATE POLICY "Allow all operations"
+ON storage.objects FOR ALL
+USING (bucket_id = 'avatars');
+```
+
+このポリシー1つで、すべてのユーザー（認証済み・未認証）がアップロード・更新・削除・読み取りを行えます。
+
+---
+
+**より安全な方法（本番推奨）:**
+
+個別のポリシーを作成する場合は以下を使用:
+
+**アップロードを許可:**
+```sql
+CREATE POLICY "Anyone can upload avatars"
 ON storage.objects FOR INSERT
-TO authenticated
+TO public
 WITH CHECK (bucket_id = 'avatars');
 ```
 
-**更新を許可（認証済みユーザー）:**
+**更新を許可:**
 ```sql
-CREATE POLICY "Authenticated users can update avatars"
+CREATE POLICY "Anyone can update avatars"
 ON storage.objects FOR UPDATE
-TO authenticated
+TO public
 USING (bucket_id = 'avatars');
 ```
 
-**削除を許可（認証済みユーザー）:**
+**削除を許可:**
 ```sql
-CREATE POLICY "Authenticated users can delete avatars"
+CREATE POLICY "Anyone can delete avatars"
 ON storage.objects FOR DELETE
-TO authenticated
+TO public
 USING (bucket_id = 'avatars');
 ```
 
-**公開読み取りを許可:**
+**読み取りを許可:**
 ```sql
-CREATE POLICY "Public can read avatars"
+CREATE POLICY "Anyone can read avatars"
 ON storage.objects FOR SELECT
 TO public
 USING (bucket_id = 'avatars');
 ```
+
+⚠️ **注意**: `TO public` は認証の有無に関わらずすべてのユーザーを意味します。
+より厳密な制御が必要な場合は、RLS（Row Level Security）で条件を追加してください。
 
 ## 2. 環境変数の設定
 
