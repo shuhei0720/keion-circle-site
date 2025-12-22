@@ -124,7 +124,7 @@ export default function UsersPage() {
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         <div className="flex items-center gap-3 mb-6 sm:mb-8">
           <Users className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-          <h1 className="text-2xl sm:text-3xl font-bold">ユーザー管理</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">ユーザー管理</h1>
         </div>
 
         {loading ? (

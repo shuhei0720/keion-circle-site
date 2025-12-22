@@ -48,7 +48,7 @@ export default async function ProfilePage() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">マイプロフィール</h1>
+        <h1 className="text-3xl font-bold mb-6 text-white">マイプロフィール</h1>
 
         {/* プロフィール編集 */}
         <ProfileEditClient user={user} />

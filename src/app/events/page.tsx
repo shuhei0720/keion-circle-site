@@ -418,7 +418,7 @@ ${event.content}
     <DashboardLayout>
       <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">イベント</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">イベント</h1>
           <div className="flex gap-2">
             {session?.user?.role === 'admin' && !showCreateForm && (
               <button

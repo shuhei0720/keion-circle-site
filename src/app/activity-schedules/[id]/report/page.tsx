@@ -166,7 +166,7 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
           <span>戻る</span>
         </button>
 
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">活動報告作成</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6">活動報告作成</h1>
 
         <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
