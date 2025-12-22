@@ -54,6 +54,7 @@ export default function ActivitySchedulesPage() {
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const [showMarkdownEditor, setShowMarkdownEditor] = useState(false)
 
   // フォーム状態
   const [formData, setFormData] = useState({
@@ -139,6 +140,7 @@ export default function ActivitySchedulesPage() {
         setFormData({ title: '', content: '', date: '' })
         setShowCreateForm(false)
         setEditingId(null)
+        setShowMarkdownEditor(false)
         fetchSchedules()
       } else {
         alert('保存に失敗しました')
@@ -359,15 +361,40 @@ ${schedule.content}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">内容（マークダウン形式）</label>
-                <MarkdownToolbar onInsert={handleMarkdownInsert} />
-                <textarea
-                  ref={contentTextareaRef}
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:ring-2 focus:ring-blue-500 min-h-[200px] font-mono text-sm"
-                  placeholder="## 今日の練習内容&#10;&#10;- 課題曲の練習&#10;- パート別練習&#10;- 通し練習"
-                />
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium">内容</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowMarkdownEditor(!showMarkdownEditor)}
+                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                  >
+                    {showMarkdownEditor ? 'プレビュー表示' : 'マークダウンで編集'}
+                  </button>
+                </div>
+                
+                {showMarkdownEditor ? (
+                  <>
+                    <MarkdownToolbar onInsert={handleMarkdownInsert} />
+                    <textarea
+                      ref={contentTextareaRef}
+                      value={formData.content}
+                      onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                      className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:ring-2 focus:ring-blue-500 min-h-[200px] font-mono text-sm"
+                      placeholder="## 今日の練習内容&#10;&#10;- 課題曲の練習&#10;- パート別練習&#10;- 通し練習"
+                    />
+                  </>
+                ) : (
+                  <div 
+                    className="w-full px-4 py-2 border rounded-lg bg-gray-50 min-h-[200px] prose prose-sm max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => setShowMarkdownEditor(true)}
+                  >
+                    {formData.content ? (
+                      <ReactMarkdown>{formData.content}</ReactMarkdown>
+                    ) : (
+                      <p className="text-gray-400">クリックして内容を入力...</p>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="flex gap-2">
                 <button

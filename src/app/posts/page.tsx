@@ -64,6 +64,7 @@ export default function PostsPage() {
   const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [postId: string]: boolean }>({})
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const [showMarkdownEditor, setShowMarkdownEditor] = useState(false)
 
   const isAdmin = session?.user?.role === 'admin'
 
@@ -515,16 +516,42 @@ export default function PostsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">内容</label>
-                  <MarkdownToolbar onInsert={handleMarkdownInsert} />
-                  <textarea
-                    ref={contentTextareaRef}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    rows={6}
-                    className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium">内容</label>
+                    <button
+                      type="button"
+                      onClick={() => setShowMarkdownEditor(!showMarkdownEditor)}
+                      className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      {showMarkdownEditor ? 'プレビュー表示' : 'マークダウンで編集'}
+                    </button>
+                  </div>
+                  
+                  {showMarkdownEditor ? (
+                    <>
+                      <MarkdownToolbar onInsert={handleMarkdownInsert} />
+                      <textarea
+                        ref={contentTextareaRef}
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        rows={10}
+                        className="w-full px-4 py-2 border border-t-0 rounded-b-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                        required
+                        placeholder="ここに内容を入力してください"
+                      />
+                    </>
+                  ) : (
+                    <div 
+                      className="w-full px-4 py-2 border rounded-lg bg-gray-50 min-h-[240px] prose prose-sm max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                      onClick={() => setShowMarkdownEditor(true)}
+                    >
+                      {content ? (
+                        <ReactMarkdown>{content}</ReactMarkdown>
+                      ) : (
+                        <p className="text-gray-400">クリックして内容を入力...</p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">YouTube URL</label>

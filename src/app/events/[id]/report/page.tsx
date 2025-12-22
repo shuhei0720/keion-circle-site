@@ -13,7 +13,7 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
+  const [showPreview, setShowPreview] = useState(true)
   const [eventId, setEventId] = useState<string>('')
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -186,8 +186,15 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
               </div>
 
               {showPreview ? (
-                <div className="w-full px-4 py-2 border rounded-lg bg-gray-50 min-h-[400px] prose prose-sm max-w-none">
-                  <ReactMarkdown>{formData.content}</ReactMarkdown>
+                <div 
+                  className="w-full px-4 py-2 border rounded-lg bg-gray-50 min-h-[400px] prose prose-sm max-w-none cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => setShowPreview(false)}
+                >
+                  {formData.content ? (
+                    <ReactMarkdown>{formData.content}</ReactMarkdown>
+                  ) : (
+                    <p className="text-gray-400">クリックして内容を入力...</p>
+                  )}
                 </div>
               ) : (
                 <>
