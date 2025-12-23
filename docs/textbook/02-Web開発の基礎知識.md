@@ -2821,20 +2821,73 @@ a[href$=".pdf"] {
 **色の指定方法：**
 
 ```css
-/* 色名 */
+/* 1. 色名（英語） */
 color: red;
 color: blue;
 color: white;
+color: black;
+color: gray;
 
-/* 16進数 */
-color: #FF0000;    /* 赤 */
-color: #0000FF;    /* 青 */
+/* 2. 16進数（Hex） */
+color: #FF0000;    /* 赤（R:FF, G:00, B:00） */
+color: #0000FF;    /* 青（R:00, G:00, B:FF） */
 color: #FFFFFF;    /* 白 */
+color: #000000;    /* 黒 */
+color: #F00;       /* #FF0000の短縮形 */
 
-/* RGB */
-color: rgb(255, 0, 0);     /* 赤 */
-color: rgba(255, 0, 0, 0.5); /* 半透明の赤 */
+/* 3. RGB（Red, Green, Blue） */
+color: rgb(255, 0, 0);     /* 赤（0-255で指定） */
+color: rgb(0, 0, 255);     /* 青 */
+color: rgb(128, 128, 128); /* グレー */
+
+/* 4. RGBA（Aは透明度） */
+color: rgba(255, 0, 0, 0.5);  /* 半透明の赤（0.5 = 50%） */
+color: rgba(0, 0, 0, 0.8);    /* 少し透明な黒（80%） */
+background-color: rgba(255, 255, 255, 0.3);  /* 30%の白 */
 ```
+
+**このコードの詳しい説明：**
+
+1. **色名**
+   - 最も簡単ですが、種類が限られています
+   - `red`, `blue`, `green`, `yellow`, `purple` など
+
+2. **16進数（Hex）**
+   - `#RRGGBB` の形式
+   - RR = 赤、GG = 緑、BB = 青（00 〜 FF）
+   - デザインツール（Figma, Photoshopなど）で使われる標準形式
+
+   **例：**
+   ```
+   #FF0000  →  R=255, G=0, B=0  →  赤
+   #00FF00  →  R=0, G=255, B=0  →  緑
+   #0000FF  →  R=0, G=0, B=255  →  青
+   #FFFFFF  →  R=255, G=255, B=255  →  白
+   #000000  →  R=0, G=0, B=0  →  黒
+   ```
+
+3. **RGB**
+   - 0 〜 255 の数値で指定
+   - 直感的でわかりやすい
+
+4. **RGBA（透明度付き）**
+   - 最後の数値（Alpha）が透明度
+   - 0.0 = 完全に透明
+   - 1.0 = 完全に不透明
+   - 0.5 = 半透明
+
+**実用例：オーバーレイ（重ね合わせ）**
+```css
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);  /* 半透明の黒 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+```
+↑ 画像の上に半透明の黒を重ねて、テキストを読みやすくする
 
 #### テキスト
 
@@ -2850,6 +2903,107 @@ color: rgba(255, 0, 0, 0.5); /* 半透明の赤 */
 }
 ```
 
+**このコードの詳しい説明：**
+
+1. **`font-size`（文字サイズ）**
+   ```css
+   font-size: 16px;   /* 16ピクセル */
+   font-size: 1.5em;  /* 親要素の1.5倍 */
+   font-size: 1.2rem; /* ルート要素の1.2倍 */
+   ```
+   - **px**: 固定サイズ（16px、20pxなど）
+   - **em**: 親要素に対する倍率
+   - **rem**: `<html>` に対する倍率（推奨）
+
+2. **`font-weight`（太さ）**
+   ```css
+   font-weight: normal;   /* 通常（400） */
+   font-weight: bold;     /* 太字（700） */
+   font-weight: 400;      /* 数値でも指定可能 */
+   font-weight: 700;      /* bold と同じ */
+   ```
+
+3. **`font-family`（フォント）**
+   ```css
+   font-family: Arial, sans-serif;
+   ```
+   - カンマ区切りで複数指定（フォールバック）
+   - 1つ目がなければ2つ目を使う
+   - 最後は `sans-serif` や `serif` などの汎用フォント
+
+   **よく使うフォント：**
+   ```css
+   /* Windowsでよく使われる */
+   font-family: "メイリオ", "Meiryo", sans-serif;
+   
+   /* Macでよく使われる */
+   font-family: "ヒラギノ角ゴ Pro", "Hiragino Kaku Gothic Pro", sans-serif;
+   
+   /* 両方対応 */
+   font-family: "メイリオ", "Meiryo", "ヒラギノ角ゴ Pro", sans-serif;
+   ```
+
+4. **`text-align`（揃え方）**
+   ```css
+   text-align: left;     /* 左揃え（デフォルト） */
+   text-align: center;   /* 中央揃え */
+   text-align: right;    /* 右揃え */
+   text-align: justify;  /* 両端揃え */
+   ```
+
+5. **`text-decoration`（装飾）**
+   ```css
+   text-decoration: none;       /* なし */
+   text-decoration: underline;  /* 下線 */
+   text-decoration: line-through; /* 取り消し線 */
+   text-decoration: overline;   /* 上線 */
+   ```
+
+   **実用例：リンクの下線を消す**
+   ```css
+   a {
+     text-decoration: none;  /* リンクの下線を消す */
+   }
+   a:hover {
+     text-decoration: underline;  /* マウスを乗せたら下線 */
+   }
+   ```
+
+6. **`line-height`（行の高さ）**
+   ```css
+   line-height: 1.5;    /* フォントサイズの1.5倍 */
+   line-height: 24px;   /* 固定値 */
+   ```
+   - 読みやすさに影響する重要なプロパティ
+   - 1.5 〜 1.8 が読みやすい
+
+   **比較：**
+   ```
+   line-height: 1.0  →  文字がぎゅうぎゅう
+   line-height: 1.5  →  適度な余白で読みやすい
+   line-height: 3.0  →  余白が多すぎて読みづらい
+   ```
+
+7. **`letter-spacing`（文字間隔）**
+   ```css
+   letter-spacing: 0px;    /* デフォルト */
+   letter-spacing: 2px;    /* 2px広げる */
+   letter-spacing: -1px;   /* 1px詰める */
+   ```
+
+**実用例：見出しのスタイリング**
+```css
+h1 {
+  font-size: 32px;
+  font-weight: bold;
+  font-family: "Arial", sans-serif;
+  text-align: center;
+  color: #333;
+  line-height: 1.2;
+  letter-spacing: 1px;
+}
+```
+
 #### サイズ
 
 ```css
@@ -2861,13 +3015,85 @@ color: rgba(255, 0, 0, 0.5); /* 半透明の赤 */
 }
 ```
 
-**単位：**
-- `px` - ピクセル（固定サイズ）
-- `%` - パーセント（親要素に対する割合）
-- `em` - 親要素のフォントサイズに対する倍率
-- `rem` - ルート要素のフォントサイズに対する倍率
-- `vh` - ビューポート（画面）の高さに対する割合
-- `vw` - ビューポートの幅に対する割合
+**このコードの詳しい説明：**
+
+1. **`width`（幅）**
+   ```css
+   width: 200px;     /* 固定幅 */
+   width: 50%;       /* 親要素の50% */
+   width: 100vw;     /* 画面幅の100% */
+   ```
+
+2. **`height`（高さ）**
+   ```css
+   height: 100px;    /* 固定高さ */
+   height: 100vh;    /* 画面高さの100% */
+   ```
+
+3. **`max-width`（最大幅）**
+   ```css
+   max-width: 500px;
+   ```
+   - これ以上大きくならない
+   - レスポンシブデザインで重要
+
+   **使用例：**
+   ```css
+   .container {
+     width: 100%;       /* 画面幅いっぱい */
+     max-width: 1200px; /* でも1200pxを超えない */
+     margin: 0 auto;    /* 中央揃え */
+   }
+   ```
+
+4. **`min-height`（最小高さ）**
+   ```css
+   min-height: 50px;
+   ```
+   - これより小さくならない
+   - コンテンツが少なくても最低限の高さを保つ
+
+**単位の詳細説明：**
+
+| 単位 | 説明 | 例 | 使い所 |
+|---|---|---|---|
+| **px** | ピクセル（固定サイズ） | `16px` | 正確なサイズが必要なとき |
+| **%** | 親要素に対する割合 | `50%` | レスポンシブレイアウト |
+| **em** | 親要素のフォントサイズに対する倍率 | `1.5em` | 相対的なサイズ |
+| **rem** | ルート要素のフォントサイズに対する倍率 | `1.2rem` | フォントサイズ（推奨） |
+| **vh** | ビューポート（画面）の高さに対する割合 | `100vh` | 画面いっぱいの高さ |
+| **vw** | ビューポートの幅に対する割合 | `50vw` | 画面幅の50% |
+
+**実用例：**
+```css
+/* px: ボーダーなど固定サイズ */
+border: 1px solid black;
+
+/* %: レスポンシブな幅 */
+.column {
+  width: 50%;  /* 親要素の半分 */
+}
+
+/* rem: フォントサイズ */
+h1 {
+  font-size: 2rem;  /* ルートの2倍 */
+}
+
+/* vh: ヒーローセクション */
+.hero {
+  height: 100vh;  /* 画面いっぱいの高さ */
+}
+```
+
+**px vs rem の比較：**
+```css
+/* px: ユーザーがブラウザのフォントサイズを変えても変わらない */
+font-size: 16px;
+
+/* rem: ユーザーがブラウザのフォントサイズを変えると連動する */
+font-size: 1rem;  /* デフォルト16pxだが、ユーザー設定で変わる */
+```
+↑ **アクセシビリティのため `rem` を使うのが推奨**
 
 ### ボックスモデル
 
@@ -2889,15 +3115,311 @@ color: rgba(255, 0, 0, 0.5); /* 半透明の赤 */
 └─────────────────────────────────┘
 ```
 
+**ボックスモデルとは：**
+- すべてのHTML要素は、4つの層（content, padding, border, margin）から成る「箱」です
+- この箱の仕組みを理解することが、CSSレイアウトの基本です
+
 ```css
 .box {
   /* 内容のサイズ */
   width: 200px;
   height: 100px;
   
-  /* 内側の余白 */
+  /* 内側の余白（padding） */
   padding: 20px;                 /* 全方向 */
   padding-top: 10px;            /* 上だけ */
+  padding-right: 15px;          /* 右だけ */
+  padding-bottom: 10px;         /* 下だけ */
+  padding-left: 15px;           /* 左だけ */
+  padding: 10px 20px;           /* 上下 左右 */
+  padding: 10px 15px 20px 15px; /* 上 右 下 左（時計回り） */
+  
+  /* 枠線（border） */
+  border: 2px solid black;      /* 太さ スタイル 色 */
+  border-top: 1px solid red;    /* 上だけ */
+  border-radius: 10px;          /* 角を丸く */
+  
+  /* 外側の余白（margin） */
+  margin: 20px;                 /* paddingと同じ指定方法 */
+  margin: 0 auto;               /* 左右中央揃え */
+}
+```
+
+**このコードの詳しい説明：**
+
+### 1. Content（内容）
+
+```css
+.box {
+  width: 200px;
+  height: 100px;
+}
+```
+
+- 実際のコンテンツ（テキストや画像）が入る領域
+- `width` と `height` で指定
+
+### 2. Padding（内側の余白）
+
+```css
+/* 全方向に同じ余白 */
+padding: 20px;
+
+/* 上下・左右で分ける */
+padding: 10px 20px;  /* 上下:10px, 左右:20px */
+
+/* 各方向を個別に指定（時計回り：上→右→下→左） */
+padding: 10px 15px 20px 25px;
+
+/* 1つずつ指定 */
+padding-top: 10px;
+padding-right: 15px;
+padding-bottom: 20px;
+padding-left: 25px;
+```
+
+**Paddingの役割：**
+- **コンテンツと枠線の間の余白**
+- クリック可能な領域を広げる（ボタンなど）
+- 背景色が適用される領域
+
+**例：ボタンのpadding**
+```css
+.button {
+  padding: 10px 20px;  /* 上下10px、左右20px */
+  background-color: blue;
+  color: white;
+}
+```
+
+表示：
+```
+┌────────────────────┐
+│  ↑ 10px            │
+│  ← 20px  ボタン → │  ← 背景色はpaddingの領域まで
+│  ↓ 10px            │
+└────────────────────┘
+```
+
+**Paddingなしの場合：**
+```
+┌──────┐
+│ボタン│  ← クリックしづらい！
+└──────┘
+```
+
+### 3. Border（枠線）
+
+```css
+/* 基本形：太さ スタイル 色 */
+border: 2px solid black;
+
+/* 各プロパティを個別に指定 */
+border-width: 2px;
+border-style: solid;
+border-color: black;
+
+/* 各辺を個別に指定 */
+border-top: 1px solid red;
+border-right: 2px dashed blue;
+border-bottom: 3px dotted green;
+border-left: 4px double orange;
+
+/* 角を丸く */
+border-radius: 10px;           /* 全角 */
+border-radius: 10px 20px;      /* 左上右下, 右上左下 */
+border-radius: 10px 20px 30px 40px;  /* 左上, 右上, 右下, 左下 */
+
+/* 円形 */
+border-radius: 50%;
+```
+
+**Border Styleの種類：**
+```css
+border-style: solid;   /* 実線 ──── */
+border-style: dashed;  /* 破線 ---- */
+border-style: dotted;  /* 点線 ···· */
+border-style: double;  /* 二重線 ═══ */
+border-style: none;    /* なし */
+```
+
+**実用例：カード**
+```css
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+}
+```
+
+表示：
+```
+┌────────────────────┐
+│                    │
+│   カードの内容     │
+│                    │
+└────────────────────┘
+```
+
+**実用例：円形アバター**
+```css
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;  /* 円形 */
+  border: 3px solid white;
+}
+```
+
+### 4. Margin（外側の余白）
+
+```css
+/* paddingと同じ指定方法 */
+margin: 20px;
+margin: 10px 20px;
+margin: 10px 15px 20px 25px;
+
+/* 1つずつ指定 */
+margin-top: 10px;
+margin-right: 15px;
+margin-bottom: 20px;
+margin-left: 25px;
+
+/* 左右中央揃え（重要！） */
+margin: 0 auto;
+
+/* 負の値も使える */
+margin-top: -10px;  /* 10px上に移動 */
+```
+
+**Marginの役割：**
+- **要素と要素の間の余白**
+- 背景色は適用されない
+- 隣の要素との距離を調整
+
+**例：要素の配置**
+```css
+.box1 {
+  margin-bottom: 20px;  /* 下に20pxの余白 */
+}
+.box2 {
+  margin-top: 10px;     /* 上に10pxの余白 */
+}
+```
+
+表示：
+```
+┌─────────┐
+│ box1    │
+└─────────┘
+   ↓ 20px（marginが重なって、実際は20px）
+┌─────────┐
+│ box2    │
+└─────────┘
+```
+
+> 💡 **Margin Collapse（マージンの相殺）**: 上下のmarginは重なると、**大きい方が適用**されます。上記の例では、box1のmargin-bottom（20px）とbox2のmargin-top（10px）が重なり、実際の余白は20pxになります。
+
+**左右中央揃え：**
+```css
+.container {
+  width: 800px;
+  margin: 0 auto;  /* 左右のmarginを自動調整 → 中央揃え */
+}
+```
+
+表示：
+```
+←─────────────────────────────────→ 画面幅
+    ┌──────────────┐
+    │  container  │  ← 中央に配置される
+    └──────────────┘
+```
+
+### Box-Sizingの重要性
+
+```css
+/* デフォルト（content-box） */
+.box {
+  width: 200px;
+  padding: 20px;
+  border: 2px solid black;
+}
+/* 実際の幅 = 200 + 20×2 + 2×2 = 244px */
+```
+
+**問題：指定した幅と実際の幅が違う！**
+
+```css
+/* 解決策：border-box */
+.box {
+  box-sizing: border-box;  /* paddingとborderを含めた幅になる */
+  width: 200px;
+  padding: 20px;
+  border: 2px solid black;
+}
+/* 実際の幅 = 200px（padding, borderを含む） */
+```
+
+**ベストプラクティス：すべての要素に適用**
+```css
+* {
+  box-sizing: border-box;
+}
+```
+↑ これをCSSの最初に書くと、すべての要素で直感的なサイズ指定ができます
+
+**比較表：**
+
+| | content-box（デフォルト） | border-box（推奨） |
+|---|---|---|
+| width | コンテンツのみ | padding + border を含む |
+| 実際の幅 | width + padding + border | width |
+| 直感的 | ✗ | ✓ |
+
+**視覚的な違い：**
+
+```
+content-box:
+width: 200px
+┌─────────────────────────────┐
+│ border (2px)                │
+│ ┌─────────────────────────┐ │
+│ │ padding (20px)          │ │
+│ │ ┌─────────────────────┐ │ │
+│ │ │ content (200px)     │ │ │  ← width指定
+│ │ └─────────────────────┘ │ │
+│ └─────────────────────────┘ │
+└─────────────────────────────┘
+実際の幅 = 244px
+
+border-box:
+width: 200px
+┌───────────────────┐
+│ border (2px)      │
+│ ┌───────────────┐ │
+│ │ padding (20px)│ │
+│ │ ┌───────────┐ │ │
+│ │ │ content  │ │ │
+│ │ │ (156px)  │ │ │  ← 自動調整
+│ │ └───────────┘ │ │
+│ └───────────────┘ │
+└───────────────────┘
+実際の幅 = 200px  ← width指定と一致！
+```
+
+**初心者への補足：**
+> 💡 **ボックスモデルを理解するコツ：**
+> 1. **Padding**: 要素の「内側」の余白（背景色が付く）
+> 2. **Border**: 要素の「枠線」（見える線）
+> 3. **Margin**: 要素の「外側」の余白（背景色は付かない）
+> 
+> **覚え方**: "P-B-M" （パブロ・マスヤ）→ Padding, Border, Margin
+> 
+> **実際の開発では**:
+> - `box-sizing: border-box` を使う（直感的）
+> - ブラウザの開発者ツールでボックスモデルを確認する
+> - Chrome DevTools の Elements タブ → Computed タブで視覚的に確認できます
   padding-right: 15px;          /* 右だけ */
   padding-bottom: 10px;         /* 下だけ */
   padding-left: 15px;           /* 左だけ */
@@ -2927,6 +3449,144 @@ color: rgba(255, 0, 0, 0.5); /* 半透明の赤 */
 }
 ```
 
+**このコードの詳しい説明：**
+
+### 1. `display: block`（ブロック要素）
+
+```css
+div {
+  display: block;
+}
+```
+
+**特徴：**
+- 親要素の幅いっぱいに広がる
+- 必ず新しい行から始まる（縦に並ぶ）
+- `width`, `height`, `margin`, `padding` すべて指定可能
+
+**ブロック要素の例：** `<div>`, `<p>`, `<h1>`, `<section>` など
+
+```html
+<div>ボックス1</div>
+<div>ボックス2</div>
+<div>ボックス3</div>
+```
+
+表示：
+```
+┌──────────────────┐
+│ ボックス1        │  ← 幅いっぱい
+└──────────────────┘
+┌──────────────────┐
+│ ボックス2        │
+└──────────────────┘
+┌──────────────────┐
+│ ボックス3        │
+└──────────────────┘
+```
+
+### 2. `display: inline`（インライン要素）
+
+```css
+span {
+  display: inline;
+}
+```
+
+**特徴：**
+- コンテンツの幅だけ占める
+- 横に並ぶ
+- `width`, `height` は指定できない
+- 上下の `margin`, `padding` は効かない（左右はOK）
+
+**インライン要素の例：** `<span>`, `<a>`, `<strong>`, `<em>` など
+
+```html
+<span>テキスト1</span>
+<span>テキスト2</span>
+<span>テキスト3</span>
+```
+
+表示：
+```
+テキスト1 テキスト2 テキスト3  ← 横に並ぶ
+```
+
+### 3. `display: inline-block`（両方の特徴）
+
+```css
+.box {
+  display: inline-block;
+}
+```
+
+**特徴：**
+- 横に並ぶ（inlineの特徴）
+- `width`, `height`, `margin`, `padding` すべて指定可能（blockの特徴）
+- ボタンやカードなどでよく使う
+
+```html
+<div style="display: inline-block; width: 100px; height: 50px; background: blue;"></div>
+<div style="display: inline-block; width: 100px; height: 50px; background: red;"></div>
+```
+
+表示：
+```
+┌──────┐ ┌──────┐
+│ 青   │ │ 赤   │  ← 横に並ぶ & サイズ指定可能
+└──────┘ └──────┘
+```
+
+### 4. `display: none`（非表示）
+
+```css
+.hidden {
+  display: none;
+}
+```
+
+**特徴：**
+- 要素が完全に消える
+- 場所も取らない
+- **`visibility: hidden` との違い：**
+  - `display: none` → 要素が消える & 場所も消える
+  - `visibility: hidden` → 要素が消える & 場所は残る
+
+**比較：**
+```html
+<div>要素1</div>
+<div style="display: none;">要素2（消える）</div>
+<div>要素3</div>
+```
+
+表示：
+```
+要素1
+要素3  ← 要素2の場所は詰まる
+```
+
+```html
+<div>要素1</div>
+<div style="visibility: hidden;">要素2（消える）</div>
+<div>要素3</div>
+```
+
+表示：
+```
+要素1
+       ← 要素2の場所は残る（空白）
+要素3
+```
+
+**displayの使い分け表：**
+
+| display | 幅 | 並び方 | サイズ指定 | 使い所 |
+|---|---|---|---|---|
+| `block` | 親いっぱい | 縦 | ✓ | div, p, section |
+| `inline` | コンテンツのみ | 横 | ✗ | span, a, strong |
+| `inline-block` | コンテンツのみ | 横 | ✓ | ボタン、カード |
+| `none` | - | - | - | JavaScript で切り替え |
+
 #### Position
 
 ```css
@@ -2944,6 +3604,214 @@ color: rgba(255, 0, 0, 0.5); /* 半透明の赤 */
   left: 20px;
 }
 ```
+
+**このコードの詳しい説明：**
+
+### 1. `position: static`（デフォルト）
+
+```css
+.element {
+  position: static;
+}
+```
+
+- デフォルトの配置
+- `top`, `left` などは効かない
+- 通常のドキュメントフローに従う
+
+### 2. `position: relative`（相対位置）
+
+```css
+.element {
+  position: relative;
+  top: 10px;   /* 元の位置から下に10px */
+  left: 20px;  /* 元の位置から右に20px */
+}
+```
+
+**特徴：**
+- **元の位置を基準**に移動
+- 元の位置の場所は確保される（他の要素はずれない）
+- 子要素の `absolute` の基準になる
+
+**例：**
+```html
+<div class="box1">ボックス1</div>
+<div class="box2" style="position: relative; top: 20px; left: 30px;">ボックス2</div>
+<div class="box3">ボックス3</div>
+```
+
+表示：
+```
+┌──────────┐
+│ ボックス1│
+└──────────┘
+             ┌──────────┐
+             │ ボックス2│  ← 元の位置から右下に移動
+             └──────────┘
+             （ここは空白）
+┌──────────┐
+│ ボックス3│  ← ボックス2の元の位置を避けて配置
+└──────────┘
+```
+
+### 3. `position: absolute`（絶対位置）
+
+```css
+.element {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+```
+
+**特徴：**
+- **親要素（`position: relative` の親）を基準**に配置
+- 元の位置の場所は確保されない（他の要素に重なる）
+- 親に `position` がない場合は、`<body>` が基準になる
+
+**実用例：バッジ**
+```html
+<div style="position: relative; width: 100px; height: 100px; background: blue;">
+  親ボックス
+  <span style="position: absolute; top: 0; right: 0; background: red; color: white;">99+</span>
+</div>
+```
+
+表示：
+```
+┌────────────────┐ [99+]  ← 右上に固定
+│                │
+│   親ボックス    │
+│                │
+└────────────────┘
+```
+
+**よくある間違い：**
+```html
+<!-- ❌ 親に position: relative がない -->
+<div>
+  <span style="position: absolute; top: 0; right: 0;">バッジ</span>
+</div>
+<!-- → バッジが画面全体の右上に行ってしまう -->
+
+<!-- ✅ 親に position: relative がある -->
+<div style="position: relative;">
+  <span style="position: absolute; top: 0; right: 0;">バッジ</span>
+</div>
+<!-- → バッジが親要素の右上に配置される -->
+```
+
+### 4. `position: fixed`（固定位置）
+
+```css
+.element {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+```
+
+**特徴：**
+- **画面（viewport）を基準**に配置
+- スクロールしても動かない
+- 元の位置の場所は確保されない
+
+**実用例：固定ヘッダー**
+```css
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 1000;  /* 他の要素より前面に */
+}
+```
+
+表示：
+```
+┌────────────────────────────┐
+│ ヘッダー（固定）            │
+├────────────────────────────┤
+│                            │
+│   スクロールするコンテンツ  │
+│                            │
+│                            │  ← スクロールしても
+│                            │     ヘッダーは動かない
+│                            │
+```
+
+### 5. `position: sticky`（スティッキー）
+
+```css
+.element {
+  position: sticky;
+  top: 0;
+}
+```
+
+**特徴：**
+- 普段は `relative` のように動作
+- スクロールして指定位置に達すると `fixed` のように固定される
+- 親要素の範囲内でのみ動作
+
+**実用例：スティッキーヘッダー**
+```css
+.section-header {
+  position: sticky;
+  top: 0;
+  background: white;
+}
+```
+
+**動作：**
+```
+スクロール前：
+┌─────────────────┐
+│ セクション1     │
+├─────────────────┤  ← セクション1のヘッダー
+│ 内容...         │
+│                 │
+
+スクロール中：
+┌─────────────────┐  ← セクション1のヘッダー（固定）
+│ 内容...         │
+│                 │
+│ セクション2     │
+├─────────────────┤  ← セクション2のヘッダー
+```
+
+**Positionの比較表：**
+
+| position | 基準 | 場所確保 | スクロール | 使い所 |
+|---|---|---|---|---|
+| `static` | 通常フロー | ✓ | 連動 | デフォルト |
+| `relative` | 自分の元の位置 | ✓ | 連動 | 軽微な調整、absolute の親 |
+| `absolute` | 親要素 | ✗ | 連動 | モーダル、ツールチップ、バッジ |
+| `fixed` | 画面 | ✗ | 固定 | 固定ヘッダー、フローティングボタン |
+| `sticky` | 親要素 | ✓ | 条件付き固定 | テーブルヘッダー、サイドバー |
+
+**z-indexの重要性：**
+```css
+.modal {
+  position: fixed;
+  z-index: 1000;  /* 重なり順（大きいほど前面） */
+}
+
+.header {
+  position: fixed;
+  z-index: 100;   /* モーダルより後ろ */
+}
+```
+
+> 💡 **Position の使い分け：**
+> - **軽い調整** → `relative`
+> - **重ねる** → `absolute`
+> - **常に見える** → `fixed`
+> - **スクロールで固定** → `sticky`
 
 #### Flexbox（重要！）
 
