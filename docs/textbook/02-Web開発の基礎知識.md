@@ -6,7 +6,7 @@
 
 ```mermaid
 mindmap
-  root((Web開発の<br/>基礎))
+  root((Web開発の基礎))
     HTML
       ページの構造
       セマンティック
@@ -68,9 +68,9 @@ mindmap
 graph TB
     subgraph "ユーザー側（フロントエンド）"
         A[ブラウザ]
-        B[HTML<br/>構造]
-        C[CSS<br/>見た目]
-        D[JavaScript<br/>動き]
+        B["HTML (構造)"]
+        C["CSS (見た目)"]
+        D["JavaScript (動き)"]
     end
     
     subgraph "通信"
@@ -113,19 +113,19 @@ Webページを見るとき、実は裏側でこんなやり取りが行われ�
 ```mermaid
 sequenceDiagram
     participant U as ユーザー
-    participant B as ブラウザ<br/>(クライアント)
+    participant B as ブラウザ (クライアント)
     participant D as DNSサーバー
     participant W as Webサーバー
     participant DB as データベース
     
-    U->>B: URLを入力<br/>https://example.com
+    U->>B: URLを入力 (https://example.com)
     B->>D: ドメイン名を問い合わせ
-    D-->>B: IPアドレスを返す<br/>(123.45.67.89)
-    B->>W: ① ページを要求<br/>(HTTPリクエスト)
+    D-->>B: IPアドレスを返す (123.45.67.89)
+    B->>W: ① ページを要求 (HTTPリクエスト)
     W->>DB: ② データを取得
     DB-->>W: データを返す
-    W-->>B: ③ HTML/CSS/JSを返す<br/>(HTTPレスポンス)
-    B->>B: ④ ページを表示<br/>(レンダリング)
+    W-->>B: ③ HTML/CSS/JSを返す (HTTPレスポンス)
+    B->>B: ④ ページを表示 (レンダリング)
     B->>U: ⑤ 画面に表示
 ```
 
@@ -193,14 +193,14 @@ sequenceDiagram
 
 ```mermaid
 graph LR
-    A[HTTPリクエスト] --> B[メソッド<br/>GET/POST/PUT/DELETE]
-    A --> C[URL<br/>/posts/123]
-    A --> D[ヘッダー<br/>Content-Type等]
-    A --> E[ボディ<br/>送信データ]
+    A[HTTPリクエスト] --> B["メソッド (GET/POST/PUT/DELETE)"]
+    A --> C["URL (/posts/123)"]
+    A --> D["ヘッダー (Content-Type等)"]
+    A --> E["ボディ (送信データ)"]
     
-    F[HTTPレスポンス] --> G[ステータスコード<br/>200/404/500]
-    F --> H[ヘッダー<br/>Content-Type等]
-    F --> I[ボディ<br/>HTML/JSON等]
+    F[HTTPレスポンス] --> G["ステータスコード (200/404/500)"]
+    F --> H["ヘッダー (Content-Type等)"]
+    F --> I["ボディ (HTML/JSON等)"]
 ```
 
 **リクエストの例：**
@@ -267,11 +267,11 @@ mindmap
 
 | メソッド | 意味 | 例 | 特徴 |
 |---------|------|-----|------|
-| GET | データを取得 | ページを表示<br/>投稿一覧取得 | ・URLにパラメータ<br/>・安全（データ変更なし）<br/>・キャッシュ可能 |
-| POST | データを送信 | フォームの送信<br/>新規投稿作成 | ・ボディにデータ<br/>・データ作成<br/>・キャッシュ不可 |
-| PUT | データを更新 | プロフィール編集<br/>投稿全体を更新 | ・全体を置き換え<br/>・べき等性あり |
-| PATCH | データを一部更新 | いいね追加<br/>閲覧数更新 | ・一部だけ変更<br/>・効率的 |
-| DELETE | データを削除 | 投稿の削除<br/>コメント削除 | ・データ削除<br/>・べき等性あり |
+| GET | データを取得 | ページを表示、投稿一覧取得 | ・URLにパラメータ<br/>・安全（データ変更なし）<br/>・キャッシュ可能 |
+| POST | データを送信 | フォームの送信、新規投稿作成 | ・ボディにデータ<br/>・データ作成<br/>・キャッシュ不可 |
+| PUT | データを更新 | プロフィール編集、投稿全体を更新 | ・全体を置き換え<br/>・べき等性あり |
+| PATCH | データを一部更新 | いいね追加、閲覧数更新 | ・一部だけ変更<br/>・効率的 |
+| DELETE | データを削除 | 投稿の削除、コメント削除 | ・データ削除<br/>・べき等性あり |
 
 **実際の使用例：**
 
@@ -280,7 +280,36 @@ mindmap
 fetch('/api/posts')
   .then(res => res.json())
   .then(data => console.log(data));
+```
 
+**このコードの詳しい説明：**
+
+1. `fetch('/api/posts')` - `/api/posts`にGETリクエストを送信
+   - デフォルトでGETメソッドが使われる
+   - サーバーに「投稿一覧をください」とお願い
+
+2. `.then(res => res.json())` - レスポンスを受け取る
+   - `res`はHTTPレスポンス（サーバーからの返事）
+   - `res.json()`でJSON形式のデータに変換
+   - Promiseを返すので次の`.then()`に渡される
+
+3. `.then(data => console.log(data))` - データを使う
+   - `data`には投稿一覧のデータが入っている
+   - `console.log(data)`でコンソールに表示
+   - 実際のアプリでは画面に表示する処理を書く
+
+**実行結果のイメージ：**
+```javascript
+// dataの中身
+[
+  { id: 1, title: "練習報告", content: "今日は..." },
+  { id: 2, title: "ライブ報告", content: "無事終了" }
+]
+```
+
+---
+
+```typescript
 // POST - 新規投稿を作成
 fetch('/api/posts', {
   method: 'POST',
@@ -290,7 +319,48 @@ fetch('/api/posts', {
     content: '今日は...'
   })
 });
+```
 
+**このコードの詳しい説明：**
+
+1. `fetch('/api/posts', { ... })` - 第2引数にオプションを指定
+   - `/api/posts`にリクエストを送る
+   - `{ ... }`の中に詳細設定を書く
+
+2. `method: 'POST'` - HTTPメソッドをPOSTに指定
+   - データを作成したいのでPOSTを使う
+   - GETと違い、データをサーバーに送信できる
+
+3. `headers: { 'Content-Type': 'application/json' }` - ヘッダーを設定
+   - `Content-Type`は「どんな形式のデータか」を示す
+   - `application/json`は「JSON形式です」という意味
+   - サーバーがデータを正しく解釈できるようになる
+
+4. `body: JSON.stringify({ ... })` - 送信するデータ
+   - `body`にはリクエストの本文（送りたいデータ）を書く
+   - JavaScriptのオブジェクト `{ title: ..., content: ... }` を作成
+   - `JSON.stringify()`でJSON文字列に変換（必須！）
+   - サーバーに送れる形式にする
+
+**なぜJSON.stringify()が必要？**
+```javascript
+// ❌ これはダメ（オブジェクトのまま）
+body: { title: '練習報告' }
+
+// ✅ これが正しい（JSON文字列に変換）
+body: JSON.stringify({ title: '練習報告' })
+// → '{"title":"練習報告"}' という文字列になる
+```
+
+**実行後にサーバーで起こること：**
+1. POSTリクエストを受信
+2. JSON文字列をパース（解析）
+3. データベースに新しい投稿を保存
+4. 成功レスポンス（201 Created）を返す
+
+---
+
+```typescript
 // PUT - 投稿を更新
 fetch('/api/posts/123', {
   method: 'PUT',
@@ -299,12 +369,98 @@ fetch('/api/posts/123', {
     content: '今日は...（追記）'
   })
 });
+```
 
+**このコードの詳しい説明：**
+
+1. `'/api/posts/123'` - 更新したい投稿を指定
+   - `123`は投稿のID
+   - この投稿を丸ごと置き換える
+
+2. `method: 'PUT'` - 更新のためPUTメソッド
+   - リソース全体を置き換える
+   - POSTは「作成」、PUTは「更新」
+
+3. `body: JSON.stringify({ ... })` - 新しい内容
+   - titleとcontentを両方指定
+   - 指定しなかったフィールドは削除される可能性あり
+
+**PUTとPATCHの違い：**
+```typescript
+// PUT - 全体を置き換え
+fetch('/api/posts/123', {
+  method: 'PUT',
+  body: JSON.stringify({
+    title: '新しいタイトル',
+    content: '新しい内容',
+    // すべてのフィールドを指定する必要がある
+  })
+});
+
+// PATCH - 一部だけ更新
+fetch('/api/posts/123', {
+  method: 'PATCH',
+  body: JSON.stringify({
+    title: '新しいタイトル'
+    // titleだけ更新、contentはそのまま
+  })
+});
+```
+
+---
+
+```typescript
 // DELETE - 投稿を削除
 fetch('/api/posts/123', {
   method: 'DELETE'
 });
 ```
+
+**このコードの詳しい説明：**
+
+1. `'/api/posts/123'` - 削除したい投稿を指定
+   - URLのパスで対象を特定
+   - `123`は削除する投稿のID
+
+2. `method: 'DELETE'` - DELETEメソッドを指定
+   - 削除したいのでDELETEを使う
+   - データを送る必要がないので`body`は不要
+
+3. `body`なし - 削除するだけなので送信データ不要
+   - URLで削除対象を指定済み
+   - 追加情報は必要ない
+
+**実行後にサーバーで起こること：**
+1. DELETEリクエストを受信
+2. ID=123の投稿をデータベースから削除
+3. 成功レスポンス（200 OK または 204 No Content）を返す
+
+**安全な削除の実装例：**
+```typescript
+// 確認してから削除
+if (confirm('本当に削除しますか？')) {
+  fetch('/api/posts/123', {
+    method: 'DELETE'
+  })
+  .then(res => {
+    if (res.ok) {
+      alert('削除しました');
+      // 画面から削除した投稿を消す処理
+    } else {
+      alert('削除に失敗しました');
+    }
+  });
+}
+```
+
+**初心者への補足：**
+> 💡 HTTPメソッドは「動詞」です：
+> - **GET** = 「見せて」（取得）
+> - **POST** = 「作って」（作成）
+> - **PUT/PATCH** = 「直して」（更新）
+> - **DELETE** = 「消して」（削除）
+
+---
 
 **HTTPステータスコード：**
 
@@ -315,20 +471,20 @@ graph TB
     A --> D[4xx クライアントエラー]
     A --> E[5xx サーバーエラー]
     
-    B --> B1[200 OK<br/>成功]
-    B --> B2[201 Created<br/>作成成功]
-    B --> B3[204 No Content<br/>成功だが中身なし]
+    B --> B1["200 OK (成功)"]
+    B --> B2["201 Created (作成成功)"]
+    B --> B3["204 No Content (成功だが中身なし)"]
     
-    C --> C1[301 Moved Permanently<br/>永久に移動]
-    C --> C2[302 Found<br/>一時的に移動]
+    C --> C1["301 Moved Permanently (永久に移動)"]
+    C --> C2["302 Found (一時的に移動)"]
     
-    D --> D1[400 Bad Request<br/>リクエストが不正]
-    D --> D2[401 Unauthorized<br/>認証が必要]
-    D --> D3[403 Forbidden<br/>権限がない]
-    D --> D4[404 Not Found<br/>見つからない]
+    D --> D1["400 Bad Request (リクエストが不正)"]
+    D --> D2["401 Unauthorized (認証が必要)"]
+    D --> D3["403 Forbidden (権限がない)"]
+    D --> D4["404 Not Found (見つからない)"]
     
-    E --> E1[500 Internal Server Error<br/>サーバーエラー]
-    E --> E2[503 Service Unavailable<br/>サービス停止中]
+    E --> E1["500 Internal Server Error (サーバーエラー)"]
+    E --> E2["503 Service Unavailable (サービス停止中)"]
     
     style B fill:#e8f5e9
     style D fill:#fff4e1
@@ -361,12 +517,12 @@ URLは住所のようなものです：
 
 ```mermaid
 graph TB
-    A[URL] --> B[プロトコル<br/>https://]
-    A --> C[ドメイン<br/>example.com]
-    A --> D[ポート<br/>:443]
-    A --> E[パス<br/>/posts/123]
-    A --> F[クエリ<br/>?sort=new]
-    A --> G[フラグメント<br/>#comments]
+    A[URL] --> B["プロトコル (https://)"]
+    A --> C["ドメイン (example.com)"]
+    A --> D["ポート (:443)"]
+    A --> E["パス (/posts/123)"]
+    A --> F["クエリ (?sort=new)"]
+    A --> G["フラグメント (#comments)"]
     
     B --> B1[通信方法を指定]
     C --> C1[サーバーの場所]
@@ -517,7 +673,7 @@ mindmap
 
 ```mermaid
 graph LR
-    A[文章] -->|HTML| B[構造化された<br/>Webページ]
+    A[文章] -->|HTML| B["構造化されたWebページ"]
     
     A -->|タグで囲む| C[見出し]
     A -->|タグで囲む| D[段落]
@@ -629,21 +785,21 @@ graph LR
 
 ```mermaid
 graph TB
-    A[html] --> B[head<br/>メタ情報]
-    A --> C[body<br/>表示内容]
+    A[html] --> B["head (メタ情報)"]
+    A --> C["body (表示内容)"]
     
     B --> B1[meta charset]
     B --> B2[meta viewport]
     B --> B3[title]
-    B --> B4[link<br/>CSSファイル]
+    B --> B4["link (CSSファイル)"]
     
-    C --> C1[header<br/>ヘッダー]
-    C --> C2[main<br/>メインコンテンツ]
-    C --> C3[footer<br/>フッター]
+    C --> C1["header (ヘッダー)"]
+    C --> C2["main (メインコンテンツ)"]
+    C --> C3["footer (フッター)"]
     
-    C1 --> C1A[nav<br/>ナビゲーション]
-    C2 --> C2A[article<br/>記事]
-    C2 --> C2B[aside<br/>サイドバー]
+    C1 --> C1A["nav (ナビゲーション)"]
+    C2 --> C2A["article (記事)"]
+    C2 --> C2B["aside (サイドバー)"]
     
     style B fill:#e1f5ff
     style C fill:#e8f5e9
@@ -893,12 +1049,12 @@ graph TB
     A[画像パス] --> B[絶対パス]
     A --> C[相対パス]
     
-    B --> B1[https://example.com/image.jpg<br/>完全なURL]
-    B --> B2[/images/photo.jpg<br/>ルートからのパス]
+    B --> B1["https://example.com/image.jpg (完全なURL)"]
+    B --> B2["/images/photo.jpg (ルートからのパス)"]
     
-    C --> C1[image.jpg<br/>同じフォルダ]
-    C --> C2[images/photo.jpg<br/>サブフォルダ]
-    C --> C3[../image.jpg<br/>1つ上のフォルダ]
+    C --> C1["image.jpg (同じフォルダ)"]
+    C --> C2["images/photo.jpg (サブフォルダ)"]
+    C --> C3["../image.jpg (1つ上のフォルダ)"]
 ```
 
 #### 6. 強調
