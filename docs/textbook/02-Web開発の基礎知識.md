@@ -1,29 +1,173 @@
 # 第2章：Web開発の基礎知識
 
-この章では、Web開発の基本となる **HTML**、**CSS**、**JavaScript** について学びます。これらはWebページを作る上で必須の技術です。
+## この章で学ぶこと
+
+この章では、Web開発の基本となる **HTML**、**CSS**、**JavaScript** について学びます。
+
+```mermaid
+mindmap
+  root((Web開発の<br/>基礎))
+    HTML
+      ページの構造
+      セマンティック
+      フォーム
+    CSS
+      スタイリング
+      レイアウト
+      レスポンシブ
+    JavaScript
+      動的な処理
+      DOM操作
+      イベント処理
+    ブラウザ
+      レンダリング
+      開発者ツール
+      デバッグ
+```
+
+**学習の流れ：**
+
+1. **Webページの仕組み**（20分）
+   - クライアント・サーバーモデル
+   - HTTP通信
+   - URLの構造
+
+2. **HTML**（1-2時間）
+   - タグと要素の基本
+   - セマンティックHTML
+   - フォーム要素
+
+3. **CSS**（2-3時間）
+   - セレクタとプロパティ
+   - ボックスモデル
+   - FlexboxとGrid
+
+4. **JavaScript**（3-4時間）
+   - 変数と型
+   - 関数
+   - DOM操作
+
+5. **実践演習**（1時間）
+   - 簡単なWebページを作成
+
+**到達目標：**
+- ✅ Webページがどのように表示されるか理解できる
+- ✅ HTMLで文書構造を作れる
+- ✅ CSSでスタイリングができる
+- ✅ JavaScriptで動的な処理を追加できる
+
+---
 
 ## 2.1 Webページの仕組み
+
+### Web技術の全体像
+
+まず、Web技術全体がどのように関連しているかを理解しましょう：
+
+```mermaid
+graph TB
+    subgraph "ユーザー側（フロントエンド）"
+        A[ブラウザ]
+        B[HTML<br/>構造]
+        C[CSS<br/>見た目]
+        D[JavaScript<br/>動き]
+    end
+    
+    subgraph "通信"
+        E[HTTP/HTTPS]
+        F[DNS]
+    end
+    
+    subgraph "サーバー側（バックエンド）"
+        G[Webサーバー]
+        H[アプリケーション]
+        I[データベース]
+    end
+    
+    A --> B
+    A --> C
+    A --> D
+    A <-->|リクエスト/レスポンス| E
+    E <--> F
+    E <--> G
+    G <--> H
+    H <--> I
+    
+    style B fill:#e1f5ff
+    style C fill:#fff4e1
+    style D fill:#ffe1e1
+```
+
+**初心者への補足：**
+> 💡 Webページは「3つの言語」で作られています：
+> - **HTML** = 家の骨組み（構造）
+> - **CSS** = 家の内装（デザイン）
+> - **JavaScript** = 家の設備（動く部分）
+
+---
 
 ### クライアントとサーバー
 
 Webページを見るとき、実は裏側でこんなやり取りが行われています：
 
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant B as ブラウザ<br/>(クライアント)
+    participant D as DNSサーバー
+    participant W as Webサーバー
+    participant DB as データベース
+    
+    U->>B: URLを入力<br/>https://example.com
+    B->>D: ドメイン名を問い合わせ
+    D-->>B: IPアドレスを返す<br/>(123.45.67.89)
+    B->>W: ① ページを要求<br/>(HTTPリクエスト)
+    W->>DB: ② データを取得
+    DB-->>W: データを返す
+    W-->>B: ③ HTML/CSS/JSを返す<br/>(HTTPレスポンス)
+    B->>B: ④ ページを表示<br/>(レンダリング)
+    B->>U: ⑤ 画面に表示
 ```
-あなたのブラウザ           Webサーバー
-（クライアント）
-      |                        |
-      |  ① ページください！      |
-      |----------------------->|
-      |                        |
-      |  ② HTMLを送ります       |
-      |<-----------------------|
-      |                        |
-      |  ③ 画像ください！        |
-      |----------------------->|
-      |                        |
-      |  ④ 画像を送ります       |
-      |<-----------------------|
-```
+
+**各ステップの詳細：**
+
+1. **DNS解決**
+   ```
+   example.com
+   ↓
+   DNS（電話帳みたいなもの）で検索
+   ↓
+   123.45.67.89（実際のサーバーの住所）
+   ```
+
+2. **HTTPリクエスト送信**
+   ```http
+   GET /index.html HTTP/1.1
+   Host: example.com
+   User-Agent: Mozilla/5.0...
+   Accept: text/html
+   ```
+
+3. **サーバー処理**
+   - リクエストを受け取る
+   - 必要なデータをデータベースから取得
+   - HTMLを生成
+
+4. **HTTPレスポンス返却**
+   ```http
+   HTTP/1.1 200 OK
+   Content-Type: text/html
+   Content-Length: 1234
+   
+   <!DOCTYPE html>
+   <html>...</html>
+   ```
+
+5. **ブラウザでレンダリング**
+   - HTMLを解析（パース）
+   - CSSを読み込んでスタイル適用
+   - JavaScriptを実行
+   - 画面に表示
 
 **用語の説明：**
 
@@ -31,59 +175,310 @@ Webページを見るとき、実は裏側でこんなやり取りが行われ�
 - **サーバー**: Webページのデータを保存して送ってくれるコンピューター
 - **リクエスト**: クライアントがサーバーに「データください」と頼むこと
 - **レスポンス**: サーバーがクライアントにデータを返すこと
+- **DNS**: ドメイン名（example.com）をIPアドレス（123.45.67.89）に変換する仕組み
+- **レンダリング**: HTMLやCSSを解析して、画面に表示すること
+
+**初心者への補足：**
+> 💡 Webページを見るのは、レストランで料理を注文するようなものです：
+> 1. あなた（ブラウザ）がメニュー（URL）を見て注文
+> 2. 店員（サーバー）が厨房（データベース）に伝える
+> 3. 料理（HTML/CSS/JS）ができて運ばれてくる
+> 4. あなたが料理を食べる（ブラウザで表示）
+
+---
 
 ### HTTPプロトコル
 
 **HTTP**（HyperText Transfer Protocol）は、クライアントとサーバーが会話するときのルールです。
 
-```
-リクエスト:
-GET /index.html HTTP/1.1        ← index.htmlを取得したい
-Host: example.com               ← example.comというサーバーに
+```mermaid
+graph LR
+    A[HTTPリクエスト] --> B[メソッド<br/>GET/POST/PUT/DELETE]
+    A --> C[URL<br/>/posts/123]
+    A --> D[ヘッダー<br/>Content-Type等]
+    A --> E[ボディ<br/>送信データ]
+    
+    F[HTTPレスポンス] --> G[ステータスコード<br/>200/404/500]
+    F --> H[ヘッダー<br/>Content-Type等]
+    F --> I[ボディ<br/>HTML/JSON等]
 ```
 
-```
-レスポンス:
-HTTP/1.1 200 OK                 ← 成功しました！
-Content-Type: text/html         ← HTMLファイルを送ります
+**リクエストの例：**
 
-<html>
-  <body>こんにちは</body>
-</html>
+```http
+GET /api/posts/123 HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+Accept: application/json
+Authorization: Bearer abc123xyz
 ```
+
+**各行の意味：**
+1. `GET /api/posts/123 HTTP/1.1` - GETメソッドで `/api/posts/123` を取得
+2. `Host: example.com` - アクセス先のドメイン
+3. `User-Agent: ...` - ブラウザの種類とバージョン
+4. `Accept: application/json` - JSON形式のレスポンスが欲しい
+5. `Authorization: ...` - 認証トークン（ログイン済み証明）
+
+**レスポンスの例：**
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 234
+Cache-Control: max-age=3600
+
+{
+  "id": 123,
+  "title": "練習報告",
+  "content": "今日は..."
+}
+```
+
+**各行の意味：**
+1. `HTTP/1.1 200 OK` - リクエスト成功
+2. `Content-Type: application/json` - JSONデータを返す
+3. `Content-Length: 234` - データサイズは234バイト
+4. `Cache-Control: max-age=3600` - 1時間キャッシュしてOK
 
 **主なHTTPメソッド：**
 
-| メソッド | 意味 | 例 |
-|---------|------|-----|
-| GET | データを取得 | ページを表示 |
-| POST | データを送信 | フォームの送信 |
-| PUT | データを更新 | プロフィールの編集 |
-| DELETE | データを削除 | 投稿の削除 |
+```mermaid
+mindmap
+  root((HTTPメソッド))
+    GET
+      データ取得
+      ページ表示
+      検索
+    POST
+      データ作成
+      フォーム送信
+      ログイン
+    PUT
+      データ更新
+      全体を置き換え
+    PATCH
+      データ更新
+      一部だけ変更
+    DELETE
+      データ削除
+      投稿削除
+```
+
+| メソッド | 意味 | 例 | 特徴 |
+|---------|------|-----|------|
+| GET | データを取得 | ページを表示<br/>投稿一覧取得 | ・URLにパラメータ<br/>・安全（データ変更なし）<br/>・キャッシュ可能 |
+| POST | データを送信 | フォームの送信<br/>新規投稿作成 | ・ボディにデータ<br/>・データ作成<br/>・キャッシュ不可 |
+| PUT | データを更新 | プロフィール編集<br/>投稿全体を更新 | ・全体を置き換え<br/>・べき等性あり |
+| PATCH | データを一部更新 | いいね追加<br/>閲覧数更新 | ・一部だけ変更<br/>・効率的 |
+| DELETE | データを削除 | 投稿の削除<br/>コメント削除 | ・データ削除<br/>・べき等性あり |
+
+**実際の使用例：**
+
+```typescript
+// GET - 投稿一覧を取得
+fetch('/api/posts')
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+// POST - 新規投稿を作成
+fetch('/api/posts', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    title: '練習報告',
+    content: '今日は...'
+  })
+});
+
+// PUT - 投稿を更新
+fetch('/api/posts/123', {
+  method: 'PUT',
+  body: JSON.stringify({
+    title: '練習報告（更新）',
+    content: '今日は...（追記）'
+  })
+});
+
+// DELETE - 投稿を削除
+fetch('/api/posts/123', {
+  method: 'DELETE'
+});
+```
+
+**HTTPステータスコード：**
+
+```mermaid
+graph TB
+    A[HTTPステータスコード] --> B[2xx 成功]
+    A --> C[3xx リダイレクト]
+    A --> D[4xx クライアントエラー]
+    A --> E[5xx サーバーエラー]
+    
+    B --> B1[200 OK<br/>成功]
+    B --> B2[201 Created<br/>作成成功]
+    B --> B3[204 No Content<br/>成功だが中身なし]
+    
+    C --> C1[301 Moved Permanently<br/>永久に移動]
+    C --> C2[302 Found<br/>一時的に移動]
+    
+    D --> D1[400 Bad Request<br/>リクエストが不正]
+    D --> D2[401 Unauthorized<br/>認証が必要]
+    D --> D3[403 Forbidden<br/>権限がない]
+    D --> D4[404 Not Found<br/>見つからない]
+    
+    E --> E1[500 Internal Server Error<br/>サーバーエラー]
+    E --> E2[503 Service Unavailable<br/>サービス停止中]
+    
+    style B fill:#e8f5e9
+    style D fill:#fff4e1
+    style E fill:#ffe1e1
+```
+
+**よくあるステータスコード：**
+
+| コード | 名前 | 意味 | よくある原因 |
+|-------|------|------|------------|
+| 200 | OK | 成功 | 正常にデータを取得 |
+| 201 | Created | 作成成功 | 投稿を作成した |
+| 400 | Bad Request | リクエストが不正 | 必須項目が未入力 |
+| 401 | Unauthorized | 認証エラー | ログインしていない |
+| 403 | Forbidden | 権限エラー | 他人の投稿を削除しようとした |
+| 404 | Not Found | 見つからない | 存在しないページ |
+| 500 | Internal Server Error | サーバーエラー | プログラムのバグ |
+
+**初心者への補足：**
+> 💡 HTTPステータスコードは「店員さんの返事」です：
+> - 200 OK = 「かしこまりました！」
+> - 404 Not Found = 「その商品はございません」
+> - 500 Internal Server Error = 「申し訳ございません、エラーが発生しました」
+
+---
 
 ### URLの構造
 
 URLは住所のようなものです：
 
-```
-https://example.com:443/posts/123?sort=new#comments
-  │       │         │     │     │   │        │
-  │       │         │     │     │   │        └─ フラグメント（ページ内の位置）
-  │       │         │     │     │   └────────── クエリパラメータ
-  │       │         │     │     └────────────── パス
-  │       │         │     └──────────────────── ポート番号
-  │       │         └────────────────────────── ドメイン
-  │       └──────────────────────────────────── サブドメイン
-  └──────────────────────────────────────────── プロトコル
+```mermaid
+graph TB
+    A[URL] --> B[プロトコル<br/>https://]
+    A --> C[ドメイン<br/>example.com]
+    A --> D[ポート<br/>:443]
+    A --> E[パス<br/>/posts/123]
+    A --> F[クエリ<br/>?sort=new]
+    A --> G[フラグメント<br/>#comments]
+    
+    B --> B1[通信方法を指定]
+    C --> C1[サーバーの場所]
+    D --> D1[接続する窓口]
+    E --> E1[ファイルの場所]
+    F --> F1[追加パラメータ]
+    G --> G1[ページ内の位置]
 ```
 
-**例：**
+**完全なURLの例：**
+
 ```
-https://keion-circle-site.vercel.app/posts/123
+https://keion-circle-site.vercel.app:443/posts/123?sort=new&filter=practice#comments
+  │        │                │         │    │      │                       │
+  │        │                │         │    │      │                       └─ フラグメント
+  │        │                │         │    │      └───────────────────────── クエリパラメータ
+  │        │                │         │    └──────────────────────────────── パス
+  │        │                │         └───────────────────────────────────── ポート番号
+  │        │                └─────────────────────────────────────────────── ドメイン
+  │        └──────────────────────────────────────────────────────────────── サブドメイン
+  └───────────────────────────────────────────────────────────────────────── プロトコル
 ```
-- `https://` - 安全な通信（暗号化あり）
-- `keion-circle-site.vercel.app` - サイトのドメイン
-- `/posts/123` - 123番の投稿ページ
+
+**各部分の詳細：**
+
+1. **プロトコル**（https://）
+   ```
+   http://  - 暗号化なし（平文通信）
+   https:// - 暗号化あり（SSL/TLS）← 推奨！
+   ```
+   
+   **httpとhttpsの違い：**
+   ```mermaid
+   graph LR
+       A[HTTP] -->|暗号化なし| B[第三者が盗聴可能]
+       C[HTTPS] -->|暗号化あり| D[安全な通信]
+       
+       style A fill:#ffe1e1
+       style C fill:#e8f5e9
+   ```
+
+2. **ドメイン**（keion-circle-site.vercel.app）
+   ```
+   keion-circle-site - サブドメイン（サービス名）
+   vercel.app        - ドメイン（会社名）
+   ```
+
+3. **ポート番号**（:443）
+   ```
+   :80  - HTTP のデフォルト
+   :443 - HTTPS のデフォルト
+   :3000 - 開発環境でよく使う
+   ```
+   通常は省略可能（デフォルトポートの場合）
+
+4. **パス**（/posts/123）
+   ```
+   /           - トップページ
+   /posts      - 投稿一覧
+   /posts/123  - 123番の投稿
+   /posts/123/edit - 123番の投稿の編集ページ
+   ```
+
+5. **クエリパラメータ**（?sort=new&filter=practice）
+   ```
+   ?sort=new             - 1つのパラメータ
+   ?sort=new&filter=practice - 複数のパラメータ
+   
+   形式: ?key=value&key=value
+   ```
+   
+   **使用例：**
+   ```
+   /posts?sort=new          - 新しい順に並べる
+   /posts?sort=old          - 古い順に並べる
+   /posts?page=2&limit=10   - 2ページ目、10件ずつ
+   /search?q=React          - 「React」で検索
+   ```
+
+6. **フラグメント**（#comments）
+   ```
+   #top      - ページの一番上
+   #comments - commentsというIDの要素
+   #section2 - section2というIDの要素
+   ```
+   ページ内の特定の位置にスクロール
+
+**URLエンコーディング：**
+
+特殊文字はエンコードする必要があります：
+
+```javascript
+// スペースや日本語をエンコード
+encodeURIComponent('こんにちは')
+// → '%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF'
+
+encodeURIComponent('hello world')
+// → 'hello%20world'
+
+// 実際の使用例
+const query = 'React 入門';
+const url = `/search?q=${encodeURIComponent(query)}`;
+// → '/search?q=React%20%E5%85%A5%E9%96%80'
+```
+
+**初心者への補足：**
+> 💡 URLは「住所」です：
+> - **プロトコル** = 交通手段（車か電車か）
+> - **ドメイン** = 都道府県と市区町村
+> - **パス** = 番地と建物名
+> - **クエリ** = 部屋番号や追加情報
+> - **フラグメント** = 建物内のフロア
 
 ---
 
@@ -93,7 +488,55 @@ https://keion-circle-site.vercel.app/posts/123
 
 **HTML**（HyperText Markup Language）は、Webページの**構造**を作る言語です。
 
-「これは見出し」「これは段落」「これはリンク」というように、文書の構造を定義します。
+```mermaid
+mindmap
+  root((HTML))
+    構造を定義
+      見出し
+      段落
+      リスト
+      表
+    意味を持たせる
+      セマンティック
+      アクセシビリティ
+      SEO
+    リンク
+      他のページへ
+      ページ内
+      外部サイト
+    画像
+      埋め込み
+      代替テキスト
+    フォーム
+      入力欄
+      ボタン
+      送信
+```
+
+**HTMLの役割：**
+
+```mermaid
+graph LR
+    A[文章] -->|HTML| B[構造化された<br/>Webページ]
+    
+    A -->|タグで囲む| C[見出し]
+    A -->|タグで囲む| D[段落]
+    A -->|タグで囲む| E[リスト]
+    
+    C --> B
+    D --> B
+    E --> B
+    
+    style A fill:#fff4e1
+    style B fill:#e8f5e9
+```
+
+**初心者への補足：**
+> 💡 HTMLは「文章の設計図」です。
+> - 普通の文章：「軽音サークルの紹介です。メンバー募集中！」
+> - HTML：「これは見出し、これは段落、これは強調」と指定する
+
+---
 
 ### タグと要素
 
@@ -103,23 +546,425 @@ HTMLは**タグ**で囲んで書きます：
 <タグ名>内容</タグ名>
 ```
 
+**構造の図解：**
+
+```mermaid
+graph LR
+    A[<p>] -->|開始タグ| B[これは段落です]
+    B --> C[</p>]
+    C -->|終了タグ| D[完成！]
+    
+    A -.->|要素全体| D
+    
+    style A fill:#e1f5ff
+    style C fill:#e1f5ff
+    style D fill:#e8f5e9
+```
+
 **例：**
+
 ```html
 <p>これは段落です</p>
 ```
 
+**各部分の名前：**
 - `<p>` - **開始タグ**（ここから段落が始まる）
 - `これは段落です` - **内容**（実際に表示される文字）
 - `</p>` - **終了タグ**（ここで段落が終わる）
+- 全体 - **要素**（タグ + 内容）
 
-この全体を**要素**と呼びます。
+**属性を持つ要素：**
+
+```html
+<a href="https://example.com" target="_blank">リンク</a>
+   │    │                      │
+   │    │                      └─ 属性2: 新しいタブで開く
+   │    └──────────────────────── 属性1: リンク先URL
+   └───────────────────────────── タグ名
+```
+
+**属性の書き方：**
+```html
+<タグ名 属性名="属性値">内容</タグ名>
+```
+
+**空要素（終了タグがない）：**
+
+```html
+<img src="photo.jpg" alt="写真">  <!-- 画像 -->
+<br>                              <!-- 改行 -->
+<hr>                              <!-- 水平線 -->
+<input type="text">               <!-- 入力欄 -->
+```
+
+**初心者への補足：**
+> 💡 タグは「付箋」のようなものです：
+> - `<h1>` = 「これは大見出し」という付箋
+> - `<p>` = 「これは段落」という付箋
+> - `<strong>` = 「ここは重要」という付箋
+
+---
 
 ### 基本的なHTMLの構造
 
 すべてのHTMLファイルは、この構造で始まります：
 
 ```html
-<!DOCTYPE html>                 <!-- HTML5を使いますという宣言 -->
+<!DOCTYPE html>                 <!-- ① HTML5を使いますという宣言 -->
+<html lang="ja">                <!-- ② HTML文書の開始（日本語） -->
+<head>                          <!-- ③ メタ情報（画面に表示されない） -->
+  <meta charset="UTF-8">        <!--    文字コード -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--    スマホ対応 -->
+  <title>ページタイトル</title> <!--    ブラウザのタブに表示 -->
+</head>
+<body>                          <!-- ④ 実際に表示される内容 -->
+  <h1>こんにちは</h1>
+  <p>これはWebページです</p>
+</body>
+</html>                         <!-- ⑤ HTML文書の終了 -->
+```
+
+**構造の図解：**
+
+```mermaid
+graph TB
+    A[html] --> B[head<br/>メタ情報]
+    A --> C[body<br/>表示内容]
+    
+    B --> B1[meta charset]
+    B --> B2[meta viewport]
+    B --> B3[title]
+    B --> B4[link<br/>CSSファイル]
+    
+    C --> C1[header<br/>ヘッダー]
+    C --> C2[main<br/>メインコンテンツ]
+    C --> C3[footer<br/>フッター]
+    
+    C1 --> C1A[nav<br/>ナビゲーション]
+    C2 --> C2A[article<br/>記事]
+    C2 --> C2B[aside<br/>サイドバー]
+    
+    style B fill:#e1f5ff
+    style C fill:#e8f5e9
+```
+
+**各部分の役割：**
+
+1. **DOCTYPE宣言**
+   ```html
+   <!DOCTYPE html>
+   ```
+   - 「HTML5を使います」という宣言
+   - 必ず最初に書く
+   - 大文字でも小文字でもOK
+
+2. **html要素**
+   ```html
+   <html lang="ja">
+   ```
+   - HTML文書全体を囲む
+   - `lang="ja"` = 日本語のページ
+   - `lang="en"` = 英語のページ
+
+3. **head要素**（メタ情報）
+   ```html
+   <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="ページの説明">
+     <title>ページタイトル</title>
+     <link rel="stylesheet" href="style.css">
+   </head>
+   ```
+   
+   - `charset` = 文字エンコーディング（UTF-8推奨）
+   - `viewport` = スマホ対応の設定
+   - `description` = 検索結果に表示される説明
+   - `title` = ブラウザのタブに表示されるタイトル
+   - `link` = CSSファイルの読み込み
+
+4. **body要素**（表示内容）
+   ```html
+   <body>
+     <!-- ここに実際に表示される内容を書く -->
+   </body>
+   ```
+
+**最小限のHTMLファイル：**
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>マイページ</title>
+</head>
+<body>
+  <h1>こんにちは！</h1>
+</body>
+</html>
+```
+
+**初心者への補足：**
+> 💡 HTMLファイルは「本」の構造に似ています：
+> - `<!DOCTYPE html>` = 表紙の「これは本です」という表示
+> - `<head>` = 目次（読者には見えない情報）
+> - `<body>` = 本文（実際に読む内容）
+
+---
+
+### よく使うHTMLタグ
+
+#### 1. 見出し（h1-h6）
+
+```html
+<h1>最も重要な見出し</h1>
+<h2>2番目に重要な見出し</h2>
+<h3>3番目に重要な見出し</h3>
+<h4>4番目に重要な見出し</h4>
+<h5>5番目に重要な見出し</h5>
+<h6>最も重要度が低い見出し</h6>
+```
+
+**階層構造：**
+
+```mermaid
+graph TB
+    A[h1: サイトタイトル] --> B[h2: セクション1]
+    A --> C[h2: セクション2]
+    
+    B --> B1[h3: サブセクション1-1]
+    B --> B2[h3: サブセクション1-2]
+    
+    B1 --> B1A[h4: 詳細1-1-1]
+    
+    C --> C1[h3: サブセクション2-1]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#fff4e1
+```
+
+**使い方のルール：**
+- `h1` はページに1つだけ（最も重要）
+- 順番に使う（h1 → h2 → h3）
+- 飛ばさない（h1の次にh3は NG）
+
+**実例：**
+
+```html
+<h1>軽音サークル BOLD</h1>
+  <h2>活動報告</h2>
+    <h3>12月の練習</h3>
+    <h3>1月のライブ</h3>
+  <h2>メンバー紹介</h2>
+    <h3>ギター担当</h3>
+    <h3>ベース担当</h3>
+```
+
+#### 2. 段落と改行
+
+```html
+<p>これは段落です。段落は自動で改行されます。</p>
+<p>次の段落です。前の段落との間に余白が入ります。</p>
+
+<p>
+  段落内で<br>
+  改行したいときは<br>
+  brタグを使います
+</p>
+```
+
+**表示結果イメージ：**
+```
+これは段落です。段落は自動で改行されます。
+
+次の段落です。前の段落との間に余白が入ります。
+
+段落内で
+改行したいときは
+brタグを使います
+```
+
+#### 3. リスト
+
+**番号なしリスト（ul）：**
+
+```html
+<ul>
+  <li>ギター</li>
+  <li>ベース</li>
+  <li>ドラム</li>
+</ul>
+```
+
+表示：
+```
+• ギター
+• ベース
+• ドラム
+```
+
+**番号付きリスト（ol）：**
+
+```html
+<ol>
+  <li>チューニング</li>
+  <li>ウォーミングアップ</li>
+  <li>練習開始</li>
+</ol>
+```
+
+表示：
+```
+1. チューニング
+2. ウォーミングアップ
+3. 練習開始
+```
+
+**入れ子構造：**
+
+```html
+<ul>
+  <li>楽器
+    <ul>
+      <li>ギター</li>
+      <li>ベース</li>
+    </ul>
+  </li>
+  <li>ボーカル</li>
+</ul>
+```
+
+表示：
+```
+• 楽器
+  • ギター
+  • ベース
+• ボーカル
+```
+
+#### 4. リンク（a）
+
+```html
+<a href="https://example.com">外部サイトへ</a>
+<a href="/about">サイト内のページへ</a>
+<a href="#section2">ページ内の特定位置へ</a>
+<a href="mailto:info@example.com">メール送信</a>
+```
+
+**属性：**
+- `href` = リンク先のURL
+- `target="_blank"` = 新しいタブで開く
+- `rel="noopener"` = セキュリティ対策（target="_blank"と一緒に使う）
+
+```html
+<a href="https://example.com" target="_blank" rel="noopener">
+  外部サイト（新しいタブで開く）
+</a>
+```
+
+#### 5. 画像（img）
+
+```html
+<img src="photo.jpg" alt="写真の説明">
+```
+
+**属性：**
+- `src` = 画像ファイルのパス（必須）
+- `alt` = 代替テキスト（画像が表示されないとき、必須）
+- `width` = 幅（ピクセル）
+- `height` = 高さ（ピクセル）
+
+```html
+<img 
+  src="/images/guitar.jpg" 
+  alt="エレキギター" 
+  width="300" 
+  height="200"
+>
+```
+
+**パスの指定方法：**
+
+```mermaid
+graph TB
+    A[画像パス] --> B[絶対パス]
+    A --> C[相対パス]
+    
+    B --> B1[https://example.com/image.jpg<br/>完全なURL]
+    B --> B2[/images/photo.jpg<br/>ルートからのパス]
+    
+    C --> C1[image.jpg<br/>同じフォルダ]
+    C --> C2[images/photo.jpg<br/>サブフォルダ]
+    C --> C3[../image.jpg<br/>1つ上のフォルダ]
+```
+
+#### 6. 強調
+
+```html
+<strong>重要なテキスト</strong>  <!-- 太字、重要 -->
+<em>強調したいテキスト</em>      <!-- 斜体、強調 -->
+<mark>ハイライト</mark>          <!-- 黄色マーカー -->
+```
+
+表示：
+- **重要なテキスト**
+- *強調したいテキスト*
+- <mark>ハイライト</mark>
+
+#### 7. コンテナ要素
+
+```html
+<div>ブロックレベルのコンテナ</div>
+<span>インラインのコンテナ</span>
+```
+
+**違い：**
+
+```mermaid
+graph LR
+    A[div] -->|改行される| B[ブロック要素]
+    C[span] -->|改行されない| D[インライン要素]
+    
+    B --> B1[幅いっぱいに広がる]
+    B --> B2[上下に余白]
+    
+    D --> D1[内容の幅だけ]
+    D --> D2[余白なし]
+    
+    style A fill:#e1f5ff
+    style C fill:#fff4e1
+```
+
+**例：**
+
+```html
+<div>これはdivです</div>
+<div>これも別のdivです</div>
+
+<span>これはspan</span><span>です</span>
+```
+
+表示：
+```
+これはdivです
+これも別のdivです
+これはspanです
+```
+
+**初心者への補足：**
+> 💡 タグの使い分け：
+> - **div/span** = 意味なし（デザイン用）
+> - **p** = 段落
+> - **h1-h6** = 見出し
+> - **ul/ol** = リスト
+> - **strong/em** = 強調
+
+正しい意味のタグを使うことを「セマンティックHTML」と言います！
+
+---
 <html lang="ja">                <!-- HTML文書の始まり。日本語です -->
   <head>                        <!-- ページの情報（表示されない） -->
     <meta charset="UTF-8">      <!-- 文字コードはUTF-8 -->
