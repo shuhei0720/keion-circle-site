@@ -7008,7 +7008,7 @@ numbers.forEach(n => console.log(n));
 
 ### DOM操作
 
-**DOM**（Document Object Model）は、HTMLをJavaScriptで操作するための仕組みです。
+**DOM**（Document Object Model）は、HTMLをJavaScriptで操作するための仕組みです。Webページを動的に変更できます。
 
 #### 要素の取得
 
@@ -7025,6 +7025,99 @@ const elements = document.querySelectorAll('.myClass');
 // タグで取得
 const paragraphs = document.getElementsByTagName('p');
 ```
+
+**このコードの詳しい説明：**
+
+1. **document.getElementById()**
+   ```html
+   <div id="header">ヘッダー</div>
+   ```
+   ```javascript
+   const header = document.getElementById('header');
+   console.log(header);  // <div id="header">ヘッダー</div>
+   
+   // IDは1つだけ（同じIDを複数使ってはいけない）
+   // 見つからない場合は null
+   const notFound = document.getElementById('missing');
+   console.log(notFound);  // null
+   ```
+
+2. **document.querySelector()（最も便利）**
+   ```html
+   <div class="box">ボックス1</div>
+   <div class="box">ボックス2</div>
+   <p id="text">テキスト</p>
+   ```
+   ```javascript
+   // CSSセレクタが使える
+   const box = document.querySelector('.box');      // 最初の.box
+   const text = document.querySelector('#text');    // #text
+   const firstP = document.querySelector('p');      // 最初の<p>
+   
+   // 複雑なセレクタも可能
+   const link = document.querySelector('nav a.active');
+   const input = document.querySelector('input[type="email"]');
+   ```
+
+3. **document.querySelectorAll()（複数取得）**
+   ```html
+   <li class="item">アイテム1</li>
+   <li class="item">アイテム2</li>
+   <li class="item">アイテム3</li>
+   ```
+   ```javascript
+   const items = document.querySelectorAll('.item');
+   console.log(items.length);  // 3
+   
+   // NodeList（配列のようなもの）
+   items.forEach(item => {
+     console.log(item.textContent);
+   });
+   // アイテム1
+   // アイテム2
+   // アイテム3
+   
+   // 配列に変換
+   const itemsArray = Array.from(items);
+   const itemsArray2 = [...items];  // スプレッド構文
+   ```
+
+4. **getElementsBy系（古い方法）**
+   ```javascript
+   // タグ名で取得
+   const paragraphs = document.getElementsByTagName('p');
+   
+   // クラス名で取得
+   const boxes = document.getElementsByClassName('box');
+   
+   // HTMLCollection が返る（forEach が使えない）
+   // for...of は使える
+   for (const p of paragraphs) {
+     console.log(p);
+   }
+   ```
+
+**初心者への補足：**
+> 💡 **要素取得のベストプラクティス：**
+> 
+> | メソッド | 用途 | 返り値 |
+> |---------|------|--------|
+> | `querySelector()` | **1つ取得（推奨）** | 要素 or null |
+> | `querySelectorAll()` | **複数取得（推奨）** | NodeList |
+> | `getElementById()` | IDで1つ | 要素 or null |
+> | `getElementsByClassName()` | クラスで複数（非推奨） | HTMLCollection |
+> 
+> **基本は `querySelector()` と `querySelectorAll()` を使いましょう！**
+> 
+> ```javascript
+> // ✅ 推奨
+> const btn = document.querySelector('#submitBtn');
+> const items = document.querySelectorAll('.item');
+> 
+> // ❌ 古い方法
+> const btn = document.getElementById('submitBtn');
+> const items = document.getElementsByClassName('item');
+> ```
 
 #### 要素の操作
 
@@ -7050,6 +7143,137 @@ element.classList.toggle('selected');
 element.classList.contains('active');  // true/false
 ```
 
+**このコードの詳しい説明：**
+
+1. **textContent vs innerHTML**
+   ```html
+   <div id="demo">こんにちは</div>
+   ```
+   ```javascript
+   const demo = document.querySelector('#demo');
+   
+   // textContent: テキストのみ（安全）
+   demo.textContent = 'Hello <strong>World</strong>';
+   // 表示: Hello <strong>World</strong>（タグがそのまま表示）
+   
+   // innerHTML: HTMLとして解釈（注意が必要）
+   demo.innerHTML = 'Hello <strong>World</strong>';
+   // 表示: Hello World（Worldが太字）
+   
+   // ⚠️ ユーザー入力をinnerHTMLに入れるのは危険（XSS攻撃）
+   const userInput = '<script>alert("危険")</script>';
+   demo.innerHTML = userInput;  // ❌ 絶対にやらない
+   demo.textContent = userInput;  // ✅ 安全
+   ```
+
+2. **属性の操作**
+   ```html
+   <img id="photo" src="old.jpg" alt="写真">
+   <a id="link" href="https://example.com">リンク</a>
+   ```
+   ```javascript
+   const photo = document.querySelector('#photo');
+   const link = document.querySelector('#link');
+   
+   // 取得
+   console.log(photo.getAttribute('src'));  // 'old.jpg'
+   console.log(link.href);                   // 'https://example.com'
+   
+   // 設定
+   photo.setAttribute('src', 'new.jpg');
+   photo.setAttribute('alt', '新しい写真');
+   
+   // data-* 属性
+   // <div data-user-id="123" data-role="admin"></div>
+   const div = document.querySelector('div');
+   console.log(div.dataset.userId);  // '123'
+   console.log(div.dataset.role);    // 'admin'
+   
+   div.dataset.userId = '456';  // 変更
+   ```
+
+3. **スタイルの変更**
+   ```html
+   <div id="box">ボックス</div>
+   ```
+   ```javascript
+   const box = document.querySelector('#box');
+   
+   // CSSプロパティをキャメルケースで
+   box.style.color = 'red';
+   box.style.backgroundColor = 'yellow';  // background-color
+   box.style.fontSize = '20px';           // font-size
+   box.style.marginTop = '10px';          // margin-top
+   
+   // 複数のスタイルをまとめて
+   Object.assign(box.style, {
+     color: 'white',
+     backgroundColor: 'blue',
+     padding: '10px',
+     borderRadius: '5px'
+   });
+   
+   // ⚠️ style は inline style（優先度が高い）
+   // 可能ならクラスで制御する方が良い
+   ```
+
+4. **classList（クラスの操作）**
+   ```html
+   <div id="menu" class="menu">メニュー</div>
+   ```
+   ```javascript
+   const menu = document.querySelector('#menu');
+   
+   // 追加
+   menu.classList.add('active');
+   // <div class="menu active">
+   
+   // 削除
+   menu.classList.remove('active');
+   // <div class="menu">
+   
+   // トグル（あれば削除、なければ追加）
+   menu.classList.toggle('active');
+   
+   // 確認
+   if (menu.classList.contains('active')) {
+     console.log('activeクラスがあります');
+   }
+   
+   // 複数のクラスを一度に
+   menu.classList.add('active', 'highlighted', 'expanded');
+   menu.classList.remove('active', 'highlighted');
+   
+   // 置き換え
+   menu.classList.replace('menu', 'sidebar');
+   ```
+
+**初心者への補足：**
+> 💡 **要素操作のベストプラクティス：**
+> 
+> | 目的 | 推奨方法 | 理由 |
+> |------|---------|------|
+> | テキスト変更 | `textContent` | 安全 |
+> | HTML変更 | `innerHTML`（注意） | XSSに注意 |
+> | 見た目変更 | `classList` | CSSとの分離 |
+> | データ保存 | `dataset` | HTML5標準 |
+> 
+> **例：モーダルの開閉**
+> ```javascript
+> const modal = document.querySelector('#modal');
+> const openBtn = document.querySelector('#openModal');
+> const closeBtn = document.querySelector('#closeModal');
+> 
+> // ✅ classで制御（推奨）
+> openBtn.addEventListener('click', () => {
+>   modal.classList.add('active');
+> });
+> 
+> closeBtn.addEventListener('click', () => {
+>   modal.classList.remove('active');
+> });
+> ```
+
 #### 要素の作成・削除
 
 ```javascript
@@ -7067,6 +7291,194 @@ element.remove();
 // 子要素の削除
 parent.removeChild(child);
 ```
+
+**このコードの詳しい説明：**
+
+1. **要素の作成と追加**
+   ```javascript
+   // 1. 要素を作成
+   const newDiv = document.createElement('div');
+   
+   // 2. 内容を設定
+   newDiv.textContent = 'Hello';
+   newDiv.classList.add('box');
+   newDiv.id = 'myBox';
+   
+   // 3. DOMに追加
+   document.body.appendChild(newDiv);  // body の最後に追加
+   ```
+
+2. **リストに要素を追加**
+   ```html
+   <ul id="list">
+     <li>アイテム1</li>
+   </ul>
+   ```
+   ```javascript
+   const list = document.querySelector('#list');
+   
+   // 新しいリストアイテムを作成
+   const newItem = document.createElement('li');
+   newItem.textContent = 'アイテム2';
+   
+   // リストに追加
+   list.appendChild(newItem);
+   
+   // 結果:
+   // <ul id="list">
+   //   <li>アイテム1</li>
+   //   <li>アイテム2</li>
+   // </ul>
+   ```
+
+3. **複雑な要素の作成**
+   ```javascript
+   // <div class="card">
+   //   <h3>タイトル</h3>
+   //   <p>説明文</p>
+   //   <button>クリック</button>
+   // </div>
+   
+   const card = document.createElement('div');
+   card.className = 'card';
+   
+   const title = document.createElement('h3');
+   title.textContent = 'タイトル';
+   card.appendChild(title);
+   
+   const desc = document.createElement('p');
+   desc.textContent = '説明文';
+   card.appendChild(desc);
+   
+   const btn = document.createElement('button');
+   btn.textContent = 'クリック';
+   card.appendChild(btn);
+   
+   document.body.appendChild(card);
+   ```
+
+4. **insertBefore（特定の位置に挿入）**
+   ```html
+   <div id="parent">
+     <div id="child1">子要素1</div>
+     <div id="child2">子要素2</div>
+   </div>
+   ```
+   ```javascript
+   const parent = document.querySelector('#parent');
+   const child2 = document.querySelector('#child2');
+   
+   const newChild = document.createElement('div');
+   newChild.textContent = '新しい子要素';
+   
+   // child2の前に挿入
+   parent.insertBefore(newChild, child2);
+   
+   // 結果:
+   // <div id="parent">
+   //   <div id="child1">子要素1</div>
+   //   <div>新しい子要素</div>
+   //   <div id="child2">子要素2</div>
+   // </div>
+   ```
+
+5. **insertAdjacentHTML（HTML文字列で追加）**
+   ```html
+   <div id="container">既存の内容</div>
+   ```
+   ```javascript
+   const container = document.querySelector('#container');
+   
+   // beforebegin: 要素の前
+   container.insertAdjacentHTML('beforebegin', '<p>前</p>');
+   
+   // afterbegin: 要素の最初の子として
+   container.insertAdjacentHTML('afterbegin', '<p>最初</p>');
+   
+   // beforeend: 要素の最後の子として
+   container.insertAdjacentHTML('beforeend', '<p>最後</p>');
+   
+   // afterend: 要素の後
+   container.insertAdjacentHTML('afterend', '<p>後</p>');
+   
+   // 結果:
+   // <p>前</p>
+   // <div id="container">
+   //   <p>最初</p>
+   //   既存の内容
+   //   <p>最後</p>
+   // </div>
+   // <p>後</p>
+   ```
+
+6. **要素の削除**
+   ```html
+   <div id="parent">
+     <div id="child">削除される要素</div>
+   </div>
+   ```
+   ```javascript
+   const child = document.querySelector('#child');
+   
+   // ① Modern: 直接削除
+   child.remove();
+   
+   // ② Old: 親から削除
+   const parent = document.querySelector('#parent');
+   parent.removeChild(child);
+   ```
+
+7. **すべての子要素を削除**
+   ```html
+   <ul id="list">
+     <li>アイテム1</li>
+     <li>アイテム2</li>
+     <li>アイテム3</li>
+   </ul>
+   ```
+   ```javascript
+   const list = document.querySelector('#list');
+   
+   // ① innerHTML を空にする（簡単だがイベントリスナーが残る）
+   list.innerHTML = '';
+   
+   // ② すべての子要素を削除（推奨）
+   while (list.firstChild) {
+     list.removeChild(list.firstChild);
+   }
+   
+   // ③ replaceChildren（Modern）
+   list.replaceChildren();  // すべて削除
+   
+   // 新しい子要素で置き換え
+   const item1 = document.createElement('li');
+   item1.textContent = '新アイテム1';
+   const item2 = document.createElement('li');
+   item2.textContent = '新アイテム2';
+   list.replaceChildren(item1, item2);
+   ```
+
+**初心者への補足：**
+> 💡 **要素作成のベストプラクティス：**
+> 
+> | 方法 | メリット | デメリット |
+> |------|---------|-----------|
+> | `createElement()` | **安全、推奨** | 少し長い |
+> | `innerHTML` | 簡単 | XSS危険、イベント消失 |
+> | `insertAdjacentHTML()` | 便利 | XSS注意 |
+> 
+> **実用例：動的なリスト**
+> ```javascript
+> const todos = ['買い物', '掃除', '勉強'];
+> const list = document.querySelector('#todoList');
+> 
+> todos.forEach(todo => {
+>   const li = document.createElement('li');
+>   li.textContent = todo;
+>   li.classList.add('todo-item');
+>   list.appendChild(li);
+> });
+> ```
 
 #### イベントリスナー
 
@@ -7091,6 +7503,189 @@ input.addEventListener('input', (event) => {
   console.log('入力値:', event.target.value);
 });
 ```
+
+**このコードの詳しい説明：**
+
+1. **addEventListener の基本**
+   ```javascript
+   const button = document.querySelector('#btn');
+   
+   // イベントタイプ, ハンドラ関数
+   button.addEventListener('click', function() {
+     console.log('クリックされた！');
+   });
+   
+   // アロー関数で書く（推奨）
+   button.addEventListener('click', () => {
+     console.log('クリックされた！');
+   });
+   ```
+
+2. **event オブジェクト**
+   ```javascript
+   button.addEventListener('click', (event) => {
+     console.log('イベントタイプ:', event.type);        // 'click'
+     console.log('クリックした要素:', event.target);     // button要素
+     console.log('クリック座標:', event.clientX, event.clientY);
+   });
+   ```
+
+3. **複数のイベントリスナー**
+   ```javascript
+   button.addEventListener('click', () => {
+     console.log('1つ目');
+   });
+   
+   button.addEventListener('click', () => {
+     console.log('2つ目');
+   });
+   
+   // クリックすると両方実行される
+   // 1つ目
+   // 2つ目
+   ```
+
+4. **event.preventDefault()（デフォルト動作を防ぐ）**
+   ```javascript
+   // フォーム送信を防ぐ
+   const form = document.querySelector('#form');
+   form.addEventListener('submit', (event) => {
+     event.preventDefault();  // ページリロードを防ぐ
+     
+     // フォームデータを取得
+     const formData = new FormData(event.target);
+     console.log(formData.get('username'));
+   });
+   
+   // リンクの遷移を防ぐ
+   const link = document.querySelector('#link');
+   link.addEventListener('click', (event) => {
+     event.preventDefault();  // ページ遷移を防ぐ
+     console.log('リンクがクリックされたけど遷移しない');
+   });
+   ```
+
+5. **input イベント（リアルタイム入力）**
+   ```html
+   <input type="text" id="search" placeholder="検索...">
+   <div id="result"></div>
+   ```
+   ```javascript
+   const search = document.querySelector('#search');
+   const result = document.querySelector('#result');
+   
+   search.addEventListener('input', (event) => {
+     const query = event.target.value;
+     result.textContent = `検索中: ${query}`;
+     
+     // 実際はここでAPI呼び出しなど
+   });
+   ```
+
+6. **change イベント（変更確定）**
+   ```html
+   <select id="color">
+     <option value="red">赤</option>
+     <option value="blue">青</option>
+   </select>
+   ```
+   ```javascript
+   const select = document.querySelector('#color');
+   
+   // input: 入力のたびに発火
+   // change: 確定したときだけ発火
+   select.addEventListener('change', (event) => {
+     const color = event.target.value;
+     document.body.style.backgroundColor = color;
+   });
+   ```
+
+7. **キーボードイベント**
+   ```javascript
+   const input = document.querySelector('#input');
+   
+   input.addEventListener('keydown', (event) => {
+     console.log('押されたキー:', event.key);
+     
+     if (event.key === 'Enter') {
+       console.log('Enterキーが押された');
+     }
+     
+     if (event.key === 'Escape') {
+       input.value = '';  // Escapeでクリア
+     }
+     
+     // 特殊キーの確認
+     if (event.ctrlKey && event.key === 's') {
+       event.preventDefault();  // Ctrl+S を防ぐ
+       console.log('保存処理');
+     }
+   });
+   ```
+
+8. **イベントの削除**
+   ```javascript
+   // 名前付き関数を使う必要がある
+   function handleClick() {
+     console.log('クリック！');
+   }
+   
+   button.addEventListener('click', handleClick);
+   
+   // イベントを削除
+   button.removeEventListener('click', handleClick);
+   
+   // ❌ これは削除できない（関数が異なる）
+   button.addEventListener('click', () => {});
+   button.removeEventListener('click', () => {});  // 削除されない
+   ```
+
+9. **once オプション（1回だけ実行）**
+   ```javascript
+   button.addEventListener('click', () => {
+     console.log('1回だけ実行される');
+   }, { once: true });
+   
+   // 2回目以降はクリックしても実行されない
+   ```
+
+**初心者への補足：**
+> 💡 **よく使うイベント一覧：**
+> 
+> | カテゴリ | イベント | 発火タイミング |
+> |---------|---------|---------------|
+> | **マウス** | `click` | クリック |
+> | | `dblclick` | ダブルクリック |
+> | | `mouseover` | マウスが乗った |
+> | | `mouseout` | マウスが離れた |
+> | **キーボード** | `keydown` | キーを押した |
+> | | `keyup` | キーを離した |
+> | **フォーム** | `submit` | 送信 |
+> | | `input` | 入力（リアルタイム） |
+> | | `change` | 変更確定 |
+> | | `focus` | フォーカス |
+> | | `blur` | フォーカスが外れた |
+> | **その他** | `load` | ページ読み込み完了 |
+> | | `scroll` | スクロール |
+> | | `resize` | ウィンドウサイズ変更 |
+> 
+> **実用例：カウンターアプリ**
+> ```javascript
+> let count = 0;
+> const display = document.querySelector('#count');
+> const incBtn = document.querySelector('#increment');
+> const decBtn = document.querySelector('#decrement');
+> 
+> incBtn.addEventListener('click', () => {
+>   count++;
+>   display.textContent = count;
+> });
+> 
+> decBtn.addEventListener('click', () => {
+>   count--;
+>   display.textContent = count;
+> });
+> ```
 
 **よく使うイベント：**
 - `click` - クリック
