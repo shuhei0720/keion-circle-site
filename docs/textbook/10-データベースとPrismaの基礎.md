@@ -1023,66 +1023,54 @@ import 'dotenv/config';
 const prisma = new PrismaClient();
 
 async function main() {
-  // 1. スケジュールを作成
-  const schedule = await prisma.schedule.create({
+  // 1. 活動スケジュールを作成
+  const schedule = await prisma.activitySchedule.create({
     data: {
-      title: '次回練習日の調整',
-      description: '12月の練習日を決めましょう',
-      organizer: {
+      title: '12月の練習会',
+      content: '次回ライブに向けた練習です',
+      date: new Date('2025-12-25T18:00:00'),
+      location: 'スタジオABC',
+      locationUrl: 'https://maps.google.com/...',
+      user: {
         connect: { email: 'organizer@example.com' },
       },
-      candidateDates: {
-        create: [
-          { date: new Date('2025-12-25') },
-          { date: new Date('2025-12-26') },
-          { date: new Date('2025-12-27') },
-        ],
-      },
-    },
-    include: {
-      candidateDates: true,
     },
   });
   
   console.log(`✅ スケジュール作成: ${schedule.title}`);
-  console.log(`   候補日数: ${schedule.candidateDates.length}日`);
+  console.log(`   日時: ${schedule.date.toLocaleString()}`);
+  console.log(`   場所: ${schedule.location}`);
   
-  // 2. 投票を作成
-  const vote = await prisma.vote.create({
+  // 2. 参加者を登録
+  const participant = await prisma.activityParticipant.create({
     data: {
-      candidateDate: {
-        connect: { id: schedule.candidateDates[0].id },
+      activitySchedule: {
+        connect: { id: schedule.id },
       },
       user: {
         connect: { email: 'organizer@example.com' },
       },
-      status: 'available',
     },
   });
   
-  console.log(`✅ 投票完了: ${vote.status}`);
+  console.log(`✅ 参加登録完了`);
   
-  // 3. スケジュールと投票を取得
-  const scheduleWithVotes = await prisma.schedule.findUnique({
+  // 3. スケジュールと参加者を取得
+  const scheduleWithParticipants = await prisma.activitySchedule.findUnique({
     where: { id: schedule.id },
     include: {
-      candidateDates: {
+      participants: {
         include: {
-          votes: {
-            include: {
-              user: true,
-            },
-          },
+          user: true,
         },
       },
     },
   });
   
-  console.log(`\n📊 投票状況:`);
-  scheduleWithVotes.candidateDates.forEach((candidate) => {
-    const date = candidate.date.toLocaleDateString();
-    const voteCount = candidate.votes.length;
-    console.log(`  ${date}: ${voteCount}票`);
+  console.log(`\n📊 参加状況:`);
+  console.log(`  参加者数: ${scheduleWithParticipants.participants.length}名`);
+  scheduleWithParticipants.participants.forEach((p) => {
+    console.log(`  - ${p.user.name || p.user.email}`);
   });
 }
 
