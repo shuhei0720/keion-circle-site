@@ -4644,26 +4644,63 @@ HTML（構造） + CSS（装飾） + JavaScript（動き） = 動的なWebペー
 - ボタンをクリックしたときの処理
 - フォームの入力チェック
 - アニメーション
-- サーバーとのデータのやり取り
+- サーバーとのデータのやり取り（API通信）
 - ページの内容を動的に変更
+- ゲーム、チャット、リアルタイム更新
+
+**例：**
+```
+静的（HTMLだけ）:
+┌────────────┐
+│ こんにちは  │  ← 変わらない
+└────────────┘
+
+動的（JavaScript）:
+┌────────────┐
+│ こんにちは  │  [ボタン]
+└────────────┘
+  ↓ クリック
+┌────────────┐
+│ ありがとう！ │  ← 変わる！
+└────────────┘
+```
 
 ### JavaScriptの書き方
 
-#### 1. インラインスクリプト
+#### 1. インラインスクリプト（非推奨）
 
 ```html
 <button onclick="alert('クリックされました！')">クリック</button>
 ```
 
+**デメリット：**
+- HTMLとJavaScriptが混ざって読みづらい
+- 同じコードを何度も書く必要がある
+- 管理が大変
+
 #### 2. 内部スクリプト
 
 ```html
-<script>
-  console.log('Hello, JavaScript!');
-</script>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ページ</title>
+</head>
+<body>
+  <h1>こんにちは</h1>
+  
+  <script>
+    console.log('Hello, JavaScript!');
+  </script>
+</body>
+</html>
 ```
 
-#### 3. 外部スクリプト（推奨）
+**`<script>` タグの配置：**
+- **`</body>` の直前**に書くのが推奨
+- 理由：HTMLの読み込みが完了してから実行される
+
+#### 3. 外部スクリプト（**推奨**）
 
 **script.js:**
 ```javascript
@@ -4672,7 +4709,44 @@ console.log('Hello, JavaScript!');
 
 **index.html:**
 ```html
-<script src="script.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ページ</title>
+</head>
+<body>
+  <h1>こんにちは</h1>
+  
+  <script src="script.js"></script>
+</body>
+</html>
+```
+
+**メリット：**
+- HTMLとJavaScriptが分離される
+- 複数のHTMLファイルで再利用できる
+- コードが読みやすい
+
+### コンソールの使い方
+
+**`console.log()`** は開発者向けのメッセージ表示です。
+
+```javascript
+console.log('Hello, World!');
+console.log('変数の値:', age);
+console.log('計算結果:', 10 + 5);
+```
+
+**ブラウザで確認：**
+1. ブラウザで F12 を押す
+2. 「Console」タブを開く
+3. メッセージが表示される
+
+```
+Console:
+> Hello, World!
+> 変数の値: 25
+> 計算結果: 15
 ```
 
 ### 変数と定数
@@ -4689,6 +4763,43 @@ let isStudent = true;     // 真偽値
 // 後から変更できる
 name = '佐藤';
 age = 26;
+
+console.log(name);  // '佐藤'
+console.log(age);   // 26
+```
+
+**このコードの詳しい説明：**
+
+1. **`let name = '田中';`**
+   - `let` = 変数の宣言キーワード
+   - `name` = 変数名（好きな名前を付けられる）
+   - `=` = 代入演算子
+   - `'田中'` = 文字列の値
+
+2. **変更が可能**
+   ```javascript
+   name = '佐藤';  // 新しい値を代入
+   ```
+
+3. **再宣言はできない**
+   ```javascript
+   let name = '田中';
+   let name = '佐藤';  // ❌ エラー！すでに宣言済み
+   ```
+
+**変数名のルール：**
+```javascript
+// ✅ 良い変数名
+let userName = '太郎';      // キャメルケース（推奨）
+let user_name = '太郎';     // スネークケース
+let age = 25;
+let isActive = true;
+
+// ❌ 悪い変数名
+let a = '太郎';             // 意味不明
+let 123abc = 'test';        // 数字から始まる（エラー）
+let user-name = '太郎';     // ハイフンは使えない
+let let = 'test';           // 予約語は使えない
 ```
 
 #### const（定数）
@@ -4696,10 +4807,30 @@ age = 26;
 ```javascript
 const PI = 3.14;          // 定数（変更できない）
 const siteName = 'BOLD軽音';
+const MAX_USERS = 100;
 
-// エラー！変更できない
+// ❌ エラー！変更できない
 // PI = 3.15;
 ```
+
+**このコードの詳しい説明：**
+
+1. **`const PI = 3.14;`**
+   - `const` = 定数の宣言キーワード
+   - 一度代入したら変更できない
+
+2. **なぜ `const` を使うのか？**
+   - 変更されない値を保護する
+   - バグを防ぐ
+   - コードの意図が明確になる
+
+**例：設定値**
+```javascript
+const API_URL = 'https://api.example.com';
+const MAX_FILE_SIZE = 10 * 1024 * 1024;  // 10MB
+const ADMIN_EMAIL = 'admin@example.com';
+```
+↑ これらは変更されるべきでない値
 
 #### var（古い書き方）
 
@@ -4708,9 +4839,44 @@ var oldWay = 'これは古い書き方';
 // 今はletとconstを使います
 ```
 
-> 💡 **使い分け**: 基本的に`const`を使い、変更が必要なときだけ`let`を使います。
+**`var` の問題点：**
+```javascript
+// 問題1: 再宣言できてしまう
+var name = '田中';
+var name = '佐藤';  // エラーにならない（混乱の原因）
+
+// 問題2: スコープが関数単位（後述）
+if (true) {
+  var x = 10;
+}
+console.log(x);  // 10（外からアクセスできてしまう）
+
+// let/const は再宣言できない
+let name2 = '田中';
+let name2 = '佐藤';  // ❌ エラー！
+```
+
+> 💡 **使い分け：**
+> - **基本は `const`** を使う（変更しない値）
+> - **変更が必要なときだけ `let`** を使う（カウンターなど）
+> - **`var` は使わない**（古い書き方）
+
+**実用例：**
+```javascript
+// ✅ 良い例
+const userName = '田中';      // 変更しない
+let score = 0;                // 変更する
+score = score + 10;
+
+// ❌ 悪い例
+let userName = '田中';        // constで良い
+const score = 0;              // 変更できない！
+score = score + 10;           // エラー
+```
 
 ### データ型
+
+JavaScriptには主に7つのデータ型があります。
 
 #### 文字列（String）
 
@@ -4728,6 +4894,59 @@ const fullName = lastName + firstName;  // '山田太郎'
 const greeting = `こんにちは、${fullName}さん`;  // 'こんにちは、山田太郎さん'
 ```
 
+**このコードの詳しい説明：**
+
+1. **3種類のクォート**
+   ```javascript
+   const str1 = 'シングルクォート';   // 最もよく使う
+   const str2 = "ダブルクォート";      // どちらでもOK
+   const str3 = `バッククォート`;      // テンプレートリテラル用
+   ```
+
+2. **文字列の結合（古い方法）**
+   ```javascript
+   const fullName = lastName + firstName;
+   const message = 'こんにちは、' + fullName + 'さん';
+   ```
+   ↑ `+` で連結するが、読みづらい
+
+3. **テンプレートリテラル（新しい方法、推奨）**
+   ```javascript
+   const age = 25;
+   const message = `私は${age}歳です`;  // '私は25歳です'
+   ```
+   - **`${変数名}`** で変数を埋め込める
+   - 読みやすい、書きやすい
+
+   **計算も可能：**
+   ```javascript
+   const price = 1000;
+   const tax = `税込: ${price * 1.1}円`;  // '税込: 1100円'
+   ```
+
+4. **複数行の文字列**
+   ```javascript
+   // ❌ 古い方法
+   const message = '1行目\n2行目\n3行目';
+   
+   // ✅ テンプレートリテラル
+   const message = `1行目
+   2行目
+   3行目`;
+   ```
+
+**文字列のメソッド（便利な操作）：**
+```javascript
+const text = 'Hello, World!';
+
+console.log(text.length);           // 13（文字数）
+console.log(text.toUpperCase());    // 'HELLO, WORLD!'（大文字に）
+console.log(text.toLowerCase());    // 'hello, world!'（小文字に）
+console.log(text.includes('World')); // true（含まれているか）
+console.log(text.slice(0, 5));      // 'Hello'（切り出し）
+console.log(text.replace('World', 'JavaScript'));  // 'Hello, JavaScript!'
+```
+
 #### 数値（Number）
 
 ```javascript
@@ -4741,6 +4960,52 @@ const diff = 10 - 5;       // 5（引き算）
 const product = 10 * 5;    // 50（掛け算）
 const quotient = 10 / 5;   // 2（割り算）
 const remainder = 10 % 3;  // 1（余り）
+const power = 2 ** 3;      // 8（べき乗、2の3乗）
+```
+
+**このコードの詳しい説明：**
+
+1. **整数と小数の区別なし**
+   ```javascript
+   const a = 10;      // 整数
+   const b = 10.0;    // 小数（でも同じ）
+   console.log(a === b);  // true
+   ```
+
+2. **剰余演算子（%）の使い道**
+   ```javascript
+   // 偶数か奇数かの判定
+   const num = 10;
+   if (num % 2 === 0) {
+     console.log('偶数');
+   }
+   
+   // 5で割り切れるか
+   if (num % 5 === 0) {
+     console.log('5の倍数');
+   }
+   ```
+
+3. **特殊な数値**
+   ```javascript
+   const inf = 1 / 0;           // Infinity（無限大）
+   const negInf = -1 / 0;       // -Infinity
+   const notNum = 0 / 0;        // NaN（Not a Number）
+   
+   console.log(isNaN(notNum));  // true（NaNかどうかチェック）
+   ```
+
+**数値のメソッド：**
+```javascript
+const num = 3.14159;
+
+console.log(num.toFixed(2));        // '3.14'（小数点以下2桁）
+console.log(parseInt('10'));        // 10（文字列を整数に）
+console.log(parseFloat('3.14'));    // 3.14（文字列を小数に）
+console.log(Math.round(3.6));       // 4（四捨五入）
+console.log(Math.floor(3.9));       // 3（切り捨て）
+console.log(Math.ceil(3.1));        // 4（切り上げ）
+console.log(Math.random());         // 0〜1のランダムな数
 ```
 
 #### 真偽値（Boolean）
@@ -4758,7 +5023,180 @@ const isGreaterOrEqual = 10 >= 10; // true（以上）
 const isLessOrEqual = 10 <= 5;    // false（以下）
 ```
 
-> ⚠️ **注意**: `===`（厳密等価）を使い、`==`（等価）は避けましょう。
+**このコードの詳しい説明：**
+
+1. **厳密等価（`===`）と等価（`==`）の違い**
+   ```javascript
+   // ✅ 厳密等価（推奨）
+   console.log(10 === 10);      // true
+   console.log(10 === '10');    // false（型が違う）
+   
+   // ⚠️ 等価（非推奨）
+   console.log(10 == '10');     // true（型変換される）
+   console.log(0 == false);     // true（混乱の元）
+   ```
+   ↑ **必ず `===` を使いましょう**
+
+2. **真偽値に変換される値**
+   ```javascript
+   // Falsy（falseとして扱われる）
+   console.log(Boolean(false));     // false
+   console.log(Boolean(0));         // false
+   console.log(Boolean(''));        // false（空文字列）
+   console.log(Boolean(null));      // false
+   console.log(Boolean(undefined)); // false
+   console.log(Boolean(NaN));       // false
+   
+   // Truthy（trueとして扱われる）
+   console.log(Boolean(true));      // true
+   console.log(Boolean(1));         // true
+   console.log(Boolean('Hello'));   // true
+   console.log(Boolean([]));        // true（空配列でも）
+   console.log(Boolean({}));        // true（空オブジェクトでも）
+   ```
+
+**実用例：**
+```javascript
+const username = '';
+
+if (username) {
+  console.log(`ようこそ、${username}さん`);
+} else {
+  console.log('ユーザー名を入力してください');
+}
+// → 'ユーザー名を入力してください'（空文字列はfalsy）
+```
+
+#### 配列（Array）
+
+```javascript
+const fruits = ['りんご', 'バナナ', 'オレンジ'];
+
+// アクセス
+console.log(fruits[0]);     // 'りんご'（0番目）
+console.log(fruits[1]);     // 'バナナ'（1番目）
+console.log(fruits.length); // 3（要素数）
+
+// 追加・削除
+fruits.push('ぶどう');      // 末尾に追加
+fruits.pop();               // 末尾を削除
+fruits.unshift('いちご');   // 先頭に追加
+fruits.shift();             // 先頭を削除
+```
+
+**このコードの詳しい説明：**
+
+1. **配列のインデックスは0から始まる**
+   ```javascript
+   const fruits = ['りんご', 'バナナ', 'オレンジ'];
+   //              0         1         2
+   
+   console.log(fruits[0]);  // 'りんご'
+   console.log(fruits[2]);  // 'オレンジ'
+   ```
+
+2. **配列の操作**
+   ```javascript
+   const numbers = [1, 2, 3];
+   
+   // 追加
+   numbers.push(4);        // [1, 2, 3, 4]（末尾に追加）
+   numbers.unshift(0);     // [0, 1, 2, 3, 4]（先頭に追加）
+   
+   // 削除
+   numbers.pop();          // [0, 1, 2, 3]（末尾を削除）
+   numbers.shift();        // [1, 2, 3]（先頭を削除）
+   
+   // 結合
+   const arr1 = [1, 2];
+   const arr2 = [3, 4];
+   const combined = arr1.concat(arr2);  // [1, 2, 3, 4]
+   
+   // スプレッド構文（新しい方法）
+   const combined2 = [...arr1, ...arr2];  // [1, 2, 3, 4]
+   ```
+
+**配列の便利なメソッド：**
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// map: 各要素を変換
+const doubled = numbers.map(n => n * 2);
+console.log(doubled);  // [2, 4, 6, 8, 10]
+
+// filter: 条件に合う要素だけ抽出
+const evens = numbers.filter(n => n % 2 === 0);
+console.log(evens);  // [2, 4]
+
+// find: 条件に合う最初の要素
+const found = numbers.find(n => n > 3);
+console.log(found);  // 4
+
+// includes: 含まれているか
+console.log(numbers.includes(3));  // true
+
+// forEach: 各要素に対して処理
+numbers.forEach(n => {
+  console.log(n * 2);
+});
+```
+
+#### オブジェクト（Object）
+
+```javascript
+const user = {
+  name: '田中太郎',
+  age: 25,
+  email: 'tanaka@example.com',
+  isActive: true
+};
+
+// アクセス
+console.log(user.name);      // '田中太郎'（ドット記法）
+console.log(user['age']);    // 25（ブラケット記法）
+
+// 変更
+user.age = 26;
+
+// 追加
+user.city = '東京';
+
+// 削除
+delete user.isActive;
+```
+
+**このコードの詳しい説明：**
+
+1. **オブジェクトはキーと値のペア**
+   ```javascript
+   const user = {
+     name: '田中',    // キー: 値
+     age: 25
+   };
+   ```
+
+2. **アクセス方法2つ**
+   ```javascript
+   // ドット記法（推奨）
+   console.log(user.name);
+   
+   // ブラケット記法（キーが動的な場合）
+   const key = 'name';
+   console.log(user[key]);  // '田中'
+   ```
+
+3. **ネストされたオブジェクト**
+   ```javascript
+   const user = {
+     name: '田中',
+     address: {
+       city: '東京',
+       zipCode: '100-0001'
+     }
+   };
+   
+   console.log(user.address.city);  // '東京'
+   ```
 
 #### null と undefined
 
@@ -4767,7 +5205,46 @@ let empty = null;          // 明示的に「空」
 let notDefined;            // undefined（未定義）
 
 console.log(notDefined);   // undefined
+console.log(empty);        // null
 ```
+
+**このコードの詳しい説明：**
+
+- **`null`**: 意図的に「値がない」ことを示す
+- **`undefined`**: 値が代入されていない
+
+```javascript
+let user = null;           // ユーザーがいないことを明示
+
+let name;                  // 宣言だけでundefined
+console.log(name);         // undefined
+
+function test() {
+  // 何も返さない
+}
+console.log(test());       // undefined
+```
+
+**初心者への補足：**
+> 💡 **データ型のまとめ：**
+> - **String**：文字列（`'こんにちは'`）
+> - **Number**：数値（`10`, `3.14`）
+> - **Boolean**：真偽値（`true`, `false`）
+> - **Array**：配列（`[1, 2, 3]`）
+> - **Object**：オブジェクト（`{ name: '田中' }`）
+> - **null**：意図的な空
+> - **undefined**：未定義
+> 
+> **typeof で確認：**
+> ```javascript
+> console.log(typeof 'Hello');   // 'string'
+> console.log(typeof 123);       // 'number'
+> console.log(typeof true);      // 'boolean'
+> console.log(typeof []);        // 'object'
+> console.log(typeof {});        // 'object'
+> console.log(typeof null);      // 'object'（バグ）
+> console.log(typeof undefined); // 'undefined'
+> ```
 
 ### 演算子
 
