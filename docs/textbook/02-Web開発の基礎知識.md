@@ -7704,7 +7704,7 @@ input.addEventListener('input', (event) => {
 
 ## 実践練習
 
-ここまでの知識を使って、簡単なWebページを作ってみましょう！
+ここまでの知識を使って、実際に動くWebページを作ってみましょう！各練習には詳しい解説を付けています。
 
 ### 練習1: カウンターアプリ
 
@@ -7714,27 +7714,77 @@ input.addEventListener('input', (event) => {
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>カウンター</title>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      font-family: sans-serif;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
+    
     .container {
       text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
     .count {
       font-size: 72px;
+      font-weight: bold;
       margin: 20px 0;
+      transition: all 0.3s ease;
     }
+    
+    .buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    
     button {
       font-size: 20px;
       padding: 10px 20px;
-      margin: 0 10px;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
+      background: #667eea;
+      color: white;
+      transition: all 0.3s ease;
+    }
+    
+    button:hover {
+      background: #764ba2;
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    #reset {
+      background: #f56565;
+    }
+    
+    #reset:hover {
+      background: #e53e3e;
     }
   </style>
 </head>
@@ -7742,23 +7792,44 @@ input.addEventListener('input', (event) => {
   <div class="container">
     <h1>カウンター</h1>
     <div class="count" id="count">0</div>
-    <button id="decrease">-</button>
-    <button id="reset">リセット</button>
-    <button id="increase">+</button>
+    <div class="buttons">
+      <button id="decrease">−</button>
+      <button id="reset">リセット</button>
+      <button id="increase">＋</button>
+    </div>
   </div>
 
   <script>
+    // 変数の初期化
     let count = 0;
+    
+    // 要素の取得
     const countElement = document.getElementById('count');
     const decreaseButton = document.getElementById('decrease');
     const resetButton = document.getElementById('reset');
     const increaseButton = document.getElementById('increase');
 
+    // 表示を更新する関数
     function updateDisplay() {
       countElement.textContent = count;
-      countElement.style.color = count > 0 ? 'green' : count < 0 ? 'red' : 'black';
+      
+      // カウントに応じて色を変更
+      if (count > 0) {
+        countElement.style.color = '#48bb78';  // 緑
+      } else if (count < 0) {
+        countElement.style.color = '#f56565';  // 赤
+      } else {
+        countElement.style.color = '#333';     // 黒
+      }
+      
+      // アニメーション効果
+      countElement.style.transform = 'scale(1.2)';
+      setTimeout(() => {
+        countElement.style.transform = 'scale(1)';
+      }, 200);
     }
 
+    // イベントリスナーの設定
     increaseButton.addEventListener('click', () => {
       count++;
       updateDisplay();
@@ -7778,35 +7849,1093 @@ input.addEventListener('input', (event) => {
 </html>
 ```
 
-> 🎯 **実践**: このコードを試してみて、以下を追加してみましょう：
-> - カウントが10になったらアラートを表示
-> - +5、-5ボタンを追加
-> - カウントの履歴を表示
+**このコードの詳しい解説：**
+
+1. **HTML構造**
+   ```html
+   <div class="container">
+     <h1>カウンター</h1>           <!-- タイトル -->
+     <div class="count" id="count">0</div>  <!-- カウント表示 -->
+     <div class="buttons">          <!-- ボタンエリア -->
+       <button id="decrease">−</button>
+       <button id="reset">リセット</button>
+       <button id="increase">＋</button>
+     </div>
+   </div>
+   ```
+
+2. **CSS のポイント**
+   ```css
+   /* Flexbox で中央配置 */
+   body {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     min-height: 100vh;  /* 画面全体の高さ */
+   }
+   
+   /* グラデーション背景 */
+   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+   
+   /* ホバー時のアニメーション */
+   button:hover {
+     transform: translateY(-2px);  /* 少し浮く */
+   }
+   ```
+
+3. **JavaScript のポイント**
+   ```javascript
+   // 状態管理
+   let count = 0;  // カウントの値を保持
+   
+   // DOM要素の取得
+   const countElement = document.getElementById('count');
+   
+   // 表示更新関数（DRY原則）
+   function updateDisplay() {
+     countElement.textContent = count;
+     // 色の変更
+     // アニメーション
+   }
+   
+   // イベントリスナー
+   increaseButton.addEventListener('click', () => {
+     count++;           // カウントを増やす
+     updateDisplay();   // 表示を更新
+   });
+   ```
+
+**🎯 チャレンジ課題：**
+
+1. **+5/-5 ボタンを追加**
+   ```javascript
+   // HTML に追加
+   <button id="increase5">＋5</button>
+   <button id="decrease5">−5</button>
+   
+   // JavaScript に追加
+   const increase5Button = document.getElementById('increase5');
+   increase5Button.addEventListener('click', () => {
+     count += 5;
+     updateDisplay();
+   });
+   ```
+
+2. **10の倍数でアラート**
+   ```javascript
+   function updateDisplay() {
+     countElement.textContent = count;
+     
+     // 10の倍数チェック
+     if (count !== 0 && count % 10 === 0) {
+       alert(`${count}になりました！`);
+     }
+     
+     // ...
+   }
+   ```
+
+3. **履歴機能**
+   ```javascript
+   const history = [];
+   
+   function updateDisplay() {
+     history.push(count);  // 履歴に追加
+     
+     // 最後の5件を表示
+     const historyText = history.slice(-5).join(' → ');
+     historyElement.textContent = historyText;
+     
+     // ...
+   }
+   ```
+
+### 練習2: ToDoリスト
+
+**完全なコード：**
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToDoリスト</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      background: #f0f4f8;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    h1 {
+      color: #2d3748;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .input-section {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    #todoInput {
+      flex: 1;
+      padding: 10px;
+      border: 2px solid #e2e8f0;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    
+    #todoInput:focus {
+      outline: none;
+      border-color: #4299e1;
+    }
+    
+    #addButton {
+      padding: 10px 20px;
+      background: #4299e1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    #addButton:hover {
+      background: #3182ce;
+    }
+    
+    .todo-list {
+      list-style: none;
+    }
+    
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 15px;
+      background: #f7fafc;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+    
+    .todo-item:hover {
+      background: #edf2f7;
+    }
+    
+    .todo-item.completed {
+      opacity: 0.6;
+    }
+    
+    .todo-item input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    
+    .todo-text {
+      flex: 1;
+      font-size: 16px;
+    }
+    
+    .todo-text.completed {
+      text-decoration: line-through;
+      color: #a0aec0;
+    }
+    
+    .delete-button {
+      padding: 5px 10px;
+      background: #fc8181;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    
+    .delete-button:hover {
+      background: #f56565;
+    }
+    
+    .stats {
+      margin-top: 20px;
+      padding: 15px;
+      background: #edf2f7;
+      border-radius: 5px;
+      text-align: center;
+      color: #4a5568;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📝 ToDoリスト</h1>
+    
+    <div class="input-section">
+      <input type="text" id="todoInput" placeholder="新しいタスクを入力...">
+      <button id="addButton">追加</button>
+    </div>
+    
+    <ul class="todo-list" id="todoList"></ul>
+    
+    <div class="stats" id="stats">
+      タスク: 0個 | 完了: 0個 | 残り: 0個
+    </div>
+  </div>
+
+  <script>
+    // 要素の取得
+    const todoInput = document.getElementById('todoInput');
+    const addButton = document.getElementById('addButton');
+    const todoList = document.getElementById('todoList');
+    const statsElement = document.getElementById('stats');
+    
+    // ToDoリストの配列
+    let todos = [];
+    
+    // ToDo を追加する関数
+    function addTodo() {
+      const text = todoInput.value.trim();
+      
+      // 空文字チェック
+      if (text === '') {
+        alert('タスクを入力してください');
+        return;
+      }
+      
+      // ToDo オブジェクトを作成
+      const todo = {
+        id: Date.now(),          // ユニークなID
+        text: text,              // タスク内容
+        completed: false         // 完了状態
+      };
+      
+      todos.push(todo);
+      todoInput.value = '';     // 入力欄をクリア
+      renderTodos();            // 再描画
+    }
+    
+    // ToDo を削除する関数
+    function deleteTodo(id) {
+      todos = todos.filter(todo => todo.id !== id);
+      renderTodos();
+    }
+    
+    // ToDo の完了状態を切り替える関数
+    function toggleTodo(id) {
+      todos = todos.map(todo => {
+        if (todo.id === id) {
+          return { ...todo, completed: !todo.completed };
+        }
+        return todo;
+      });
+      renderTodos();
+    }
+    
+    // ToDo リストを描画する関数
+    function renderTodos() {
+      // リストをクリア
+      todoList.innerHTML = '';
+      
+      // 各 ToDo を描画
+      todos.forEach(todo => {
+        const li = document.createElement('li');
+        li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+        
+        // チェックボックス
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = todo.completed;
+        checkbox.addEventListener('change', () => toggleTodo(todo.id));
+        
+        // テキスト
+        const span = document.createElement('span');
+        span.className = `todo-text ${todo.completed ? 'completed' : ''}`;
+        span.textContent = todo.text;
+        
+        // 削除ボタン
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-button';
+        deleteBtn.textContent = '削除';
+        deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+        
+        li.appendChild(checkbox);
+        li.appendChild(span);
+        li.appendChild(deleteBtn);
+        todoList.appendChild(li);
+      });
+      
+      // 統計を更新
+      updateStats();
+    }
+    
+    // 統計を更新する関数
+    function updateStats() {
+      const total = todos.length;
+      const completed = todos.filter(todo => todo.completed).length;
+      const remaining = total - completed;
+      
+      statsElement.textContent = 
+        `タスク: ${total}個 | 完了: ${completed}個 | 残り: ${remaining}個`;
+    }
+    
+    // イベントリスナー
+    addButton.addEventListener('click', addTodo);
+    
+    // Enter キーでも追加
+    todoInput.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter') {
+        addTodo();
+      }
+    });
+    
+    // 初期表示
+    renderTodos();
+  </script>
+</body>
+</html>
+```
+
+**このコードの詳しい解説：**
+
+1. **データ構造**
+   ```javascript
+   // ToDo を配列で管理
+   let todos = [
+     { id: 1, text: '買い物', completed: false },
+     { id: 2, text: '勉強', completed: true }
+   ];
+   ```
+
+2. **CRUD操作**
+   ```javascript
+   // Create: 追加
+   function addTodo() {
+     const todo = { id: Date.now(), text: text, completed: false };
+     todos.push(todo);
+   }
+   
+   // Read: 描画（renderTodos関数）
+   
+   // Update: 完了状態の切り替え
+   function toggleTodo(id) {
+     todos = todos.map(todo => 
+       todo.id === id ? { ...todo, completed: !todo.completed } : todo
+     );
+   }
+   
+   // Delete: 削除
+   function deleteTodo(id) {
+     todos = todos.filter(todo => todo.id !== id);
+   }
+   ```
+
+3. **動的な要素作成**
+   ```javascript
+   function renderTodos() {
+     todoList.innerHTML = '';  // クリア
+     
+     todos.forEach(todo => {
+       const li = document.createElement('li');
+       const checkbox = document.createElement('input');
+       const span = document.createElement('span');
+       const deleteBtn = document.createElement('button');
+       
+       // 要素を組み立て
+       li.appendChild(checkbox);
+       li.appendChild(span);
+       li.appendChild(deleteBtn);
+       todoList.appendChild(li);
+     });
+   }
+   ```
+
+4. **キーボードイベント**
+   ```javascript
+   todoInput.addEventListener('keypress', (event) => {
+     if (event.key === 'Enter') {
+       addTodo();  // Enterキーで追加
+     }
+   });
+   ```
+
+**🎯 チャレンジ課題：**
+
+1. **LocalStorage で保存**
+   ```javascript
+   function saveTodos() {
+     localStorage.setItem('todos', JSON.stringify(todos));
+   }
+   
+   function loadTodos() {
+     const saved = localStorage.getItem('todos');
+     if (saved) {
+       todos = JSON.parse(saved);
+       renderTodos();
+     }
+   }
+   
+   // 各操作の後に saveTodos() を呼ぶ
+   ```
+
+2. **フィルター機能（全て/未完了/完了）**
+   ```javascript
+   let filter = 'all';  // 'all', 'active', 'completed'
+   
+   function renderTodos() {
+     let filtered = todos;
+     
+     if (filter === 'active') {
+       filtered = todos.filter(todo => !todo.completed);
+     } else if (filter === 'completed') {
+       filtered = todos.filter(todo => todo.completed);
+     }
+     
+     // filtered を描画
+   }
+   ```
+
+3. **編集機能**
+   ```javascript
+   function editTodo(id) {
+     const todo = todos.find(t => t.id === id);
+     const newText = prompt('新しい内容:', todo.text);
+     
+     if (newText !== null && newText.trim() !== '') {
+       todos = todos.map(t => 
+         t.id === id ? { ...t, text: newText.trim() } : t
+       );
+       renderTodos();
+     }
+   }
+   ```
+
+### 練習3: モーダルウィンドウ
+
+**完全なコード：**
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>モーダルウィンドウ</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Arial', sans-serif;
+      padding: 40px;
+      background: #f7fafc;
+    }
+    
+    .content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      margin-bottom: 20px;
+      color: #2d3748;
+    }
+    
+    .open-button {
+      padding: 12px 24px;
+      background: #4299e1;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    
+    .open-button:hover {
+      background: #3182ce;
+    }
+    
+    /* モーダルのオーバーレイ */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .modal-overlay.active {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    /* モーダル本体 */
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      font-size: 24px;
+      color: #2d3748;
+    }
+    
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #a0aec0;
+      line-height: 1;
+    }
+    
+    .close-button:hover {
+      color: #718096;
+    }
+    
+    .modal-body {
+      color: #4a5568;
+      line-height: 1.6;
+    }
+    
+    .modal-footer {
+      margin-top: 20px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    
+    .button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .button-primary {
+      background: #4299e1;
+      color: white;
+    }
+    
+    .button-primary:hover {
+      background: #3182ce;
+    }
+    
+    .button-secondary {
+      background: #e2e8f0;
+      color: #4a5568;
+    }
+    
+    .button-secondary:hover {
+      background: #cbd5e0;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <h1>モーダルウィンドウの例</h1>
+    <button class="open-button" id="openModal">モーダルを開く</button>
+  </div>
+  
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">モーダルタイトル</h2>
+        <button class="close-button" id="closeButton">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>これはモーダルウィンドウの内容です。</p>
+        <p>ここに好きな HTML を配置できます。</p>
+        <ul>
+          <li>リスト項目1</li>
+          <li>リスト項目2</li>
+          <li>リスト項目3</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-secondary" id="cancelButton">キャンセル</button>
+        <button class="button button-primary" id="confirmButton">確認</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 要素の取得
+    const openButton = document.getElementById('openModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeButton = document.getElementById('closeButton');
+    const cancelButton = document.getElementById('cancelButton');
+    const confirmButton = document.getElementById('confirmButton');
+    
+    // モーダルを開く
+    function openModal() {
+      modalOverlay.classList.add('active');
+      document.body.style.overflow = 'hidden';  // スクロール防止
+    }
+    
+    // モーダルを閉じる
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+      document.body.style.overflow = '';  // スクロール復元
+    }
+    
+    // イベントリスナー
+    openButton.addEventListener('click', openModal);
+    closeButton.addEventListener('click', closeModal);
+    cancelButton.addEventListener('click', closeModal);
+    
+    confirmButton.addEventListener('click', () => {
+      alert('確認ボタンがクリックされました');
+      closeModal();
+    });
+    
+    // オーバーレイをクリックしたら閉じる
+    modalOverlay.addEventListener('click', (event) => {
+      if (event.target === modalOverlay) {
+        closeModal();
+      }
+    });
+    
+    // Escape キーで閉じる
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modalOverlay.classList.contains('active')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
+```
+
+**このコードの詳しい解説：**
+
+1. **モーダルの構造**
+   ```html
+   <!-- オーバーレイ（背景） -->
+   <div class="modal-overlay">
+     <!-- モーダル本体 -->
+     <div class="modal">
+       <div class="modal-header">...</div>
+       <div class="modal-body">...</div>
+       <div class="modal-footer">...</div>
+     </div>
+   </div>
+   ```
+
+2. **CSS のポイント**
+   ```css
+   /* 画面全体を覆う */
+   .modal-overlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     width: 100%;
+     height: 100%;
+     background: rgba(0, 0, 0, 0.5);  /* 半透明の黒 */
+   }
+   
+   /* 中央配置 */
+   .modal-overlay.active {
+     display: flex;
+     justify-content: center;
+     align-items: center;
+   }
+   
+   /* アニメーション */
+   @keyframes slideUp {
+     from { transform: translateY(50px); opacity: 0; }
+     to { transform: translateY(0); opacity: 1; }
+   }
+   ```
+
+3. **JavaScript のポイント**
+   ```javascript
+   // モーダルを開く
+   function openModal() {
+     modalOverlay.classList.add('active');
+     document.body.style.overflow = 'hidden';  // 背景のスクロール防止
+   }
+   
+   // モーダルを閉じる
+   function closeModal() {
+     modalOverlay.classList.remove('active');
+     document.body.style.overflow = '';  // スクロール復元
+   }
+   ```
+
+4. **ユーザビリティ**
+   ```javascript
+   // オーバーレイクリックで閉じる
+   modalOverlay.addEventListener('click', (event) => {
+     if (event.target === modalOverlay) {  // オーバーレイ自体がクリックされた
+       closeModal();
+     }
+   });
+   
+   // Escapeキーで閉じる
+   document.addEventListener('keydown', (event) => {
+     if (event.key === 'Escape') {
+       closeModal();
+     }
+   });
+   ```
+
+**🎯 チャレンジ課題：**
+
+1. **複数のモーダル**
+   ```javascript
+   function createModal(title, content) {
+     const overlay = document.createElement('div');
+     overlay.className = 'modal-overlay';
+     // モーダルを構築...
+     document.body.appendChild(overlay);
+     return overlay;
+   }
+   ```
+
+2. **フォーム付きモーダル**
+   ```html
+   <div class="modal-body">
+     <form id="modalForm">
+       <input type="text" name="name" placeholder="名前">
+       <input type="email" name="email" placeholder="メール">
+     </form>
+   </div>
+   ```
+
+3. **アニメーション改善**
+   ```css
+   @keyframes scaleIn {
+     from {
+       transform: scale(0.8);
+       opacity: 0;
+     }
+     to {
+       transform: scale(1);
+       opacity: 1;
+     }
+   }
+   ```
+
+**初心者への補足：**
+> 💡 **実践練習のポイント：**
+> - **まず動かす**：コピー&ペーストでOK
+> - **理解する**：なぜそう書くのか考える
+> - **改造する**：チャレンジ課題に挑戦
+> - **エラーを恐れない**：Console で確認しながら
+> 
+> **学習の流れ：**
+> 1. 完成コードを動かす
+> 2. 1行ずつコメントを読む
+> 3. 小さな変更を加えてみる
+> 4. 自分なりの機能を追加
 
 ---
 
 ## まとめ
 
-この章では、Web開発の基礎となる**HTML**、**CSS**、**JavaScript**を学びました：
+この章では、Web開発の基礎となる**HTML**、**CSS**、**JavaScript**を学びました。これらは全てのWeb開発の土台となる重要な技術です。
 
-### HTML
-- ✅ Webページの**構造**を作る
-- ✅ タグと要素
-- ✅ セマンティックHTML
+### HTML：構造を作る
 
-### CSS
-- ✅ Webページの**見た目**を作る
-- ✅ セレクタとプロパティ
-- ✅ ボックスモデル
-- ✅ FlexboxとGrid
+**学んだこと：**
+- ✅ HTMLの基本構文とタグの使い方
+- ✅ リスト（ul, ol, li）でコンテンツを整理
+- ✅ テーブル（table, thead, tbody, tr, th, td）でデータを表形式で表示
+- ✅ フォーム（form, input, select, textarea, button）でユーザー入力を受け取る
+- ✅ セマンティックHTML（header, nav, main, article, section, aside, footer）で意味のある構造を作る
 
-### JavaScript
-- ✅ Webページに**動き**をつける
-- ✅ 変数、関数、オブジェクト、配列
-- ✅ DOM操作
-- ✅ イベント処理
+**HTMLのポイント：**
+```html
+<!-- ✅ 良い例：セマンティックで読みやすい -->
+<article>
+  <header>
+    <h1>記事タイトル</h1>
+  </header>
+  <section>
+    <p>本文...</p>
+  </section>
+</article>
 
-次の章では、**モダンJavaScript**（ES6以降の新機能）について学びます。これらはReactやNext.jsでよく使う重要な機能です。
+<!-- ❌ 悪い例：divだけでは意味が伝わらない -->
+<div>
+  <div>
+    <div>記事タイトル</div>
+  </div>
+  <div>
+    <div>本文...</div>
+  </div>
+</div>
+```
+
+**HTMLで大切なこと：**
+1. **セマンティック（意味）を意識**：適切なタグを使う
+2. **アクセシビリティ**：alt属性、label要素など
+3. **階層構造**：見出しレベル（h1→h2→h3）を守る
+
+### CSS：見た目を整える
+
+**学んだこと：**
+- ✅ セレクタ（要素、クラス、ID、疑似クラス）で要素を指定
+- ✅ プロパティ（color, font-size, margin, padding）でスタイル設定
+- ✅ ボックスモデル（content, padding, border, margin）でレイアウト
+- ✅ Display（block, inline, inline-block, none）で表示方法を制御
+- ✅ Position（static, relative, absolute, fixed, sticky）で配置
+- ✅ Flexbox（flex-direction, justify-content, align-items）で1次元レイアウト
+- ✅ Grid（grid-template-columns, grid-template-areas）で2次元レイアウト
+
+**CSSのポイント：**
+```css
+/* ✅ 良い例：Flexboxで簡潔に */
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ❌ 悪い例：floatは古い */
+.container {
+  overflow: hidden;
+}
+.item {
+  float: left;
+  margin-right: 20px;
+}
+```
+
+**CSSで大切なこと：**
+1. **クラスベース**：IDは避け、クラスで管理
+2. **モダンな手法**：Flexbox、Gridを活用
+3. **保守性**：命名規則（BEM）を意識
+
+**レイアウトの使い分け：**
+| 用途 | 推奨技術 | 理由 |
+|------|---------|------|
+| ナビゲーションバー | Flexbox | 1列に並べる |
+| カード一覧 | Grid | 均等に配置 |
+| 中央配置 | Flexbox or Grid | 簡潔 |
+| レスポンシブ | Grid + minmax() | 自動調整 |
+
+### JavaScript：動きをつける
+
+**学んだこと：**
+
+**1. 基本文法**
+- ✅ 変数と定数（let, const）- varは使わない
+- ✅ データ型（String, Number, Boolean, Array, Object, null, undefined）
+- ✅ 演算子（算術、代入、比較、論理）
+- ✅ テンプレートリテラル（\`${変数}\`）
+
+**2. 制御構文**
+- ✅ 条件分岐（if/else, switch, 三項演算子）
+- ✅ ループ（for, for...of, for...in, while, break, continue）
+
+**3. 関数**
+- ✅ 関数宣言（function name() {}）
+- ✅ 関数式（const name = function() {}）
+- ✅ アロー関数（const name = () => {}）
+- ✅ デフォルト引数、残余引数
+- ✅ スコープ（グローバル、関数、ブロック）
+
+**4. DOM操作**
+- ✅ 要素の取得（querySelector, querySelectorAll）
+- ✅ 要素の操作（textContent, innerHTML, classList, style）
+- ✅ 要素の作成・削除（createElement, appendChild, remove）
+
+**5. イベント処理**
+- ✅ イベントリスナー（addEventListener）
+- ✅ イベントオブジェクト（event.target, event.preventDefault）
+- ✅ よく使うイベント（click, input, submit, keydown）
+
+**JavaScriptのポイント：**
+```javascript
+// ✅ 良い例：モダンな書き方
+const numbers = [1, 2, 3, 4, 5];
+const doubled = numbers.map(n => n * 2);
+const evens = numbers.filter(n => n % 2 === 0);
+
+// ❌ 悪い例：古い書き方
+var numbers = [1, 2, 3, 4, 5];
+var doubled = [];
+for (var i = 0; i < numbers.length; i++) {
+  doubled.push(numbers[i] * 2);
+}
+```
+
+**JavaScriptで大切なこと：**
+1. **const優先**：再代入が必要な時だけlet
+2. **アロー関数**：短く書ける、thisの扱いが異なる
+3. **配列メソッド**：map, filter, find を活用
+4. **querySelector**：古いgetElementByIdより柔軟
+5. **classList**：styleより保守性が高い
+
+### 実践で学んだパターン
+
+**1. カウンターアプリ**
+```javascript
+// 状態管理
+let count = 0;
+
+// 表示更新
+function updateDisplay() {
+  element.textContent = count;
+}
+
+// イベント処理
+button.addEventListener('click', () => {
+  count++;
+  updateDisplay();
+});
+```
+
+**2. ToDoリスト**
+```javascript
+// データ構造
+let todos = [
+  { id: 1, text: 'タスク1', completed: false }
+];
+
+// CRUD操作
+function addTodo(text) { /* ... */ }
+function deleteTodo(id) { /* ... */ }
+function toggleTodo(id) { /* ... */ }
+function renderTodos() { /* ... */ }
+```
+
+**3. モーダルウィンドウ**
+```javascript
+// 開閉制御
+function openModal() {
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  overlay.classList.remove('active');
+  document.body.style.overflow = '';
+}
+```
+
+### よくある間違いと対策
+
+**HTML**
+| ❌ 間違い | ✅ 正しい書き方 |
+|----------|--------------|
+| `<div>` だけ使う | セマンティックタグを使う |
+| alt属性を省略 | `<img alt="説明">` |
+| インライン CSS | 外部 CSS ファイル |
+
+**CSS**
+| ❌ 間違い | ✅ 正しい書き方 |
+|----------|--------------|
+| ID セレクタ多用 | クラスセレクタ使用 |
+| float でレイアウト | Flexbox or Grid |
+| !important 多用 | 適切な詳細度 |
+
+**JavaScript**
+| ❌ 間違い | ✅ 正しい書き方 |
+|----------|--------------|
+| `var` を使う | `const` or `let` |
+| `==` で比較 | `===` で比較 |
+| グローバル変数多用 | スコープを狭く |
+| innerHTML で追加 | createElement 使用 |
+
+### 次のステップ
+
+これで Web開発の基礎は完璧です！次の章では以下を学びます：
+
+**第3章：モダンJavaScriptの基礎**
+- 分割代入（Destructuring）
+- スプレッド構文（Spread/Rest）
+- 非同期処理（Promise, async/await）
+- モジュール（import/export）
+
+**第4章：Reactの基礎**
+- コンポーネント
+- JSX
+- State と Props
+- Hooks（useState, useEffect）
+
+**学習のアドバイス：**
+1. **手を動かす**：コードを写経するだけでなく、改造する
+2. **エラーに慣れる**：Console を見て、エラーメッセージを読む
+3. **小さく作る**：いきなり大きなアプリを作らない
+4. **繰り返す**：同じことを何度も書いて体で覚える
+5. **調べる**：MDN（Mozilla Developer Network）を活用
+
+**推奨リソース：**
+- **MDN Web Docs**：https://developer.mozilla.org/ja/
+- **Can I Use**：https://caniuse.com/（ブラウザ対応確認）
+- **CSS-Tricks**：https://css-tricks.com/
+- **JavaScript.info**：https://ja.javascript.info/
+
+**復習チェックリスト：**
+- [ ] HTMLの基本タグを10個言える
+- [ ] Flexboxで要素を中央配置できる
+- [ ] Gridで2列レイアウトを作れる
+- [ ] const, let, var の違いを説明できる
+- [ ] 配列の map, filter を使える
+- [ ] querySelector で要素を取得できる
+- [ ] イベントリスナーを追加できる
+- [ ] カウンターアプリを1から作れる
+- [ ] ToDoリストを1から作れる
+- [ ] モーダルウィンドウを実装できる
+
+全てチェックできたら、次の章へ進みましょう！
 
 ---
 
