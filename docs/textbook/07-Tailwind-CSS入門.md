@@ -2166,7 +2166,8 @@ export default function Button({ children, variant = 'primary', onClick }: Butto
 ### clsxを使った動的クラス
 
 ```bash
-npm install clsx
+# clsxをインストール
+npm install clsx@2.1.1
 ```
 
 ```tsx
