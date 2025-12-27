@@ -172,6 +172,9 @@ jobs:
       
       - name: Run E2E tests
         run: npm run test:e2e
+        env:
+          CI: true
+          # FULL_E2E_TEST: true # 全ブラウザテストが必要な場合はコメント解除
       
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
