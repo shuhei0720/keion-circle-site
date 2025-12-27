@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { User, MessageCircle, FileText } from 'lucide-react'
 import YouTube from 'react-youtube'
 import ScrollAnimation from '@/components/ScrollAnimation'
@@ -17,6 +18,7 @@ interface Post {
     id: string
     name: string | null
     email: string | null
+    avatarUrl?: string | null
   }
   likes: {
     userId: string
@@ -73,8 +75,20 @@ export default function HomeClient({ posts, popularPosts }: HomeClientProps) {
               <ScrollAnimation animation="fade-up" delay={index * 100} key={post.id}>
                 <div className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 border border-white/10 hover:border-white/20">
                   <div className="flex items-center gap-3 mb-4">
-                    <Link href={`/users/${post.userId}`} className="w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
-                      <User className="w-6 h-6 text-white" />
+                    <Link href={`/users/${post.userId}`} className="flex-shrink-0 hover:opacity-80 transition">
+                      {post.user.avatarUrl ? (
+                        <Image
+                          src={post.user.avatarUrl}
+                          alt={post.user.name || 'User'}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 rounded-full object-cover shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                          <User className="w-6 h-6 text-white" />
+                        </div>
+                      )}
                     </Link>
                     <div>
                       <h3 className="text-xl font-bold text-white group-hover:text-blue-300 transition-colors">{post.title}</h3>

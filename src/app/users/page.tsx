@@ -11,6 +11,7 @@ interface UserData {
   id: string
   name: string | null
   email: string | null
+  avatarUrl: string | null
   role: string
   createdAt: string
   _count: {
@@ -185,9 +186,19 @@ export default function UsersPage() {
                       <tr key={user.id} className="hover:bg-white/10 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <User className="h-5 w-5 text-blue-600" />
-                            </div>
+                            <a href={`/users/${user.id}`} className="flex-shrink-0 hover:opacity-80 transition cursor-pointer">
+                              {user.avatarUrl ? (
+                                <img
+                                  src={user.avatarUrl}
+                                  alt={user.name || 'User'}
+                                  className="h-10 w-10 rounded-full object-cover shadow-lg"
+                                />
+                              ) : (
+                                <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                  <User className="h-5 w-5 text-blue-600" />
+                                </div>
+                              )}
+                            </a>
                             <div>
                               <div className="font-medium text-white">{user.name || 'Unknown'}</div>
                               <div className="flex items-center gap-1 text-sm text-white/60">
@@ -277,9 +288,19 @@ export default function UsersPage() {
                   <div key={user.id} className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 border border-white/10">
                     {/* ユーザー情報 */}
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="flex-shrink-0 h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <User className="h-6 w-6 text-blue-600" />
-                      </div>
+                      <a href={`/users/${user.id}`} className="flex-shrink-0 hover:opacity-80 transition cursor-pointer">
+                        {user.avatarUrl ? (
+                          <img
+                            src={user.avatarUrl}
+                            alt={user.name || 'User'}
+                            className="h-12 w-12 rounded-full object-cover shadow-lg"
+                          />
+                        ) : (
+                          <div className="h-12 w-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <User className="h-6 w-6 text-blue-600" />
+                          </div>
+                        )}
+                      </a>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-white text-lg">{user.name || 'Unknown'}</div>
                         <div className="flex items-center gap-1 text-sm text-white/60 truncate">
