@@ -1,5 +1,4 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background gradient -->
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
@@ -11,17 +10,16 @@
   <!-- Background -->
   <rect width="512" height="512" rx="120" fill="url(#bgGrad)"/>
   
-  <!-- Music Note -->
-  <g transform="translate(220, 150)">
+  <!-- Musical Note (Eighth Note) -->
+  <g transform="translate(256, 256)">
     <!-- Note stem -->
-    <rect x="35" y="0" width="16" height="140" rx="8" fill="white"/>
-    <!-- Note head -->
-    <ellipse cx="43" cy="140" rx="35" ry="25" fill="white"/>
-    <!-- Music symbol accent -->
-    <circle cx="25" cy="30" r="8" fill="white" opacity="0.8"/>
-    <circle cx="65" cy="20" r="6" fill="white" opacity="0.6"/>
+    <rect x="30" y="-80" width="12" height="120" rx="6" fill="white"/>
+    <!-- Note head (ellipse rotated) -->
+    <ellipse cx="30" cy="40" rx="28" ry="20" transform="rotate(-20 30 40)" fill="white"/>
+    <!-- Flag -->
+    <path d="M 42 -80 Q 70 -70 75 -50 Q 72 -40 60 -45 Q 50 -50 42 -60 Z" fill="white"/>
   </g>
   
   <!-- BOLD text -->
-  <text x="256" y="380" font-family="Arial, sans-serif" font-size="72" font-weight="900" text-anchor="middle" fill="white">BOLD</text>
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="68" font-weight="900" text-anchor="middle" fill="white">BOLD</text>
 </svg>
