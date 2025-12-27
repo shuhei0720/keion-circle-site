@@ -10,13 +10,14 @@ export default function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [message, setMessage] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (password !== confirmPassword) {
-      alert('パスワードが一致しません')
+      setMessage('パスワードが一致しません')
       return
     }
 
@@ -26,12 +27,12 @@ export default function SignUp() {
       body: JSON.stringify({ name, email, password })
     })
 
+    const data = await res.json()
+
     if (res.ok) {
-      alert('アカウントが作成されました。ログインしてください。')
-      router.push('/auth/signin')
+      setMessage(data.message || 'メールアドレスに検証リンクを送信しました。確認してください。')
     } else {
-      const data = await res.json()
-      alert(data.error || 'アカウント作成に失敗しました')
+      setMessage(data.error || 'アカウント作成に失敗しました')
     }
   }
 
@@ -45,6 +46,17 @@ export default function SignUp() {
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
           新規登録
         </h1>
+        
+        {message && (
+          <div className={`mb-4 px-4 py-3 rounded-lg ${
+            message.includes('送信しました') || message.includes('確認してください')
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}>
+            {message}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

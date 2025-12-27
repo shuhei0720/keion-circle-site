@@ -1,19 +1,38 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    // URL パラメータからメッセージを取得
+    const verified = searchParams.get('verified')
+    const errorParam = searchParams.get('error')
+
+    if (verified === 'true') {
+      setMessage('メールアドレスが確認されました。ログインしてください。')
+    } else if (errorParam === 'invalid_token') {
+      setError('無効な検証トークンです')
+    } else if (errorParam === 'expired_token') {
+      setError('検証トークンの有効期限が切れています')
+    } else if (errorParam === 'verification_failed') {
+      setError('メールアドレスの確認に失敗しました')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    setMessage('')
     
     const result = await signIn('credentials', {
       email,
@@ -27,7 +46,7 @@ export default function SignIn() {
       router.push('/')
     } else {
       // エラーメッセージを表示
-      setError('メールアドレスまたはパスワードが正しくありません')
+      setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
     }
   }
 
@@ -50,8 +69,13 @@ export default function SignIn() {
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
           BOLD 軽音
         </h1>
+        {message && (
+          <div className="mb-4 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg text-sm">
+            {message}
+          </div>
+        )}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+          <div className="mb-4 bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
             {error}
           </div>
         )}

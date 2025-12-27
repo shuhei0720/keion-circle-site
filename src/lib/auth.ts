@@ -40,12 +40,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
-          select: { id: true, email: true, password: true, role: true }
+          select: { id: true, email: true, password: true, role: true, emailVerified: true }
         })
         console.log('[NextAuth Credentials] User found:', !!user)
 
         if (!user || !user.password) {
           console.error('[NextAuth Credentials] User not found or no password')
+          return null
+        }
+
+        // メールアドレス検証チェック
+        if (!user.emailVerified) {
+          console.error('[NextAuth Credentials] Email not verified')
           return null
         }
 
@@ -120,9 +126,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 email: user.email,
                 name: user.name || user.email.split('@')[0],
                 role: "member",
+                emailVerified: new Date(), // Google認証済みなので検証済み
               }
             })
             console.log('[NextAuth SignIn] New user created:', dbUser.id)
+          } else if (!dbUser.emailVerified) {
+            // 既存ユーザーでemailVerifiedがnullの場合、検証済みに更新
+            console.log('[NextAuth SignIn] Updating emailVerified for existing user...')
+            await prisma.user.update({
+              where: { email: user.email },
+              data: { emailVerified: new Date() }
+            })
           }
         } catch (error) {
           console.error('[NextAuth SignIn] Error:', error)
