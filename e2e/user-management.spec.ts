@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { loginAsSiteAdmin } from './helpers'
 
-test.describe('ユーザー管理機能', () => {
+test.describe('ユーザー管理機能 - サイト管理者', () => {
   test.beforeEach(async ({ page }) => {
     // グローバルセットアップで作成されたsite_adminユーザーでログイン
     await loginAsSiteAdmin(page)
@@ -16,12 +16,6 @@ test.describe('ユーザー管理機能', () => {
     await page.goto('/users')
     await expect(page).toHaveURL('/users')
     await expect(page.locator('h1')).toContainText('ユーザー管理')
-  })
-
-  test('一般ユーザーはユーザー管理ページにアクセスできない', async ({ page }) => {
-    // test@example.comは一般ユーザーとしてグローバルセットアップで作成されている
-    // このテストはグローバルセットアップでtest@example.comが作成されることに依存
-    test.skip() // まだtest@example.comの検証実装が必要なためスキップ
   })
 
   test('役割変更モーダルが正しく表示される', async ({ page }) => {
@@ -202,9 +196,33 @@ test.describe('ユーザー管理機能', () => {
     expect(isHeaderVisible || isCardVisible).toBeTruthy()
   })
 
-  test('管理者はユーザー管理リンクが表示されない', async ({ page }) => {
-    // このテストはadmin役割のユーザーが必要なためスキップ
-    // 実際にはadmin@example.comがsite_adminなので、別のadminユーザーが必要
+  test('管理者（admin）はユーザー管理リンクが表示されない', async ({ page }) => {
+    // adminロールのユーザーを作成する必要があるため、現時点ではスキップ
+    // site_adminとadminの区別をテストするには、別のadminユーザーが必要
     test.skip()
+  })
+})
+
+test.describe('ユーザー管理機能 - 一般ユーザー', () => {
+  test('一般ユーザーはユーザー管理ページにアクセスできない', async ({ page }) => {
+    // test@example.comは一般ユーザーとしてグローバルセットアップで作成されている
+    await page.goto('/auth/signin')
+    await page.getByRole('textbox', { name: 'メールアドレス' }).fill('test@example.com')
+    await page.getByLabel('パスワード').fill('password123')
+    await page.getByRole('button', { name: 'ログイン', exact: true }).click()
+    await page.waitForURL('/')
+    
+    // ナビゲーションにユーザー管理リンクが表示されないことを確認
+    const userManagementLink = page.locator('nav a[href="/users"]')
+    await expect(userManagementLink).not.toBeVisible()
+    
+    // 直接URLでアクセスしようとするとリダイレクトされる
+    await page.goto('/users')
+    await page.waitForLoadState('networkidle')
+    
+    // リダイレクトされてユーザー管理ページにアクセスできないことを確認
+    // エラーメッセージまたはホームページにリダイレクトされる
+    const currentUrl = page.url()
+    expect(currentUrl).not.toContain('/users')
   })
 })
