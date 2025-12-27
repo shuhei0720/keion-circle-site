@@ -1,12 +1,9 @@
-import { Loader2 } from 'lucide-react'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function Loading() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
-        <p className="text-gray-600">読み込み中...</p>
-      </div>
+    <div className="flex items-center justify-center min-h-screen">
+      <LoadingSpinner />
     </div>
   )
 }

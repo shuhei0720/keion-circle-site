@@ -87,12 +87,12 @@ export default async function Home() {
   }))
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
       {/* Hero Section with Background Image */}
       <div className="relative overflow-hidden min-h-[60vh] flex items-center">
         {/* 背景画像 (ぼかしとモバイル対応) */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center blur-sm opacity-30 scale-110"></div>
+          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-40 scale-110"></div>
           <div className="absolute inset-0 bg-linear-to-b from-slate-900/80 via-purple-900/70 to-slate-900/90"></div>
         </div>
         
@@ -163,9 +163,7 @@ export default async function Home() {
                 <Music className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-2xl font-bold text-white mb-3">イベント</h3>
-              <p className="text-white/70">ライブや発表会の準備と管理</p>
-              <h3 className="text-2xl font-bold text-white mb-3">イベント</h3>
-              <p className="text-white/70">ライブや発表会の準備と管理</p>
+              <p className="text-white/70">ライブや発表会の情報管理</p>
             </div>
           </Link>
 
