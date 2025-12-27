@@ -35,7 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         
         if (!credentials?.email || !credentials?.password) {
           console.error('[NextAuth Credentials] Missing credentials')
-          throw new Error("メールアドレスとパスワードを入力してください")
+          return null
         }
 
         const user = await prisma.user.findUnique({
@@ -46,7 +46,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!user || !user.password) {
           console.error('[NextAuth Credentials] User not found or no password')
-          throw new Error("ユーザーが見つかりません")
+          return null
         }
 
         const isPasswordValid = await bcrypt.compare(
@@ -57,7 +57,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         if (!isPasswordValid) {
           console.error('[NextAuth Credentials] Invalid password')
-          throw new Error("パスワードが正しくありません")
+          return null
         }
 
         const result = {

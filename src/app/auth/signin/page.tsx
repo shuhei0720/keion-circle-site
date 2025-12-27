@@ -22,18 +22,20 @@ export default function SignIn() {
       callbackUrl: '/'
     })
     
-    console.log('[Client SignIn] Result:', result)
+    console.log('[Client SignIn] Result:', JSON.stringify(result, null, 2))
     console.log('[Client SignIn] OK:', result?.ok)
     console.log('[Client SignIn] Error:', result?.error)
     console.log('[Client SignIn] Status:', result?.status)
     console.log('[Client SignIn] URL:', result?.url)
     
-    if (result?.ok) {
+    // result?.okがtrueの場合のみリダイレクト
+    if (result?.ok === true) {
       console.log('[Client SignIn] Success! Redirecting to /')
       router.push('/')
-    } else if (result?.error) {
-      console.error('[Client SignIn] Failed:', result.error)
-      alert('ログインに失敗しました。メールアドレスとパスワードを確認してください。')
+    } else {
+      // それ以外の場合は必ずアラートを表示
+      console.error('[Client SignIn] Login failed - result:', result)
+      alert(`ログインに失敗しました。\nエラー: ${result?.error || '認証エラー'}\nメールアドレスとパスワードを確認してください。`)
     }
   }
 
