@@ -685,11 +685,11 @@ cd keion-circle-site
 # 依存関係のインストール
 npm install
 
-# 環境変数の設定（.env.exampleをコピー）
+# 環境変数の設定（.env.exampleをコピーして編集）
 cp .env.example .env.local
+# .env.localを開いて、Supabaseの接続情報を設定してください
 
 # データベースの初期化
-export DATABASE_URL="file:./dev.db"
 npx prisma generate
 npx prisma db push
 
@@ -729,7 +729,7 @@ npm run db:push
 
 ### 🔧 環境変数の設定
 
-`.env.local` ファイル（開発環境）:
+`.env.local` ファイル:
 
 ```env
 # 認証設定
@@ -737,36 +737,50 @@ AUTH_URL=http://localhost:3000
 AUTH_SECRET=your-random-secret-key-at-least-32-chars
 AUTH_TRUST_HOST=true
 
-# NextAuth v5用（本番環境でも必要）
+# NextAuth v5用（本番環境でも同じ値を設定）
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=your-random-secret-key-at-least-32-chars
 
-# データベース設定（ローカル開発はSQLite）
-DATABASE_URL="file:./dev.db"
+# データベース設定（Supabase PostgreSQL）
+# Supabase Dashboard → Project Settings → Database → Connection String (Transaction pooler)
+DATABASE_URL="postgresql://postgres.xxxxx:password@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
 
 # Google OAuth認証（Google Cloud Consoleで取得）
+# 承認済みのリダイレクトURI: http://localhost:3000/api/auth/callback/google
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
-# Supabase設定（Storage用）
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+# Supabase設定（画像アップロード用）
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-本番環境（Vercel）では、`DATABASE_URL` を Supabase PostgreSQL の接続文字列に変更してください。
+**本番環境（Vercel）**: 上記と同じ環境変数を設定しますが、`AUTH_URL` と `NEXTAUTH_URL` を本番URLに変更してください。
 
 ### 🗄 データベース操作
 
 **スキーマ変更の流れ:**
 
 1. `prisma/schema.prisma` を編集
-2. 開発環境に反映:
+2. データベースに反映:
    ```bash
-   export DATABASE_URL="file:./dev.db"
    npx prisma db push
    npx prisma generate
    ```
 3. 本番環境: Vercel で自動的に `npm run build` が実行され、スキーマが適用されます
+
+**初回セットアップ時のデータベース初期化:**
+
+```bash
+# Prisma Clientを生成
+npx prisma generate
+
+# スキーマをデータベースに適用
+npx prisma db push
+
+# 管理者ユーザーを作成
+node scripts/create-admin.js admin@example.com password123 "管理者名"
+```
 
 **Prisma Studio でデータ確認:**
 
