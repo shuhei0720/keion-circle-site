@@ -35,6 +35,7 @@ jobs:
       AUTH_SECRET: test-secret
       AUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: true
+      RESEND_API_KEY: re_test_dummy_key_for_ci
       FULL_E2E_TEST: true # 全ブラウザでテスト実行
     steps:
       - uses: actions/checkout@v4
