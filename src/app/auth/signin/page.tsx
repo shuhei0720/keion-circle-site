@@ -10,6 +10,7 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [resendLoading, setResendLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -17,9 +18,12 @@ export default function SignIn() {
     // URL パラメータからメッセージを取得
     const verified = searchParams.get('verified')
     const errorParam = searchParams.get('error')
+    const reset = searchParams.get('reset')
 
     if (verified === 'true') {
       setMessage('メールアドレスが確認されました。ログインしてください。')
+    } else if (reset === 'success') {
+      setMessage('パスワードがリセットされました。ログインしてください。')
     } else if (errorParam === 'invalid_token') {
       setError('無効な検証トークンです')
     } else if (errorParam === 'expired_token') {
@@ -28,6 +32,37 @@ export default function SignIn() {
       setError('メールアドレスの確認に失敗しました')
     }
   }, [searchParams])
+
+  const handleResendVerification = async () => {
+    if (!email) {
+      setError('メールアドレスを入力してください')
+      return
+    }
+
+    setError('')
+    setMessage('')
+    setResendLoading(true)
+
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setMessage(data.message)
+      } else {
+        setError(data.error || '検証メールの再送信に失敗しました')
+      }
+    } catch (err) {
+      setError('エラーが発生しました')
+    } finally {
+      setResendLoading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -115,6 +150,22 @@ export default function SignIn() {
             ログイン
           </button>
         </form>
+
+        {error && error.includes('確認されていない') && (
+          <button
+            onClick={handleResendVerification}
+            disabled={resendLoading}
+            className="w-full mt-3 bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {resendLoading ? '送信中...' : '確認メールを再送信'}
+          </button>
+        )}
+
+        <div className="mt-4 text-center">
+          <Link href="/auth/forgot-password" className="text-sm text-blue-600 hover:text-blue-700">
+            パスワードをお忘れですか？
+          </Link>
+        </div>
         
         <div className="mt-4">
           <div className="relative">
