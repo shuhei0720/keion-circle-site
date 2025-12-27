@@ -1250,13 +1250,272 @@ export async function POST(req: NextRequest) {
 </div>
 ```
 
-### 🧪 テスト
+### 🧪 テスト仕様
 
-現在、テストは未実装ですが、以下のフレームワークの導入を推奨します:
+このプロジェクトは包括的な自動テストスイートを実装しています。
 
-- **Unit Tests**: Jest + React Testing Library
-- **E2E Tests**: Playwright
-- **API Tests**: Supertest
+#### テスト構成
+
+| テストタイプ | フレームワーク | 対象 | 実行時間 |
+|------------|-------------|------|---------|
+| **Lint** | ESLint | コード品質・スタイル | ~30秒 |
+| **Type Check** | TypeScript | 型安全性 | ~10秒 |
+| **Unit Tests** | Jest + React Testing Library | コンポーネント・関数 | ~5秒 |
+| **Integration Tests** | Jest | API Routes・DB操作 | ~10秒 |
+| **E2E Tests** | Playwright | ユーザーフロー（Chromium） | ~5-7分 |
+| **Build** | Next.js | 本番ビルド検証 | ~20秒 |
+
+#### テストコマンド
+
+```bash
+# 全テストを実行
+npm test                    # Jestウォッチモード
+
+# 個別実行
+npm run lint                # ESLint
+npx tsc --noEmit           # 型チェック
+npm run test:unit          # ユニットテスト + カバレッジ
+npm run test:integration   # 統合テスト
+npm run test:e2e           # E2Eテスト
+npm run test:e2e:ui        # E2E UIモード（デバッグ用）
+
+# CI環境用
+npm run test:ci            # カバレッジ付きテスト
+```
+
+#### カバレッジ目標
+
+現在は基本的なテスト構造のみ実装済み。今後70%のカバレッジを目指します。
+
+```
+目標カバレッジ: 70%
+- Branches: 70%
+- Functions: 70%
+- Lines: 70%
+- Statements: 70%
+```
+
+#### E2Eテスト詳細
+
+**テストシナリオ:**
+- 認証フロー（ログイン・ログアウト・エラーハンドリング）
+- 投稿管理（作成・表示・いいね・コメント・削除）
+- イベント管理（作成・参加・課題曲追加・報告作成）
+
+**ブラウザ対応:**
+- CI環境: Chromiumのみ（高速化）
+- ローカル環境: Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari
+- 週次フルテスト: 全ブラウザで自動実行（毎週日曜日）
+
+**設定ファイル:**
+- `playwright.config.ts`: E2Eテスト設定
+- `jest.config.js`: ユニット・統合テスト設定
+- `jest.setup.js`: テストモック設定
+
+---
+
+## 🚀 CI/CD パイプライン
+
+### GitHub Actions ワークフロー
+
+このプロジェクトは自動化されたCI/CDパイプラインを実装しています。
+
+```
+コミット → GitHub
+    ↓
+    ├─→ GitHub Actions（テスト実行・並列）
+    │   ├─ Lint ✓
+    │   ├─ Type Check ✓
+    │   ├─ Unit Tests ✓
+    │   ├─ Integration Tests ✓
+    │   ├─ E2E Tests ✓
+    │   └─ Build ✓
+    │
+    └─→ Vercel（自動デプロイ）
+        ├─ mainブランチ → 本番環境
+        └─ developブランチ → プレビュー環境
+```
+
+### ワークフロー詳細
+
+#### 1. メインCI（`.github/workflows/ci.yml`）
+
+**トリガー:**
+- `main`, `develop`ブランチへのプッシュ
+- `main`, `develop`へのPull Request
+
+**ジョブ構成:**
+
+| ジョブ | 実行内容 | 依存関係 | 想定時間 |
+|-------|---------|---------|---------|
+| **lint** | ESLintチェック | なし | 30秒 |
+| **type-check** | TypeScript型チェック + Prisma生成 | なし | 10秒 |
+| **unit-tests** | Jestユニットテスト + Codecovアップロード | なし | 5秒 |
+| **integration-tests** | 統合テスト + PostgreSQLコンテナ | なし | 10秒 |
+| **e2e-tests** | Playwright E2Eテスト（Chromiumのみ） | なし | 5-7分 |
+| **build** | Next.js本番ビルド | lint, type-check, unit-tests | 20秒 |
+
+**環境変数:**
+```yaml
+NODE_VERSION: '20'
+DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test  # テスト用
+NEXTAUTH_SECRET: test-secret
+AUTH_SECRET: test-secret
+```
+
+**並列実行:** lint, type-check, unit-tests, integration-tests, e2e-testsは並列実行され、約7分で完了
+
+#### 2. 週次フルE2E（`.github/workflows/full-e2e.yml`）
+
+**トリガー:**
+- 毎週日曜日 午前2時（UTC）に自動実行
+- 手動実行可能（Actions → Full E2E Tests → Run workflow）
+
+**実行内容:**
+- 全ブラウザ（Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari）でE2Eテスト
+- クロスブラウザ互換性の確認
+- 想定時間: 15-25分
+
+#### 3. セキュリティスキャン（`.github/workflows/codeql.yml`）
+
+**トリガー:**
+- 毎週日曜日に自動実行
+- `main`ブランチへのプッシュ・PR
+
+**実行内容:**
+- CodeQL静的解析（JavaScript/TypeScript）
+- セキュリティ脆弱性の検出
+
+### Vercelデプロイ
+
+**自動デプロイ:**
+- VercelのGitHub統合により、GitHubへのプッシュで自動デプロイ
+- GitHub Actionsのテスト結果とは独立して実行
+
+**デプロイ先:**
+- `main`ブランチ → https://keion-circle-site.vercel.app/（本番環境）
+- `develop`ブランチ → プレビューURL
+- Pull Request → 専用プレビューURL
+
+**ビルドコマンド:**
+```bash
+prisma generate && next build
+```
+
+**環境変数（Vercel Dashboard設定）:**
+```env
+# 認証
+AUTH_URL=https://keion-circle-site.vercel.app
+AUTH_SECRET=<ランダム文字列>
+AUTH_TRUST_HOST=true
+NEXTAUTH_URL=https://keion-circle-site.vercel.app
+NEXTAUTH_SECRET=<AUTH_SECRETと同じ>
+
+# データベース（重要: Transaction Pooler使用）
+DATABASE_URL=postgresql://[user]:[password]@[host]:6543/postgres?pgbouncer=true
+
+# Google OAuth
+GOOGLE_CLIENT_ID=<Google Cloud Console>
+GOOGLE_CLIENT_SECRET=<Google Cloud Console>
+
+# Supabase Storage
+NEXT_PUBLIC_SUPABASE_URL=<Supabase Project URL>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
+```
+
+**⚠️ 重要: データベース接続設定**
+
+Vercelなどのサーバーレス環境では、必ず**Transaction Pooler（ポート6543）**を使用してください：
+
+```env
+# ✅ 正しい（サーバーレス環境）
+DATABASE_URL=postgresql://[user]:[password]@[host]:6543/postgres?pgbouncer=true
+
+# ❌ 誤り（接続数制限エラー）
+DATABASE_URL=postgresql://[user]:[password]@[host]:5432/postgres
+```
+
+**理由:**
+- ポート5432（Session Mode）: 数十の接続のみ → サーバーレスでは`MaxClientsInSessionMode`エラー
+- ポート6543（Transaction Pooler）: 数千の接続に対応 → サーバーレス環境で必須
+
+### デプロイフロー推奨事項
+
+1. **developブランチで開発**
+   ```bash
+   git checkout develop
+   git commit -m "feat: 新機能"
+   git push origin develop
+   ```
+
+2. **GitHub Actionsでテスト確認**
+   - https://github.com/shuhei0720/keion-circle-site/actions
+   - 全テストがPassすることを確認
+
+3. **Vercelプレビュー確認**
+   - プレビューURLで動作確認
+   - データベース接続、認証、機能が正常動作
+
+4. **mainブランチへマージ**
+   ```bash
+   git checkout main
+   git merge develop
+   git push origin main
+   ```
+
+5. **本番デプロイ自動実行**
+   - Vercelが自動で本番環境にデプロイ
+   - https://keion-circle-site.vercel.app/ で確認
+
+### トラブルシューティング
+
+#### GitHub Actionsが失敗する
+
+**Lint失敗:**
+```bash
+npm run lint  # ローカルで確認
+```
+
+**Type Check失敗:**
+```bash
+npx tsc --noEmit  # 型エラーを確認
+```
+
+**E2Eテストタイムアウト:**
+- Playwrightブラウザのインストール: `npx playwright install`
+- テスト環境のデータベース確認
+
+#### Vercelデプロイが失敗する
+
+**ビルドエラー:**
+1. 環境変数が全て設定されているか確認
+2. `DATABASE_URL`がTransaction Pooler（ポート6543）を使用しているか確認
+3. ローカルで`npm run build`が成功するか確認
+
+**データベース接続エラー:**
+```
+MaxClientsInSessionMode: max clients reached
+```
+→ `DATABASE_URL`をポート6543に変更し、`?pgbouncer=true`を追加
+
+**認証エラー:**
+- Google Cloud ConsoleのOAuth認証情報でリダイレクトURIを確認
+- `AUTH_URL`と`NEXTAUTH_URL`が正しいか確認
+
+### 監視とログ
+
+**Vercel Dashboard:**
+- Runtime Logs: リアルタイムログ確認
+- Deployment Logs: ビルドログ確認
+- Analytics: アクセス解析
+
+**GitHub Actions:**
+- Actions タブ: ワークフロー実行履歴
+- Artifacts: テストレポート、Playwrightレポートのダウンロード
+
+**Codecov（オプション）:**
+- https://codecov.io でカバレッジ推移を確認
+- PRごとのカバレッジ変化を自動コメント
 
 ---
 
