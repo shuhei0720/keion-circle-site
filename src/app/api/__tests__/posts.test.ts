@@ -1,4 +1,4 @@
-import { GET, POST } from '../posts/route'
+import { GET } from '../posts/route'
 import { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
 
@@ -36,6 +36,7 @@ describe('/api/posts', () => {
         },
       ]
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockPrisma.post.findMany.mockResolvedValue(mockPosts as any)
 
       const request = new NextRequest('http://localhost:3000/api/posts')
@@ -80,6 +81,7 @@ describe('/api/posts', () => {
         updatedAt: new Date(),
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockPrisma.post.create.mockResolvedValue(mockPost as any)
 
       const request = new NextRequest('http://localhost:3000/api/posts', {

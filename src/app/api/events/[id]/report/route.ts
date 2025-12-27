@@ -80,12 +80,13 @@ export async function POST(
     })
 
     return NextResponse.json(result, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('イベント報告作成エラー:', error)
-    console.error('Error name:', error?.name)
-    console.error('Error message:', error?.message)
-    console.error('Error code:', error?.code)
-    console.error('Error stack:', error?.stack)
+    console.error('Error name:', error instanceof Error ? error.name : '')
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    console.error('Error code:', (error as any)?.code)
+    console.error('Error stack:', error instanceof Error ? error.stack : '')
     
     // Prismaエラーの詳細を返す
     const errorMessage = error?.message || String(error)

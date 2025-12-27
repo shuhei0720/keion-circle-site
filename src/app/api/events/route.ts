@@ -71,10 +71,10 @@ export async function GET() {
     })
 
     return NextResponse.json(events)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('イベント取得エラー:', error)
-    console.error('Error message:', error?.message)
-    console.error('Error stack:', error?.stack)
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    console.error('Error stack:', error instanceof Error ? error.stack : '')
     return NextResponse.json(
       { 
         error: 'イベントの取得に失敗しました',

@@ -23,13 +23,11 @@ export async function GET() {
     }
 
     return NextResponse.json(template)
-  } catch (error: any) {
-    console.error('テンプレート取得エラー:', error)
-    console.error('Error message:', error?.message)
-    console.error('Error stack:', error?.stack)
+  } catch (error: unknown) {
+    console.error('テンプレート取得エラー:', error instanceof Error ? error.message : String(error))
     return NextResponse.json({ 
       error: 'サーバーエラー',
-      details: error?.message || String(error)
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 })
   }
 }
@@ -60,10 +58,10 @@ export async function PUT(request: NextRequest) {
     })
 
     return NextResponse.json(template)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('テンプレート更新エラー:', error)
-    console.error('Error message:', error?.message)
-    console.error('Error stack:', error?.stack)
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    console.error('Error stack:', error instanceof Error ? error.stack : '')
     return NextResponse.json({ 
       error: 'サーバーエラー',
       details: error?.message || String(error)

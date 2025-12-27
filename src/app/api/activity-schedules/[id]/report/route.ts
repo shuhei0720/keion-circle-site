@@ -70,10 +70,10 @@ export async function POST(
     })
 
     return NextResponse.json(result, { status: 201 })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('活動報告作成エラー:', error)
-    console.error('Error message:', error?.message)
-    console.error('Error stack:', error?.stack)
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    console.error('Error stack:', error instanceof Error ? error.stack : '')
     return NextResponse.json(
       { 
         error: '活動報告の作成に失敗しました',

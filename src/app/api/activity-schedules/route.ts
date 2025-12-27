@@ -70,10 +70,10 @@ export async function GET() {
     })
 
     return NextResponse.json(schedules)
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('スケジュール取得エラー:', error)
-    console.error('Error message:', error?.message)
-    console.error('Error stack:', error?.stack)
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    console.error('Error stack:', error instanceof Error ? error.stack : '')
     return NextResponse.json(
       { 
         error: 'スケジュールの取得に失敗しました',

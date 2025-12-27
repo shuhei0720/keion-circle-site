@@ -474,10 +474,17 @@ export default function EventsPage() {
       keyboard: 'キーボード',
       other: 'その他'
     }
+
+    interface Song {
+      title: string;
+      parts?: Array<{ instrument: string; player: string }>;
+      sheetUrl?: string;
+      youtubeUrl?: string;
+    }
     
-    const songsText = songs.map((song: any, index: number) => {
+    const songsText = songs.map((song: Song, index: number) => {
       const parts = song.parts && song.parts.length > 0
-        ? '\n    ' + song.parts.map((p: any) => `${instrumentNames[p.instrument] || p.instrument}: ${p.player}`).join(' / ')
+        ? '\n    ' + song.parts.map((p) => `${instrumentNames[p.instrument] || p.instrument}: ${p.player}`).join(' / ')
         : ''
       
       let songSection = `\n♪ 課題曲 ${index + 1}\n\n  曲名: ${song.title}`
@@ -861,7 +868,7 @@ ${event.content}
                         {songs.length > 0 && (
                           <div className="flex items-center gap-2">
                             <Music className="w-4 h-4" />
-                            <span>課題曲: {songs.map((s: any) => s.title).join('、')}</span>
+                            <span>課題曲: {songs.map((s: Song) => s.title).join('、')}</span>
                           </div>
                         )}
                       </div>
@@ -903,7 +910,7 @@ ${event.content}
                   {/* 課題曲 */}
                   {songs.length > 0 && (
                     <div className="mb-4 space-y-4">
-                      {songs.map((song: any, songIndex: number) => {
+                      {songs.map((song: Song, songIndex: number) => {
                         const videoId = song.youtubeUrl ? getYoutubeVideoId(song.youtubeUrl) : null
                         const instrumentNames: { [key: string]: string } = {
                           vocal: 'ボーカル',
@@ -971,7 +978,7 @@ ${event.content}
                               <div>
                                 <h4 className="text-sm font-medium mb-2 text-white/80">パート担当</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                                  {song.parts.map((part: any, partIndex: number) => (
+                                  {song.parts.map((part, partIndex: number) => (
                                     <div key={partIndex} className="flex items-center gap-2">
                                       <span className="text-white/60">{instrumentNames[part.instrument] || part.instrument}:</span>
                                       <span className="font-medium text-white">{part.player}</span>
