@@ -179,19 +179,24 @@ graph TB
     B -->|未ログイン| C[🚫 ログインページ]
     B -->|ログイン済み| D{役割確認}
     
-    D -->|admin| E[🔑 管理者権限]
-    D -->|member| F[👤 メンバー権限]
+    D -->|site_admin| E[👑 サイト管理者]
+    D -->|admin| F[🔑 管理者]
+    D -->|member| G[👤 一般ユーザー]
     
-    E --> G[✅ 全機能アクセス]
-    E --> H[✅ 作成・編集・削除]
-    E --> I[✅ ユーザー管理]
+    E --> H[✅ すべての権限]
+    E --> I[✅ ユーザー管理<br/>役割変更・削除]
+    E --> J[✅ 投稿・イベント管理]
     
-    F --> J[✅ 閲覧・参加・いいね]
-    F --> K[✅ コメント投稿]
-    F --> L[🚫 作成・編集・削除不可]
+    F --> K[✅ 投稿・イベント・<br/>スケジュール管理]
+    F --> L[🚫 ユーザー管理不可]
+    
+    G --> M[✅ 閲覧・参加・いいね]
+    G --> N[✅ コメント投稿]
+    G --> O[🚫 作成・編集・削除不可]
     
     style E fill:#f9f,stroke:#333
-    style F fill:#bbf,stroke:#333
+    style F fill:#9cf,stroke:#333
+    style G fill:#bbf,stroke:#333
     style C fill:#fbb,stroke:#333
 ```
 
@@ -424,8 +429,11 @@ keion-circle-site/
 │
 ├── 🧪 e2e/                              # E2Eテスト
 │   ├── auth.spec.ts                     # 認証テスト（4件）
+│   ├── email-verification.spec.ts       # メール検証テスト（1件）
 │   ├── posts.spec.ts                    # 投稿テスト（5件）
 │   ├── events.spec.ts                   # イベントテスト（4件）
+│   ├── user-management.spec.ts          # ユーザー管理テスト（12件）
+│   ├── global-setup.ts                  # グローバルセットアップ
 │   └── helpers.ts                       # テストヘルパー
 │
 ├── 🛠️ scripts/                          # ユーティリティ
@@ -794,6 +802,11 @@ GOOGLE_CLIENT_SECRET=<Google Cloud Consoleで取得したクライアントシ�
 # Supabase設定
 NEXT_PUBLIC_SUPABASE_URL=<SupabaseプロジェクトのURL>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabaseのanon public キー>
+
+# Resend設定（メール送信用）
+# 開発環境ではダミー値でOK（メールはログに出力される）
+RESEND_API_KEY=re_dev_dummy_key_for_local_development
+RESEND_FROM_EMAIL=noreply@yourdomain.com
 ```
 
 #### 環境変数の説明
@@ -1217,9 +1230,11 @@ npx playwright test --debug
 | カテゴリ | ファイル | テスト数 | 内容 |
 |---------|---------|---------|------|
 | 🔐 **認証** | `e2e/auth.spec.ts` | 4件 | ログイン画面表示、成功ログイン、エラーハンドリング、ログアウト |
+| � **メール検証** | `e2e/email-verification.spec.ts` | 1件 | 新規登録後の検証メッセージ表示 |
 | 📝 **投稿** | `e2e/posts.spec.ts` | 5件 | 投稿作成、一覧表示、いいね、コメント、削除 |
 | 🎪 **イベント** | `e2e/events.spec.ts` | 4件 | イベント作成、参加登録、課題曲追加、活動報告変換 |
-| **合計** | | **13件** | |
+| 👥 **ユーザー管理** | `e2e/user-management.spec.ts` | 12件 | サイト管理者のユーザー管理、役割変更、アクセス制限 |
+| **合計** | | **26件** | |
 
 **テストフロー例:**
 
