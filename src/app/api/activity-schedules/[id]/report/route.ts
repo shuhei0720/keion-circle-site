@@ -77,7 +77,7 @@ export async function POST(
     return NextResponse.json(
       { 
         error: '活動報告の作成に失敗しました',
-        details: error?.message || String(error)
+        details: error instanceof Error ? error.message : String(error)
       },
       { status: 500 }
     )

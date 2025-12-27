@@ -78,7 +78,7 @@ export async function GET() {
     return NextResponse.json(
       { 
         error: 'イベントの取得に失敗しました',
-        details: error?.message || String(error)
+        details: error instanceof Error ? error.message : String(error)
       },
       { status: 500 }
     )

@@ -89,8 +89,8 @@ export async function POST(
     console.error('Error stack:', error instanceof Error ? error.stack : '')
     
     // Prismaエラーの詳細を返す
-    const errorMessage = error?.message || String(error)
-    const errorCode = error?.code || 'UNKNOWN'
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const errorCode = typeof error === 'object' && error !== null && 'code' in error ? String((error as { code: unknown }).code) : 'UNKNOWN'
     
     return NextResponse.json(
       { 

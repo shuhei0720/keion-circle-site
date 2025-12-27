@@ -64,7 +64,7 @@ export async function PUT(request: NextRequest) {
     console.error('Error stack:', error instanceof Error ? error.stack : '')
     return NextResponse.json({ 
       error: 'サーバーエラー',
-      details: error?.message || String(error)
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 })
   }
 }

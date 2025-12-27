@@ -9,6 +9,14 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube, FilePenLine, Trash2, Heart, Copy, Check } from 'lucide-react'
 import YouTube from 'react-youtube'
 
+// 型定義
+interface Song {
+  title: string;
+  parts?: Array<{ instrument: string; player: string }>;
+  sheetUrl?: string;
+  youtubeUrl?: string;
+}
+
 interface User {
   id: string
   name: string | null
@@ -473,13 +481,6 @@ export default function EventsPage() {
       drums: 'ドラム',
       keyboard: 'キーボード',
       other: 'その他'
-    }
-
-    interface Song {
-      title: string;
-      parts?: Array<{ instrument: string; player: string }>;
-      sheetUrl?: string;
-      youtubeUrl?: string;
     }
     
     const songsText = songs.map((song: Song, index: number) => {
