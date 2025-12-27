@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { useSession } from 'next-auth/react'
-import { Users, Trash2, Shield, User, Mail, Calendar } from 'lucide-react'
+import { Users, Trash2, Shield, User, Mail, Calendar, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface UserData {
@@ -20,11 +20,19 @@ interface UserData {
   }
 }
 
+interface RoleChangeModal {
+  userId: string
+  currentRole: string
+  userName: string
+}
+
 export default function UsersPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
+  const [roleChangeModal, setRoleChangeModal] = useState<RoleChangeModal | null>(null)
+  const [selectedRole, setSelectedRole] = useState<string>('')
 
   const isSiteAdmin = session?.user?.role === 'site_admin'
 
@@ -93,41 +101,30 @@ export default function UsersPage() {
     }
   }
 
-  const handleRoleChange = async (userId: string, currentRole: string) => {
-    // 役割選択ダイアログ
-    const roleOptions = [
-      { value: 'site_admin', label: 'サイト管理者' },
-      { value: 'admin', label: '管理者' },
-      { value: 'member', label: '一般ユーザー' }
-    ]
-    
-    const message = roleOptions.map((opt, idx) => `${idx + 1}. ${opt.label}`).join('\n')
-    const choice = prompt(`新しい役割を選択してください（番号を入力）:\n${message}`, '3')
-    
-    if (!choice || !['1', '2', '3'].includes(choice)) {
-      return
-    }
-    
-    const newRole = roleOptions[parseInt(choice) - 1].value
-    if (newRole === currentRole) {
-      return
-    }
-    
-    const roleLabel = roleOptions.find(opt => opt.value === newRole)?.label || newRole
-    if (!confirm(`このユーザーの役割を「${roleLabel}」に変更しますか？`)) {
+  const handleRoleChange = async (userId: string, currentRole: string, userName: string) => {
+    setRoleChangeModal({ userId, currentRole, userName })
+    setSelectedRole(currentRole)
+  }
+
+  const confirmRoleChange = async () => {
+    if (!roleChangeModal || selectedRole === roleChangeModal.currentRole) {
+      setRoleChangeModal(null)
       return
     }
 
+    const { userId } = roleChangeModal
+
     // 楽観的UI更新: 即座に役割を変更
     setUsers(prevUsers => prevUsers.map(u => 
-      u.id === userId ? { ...u, role: newRole } : u
+      u.id === userId ? { ...u, role: selectedRole } : u
     ))
+    setRoleChangeModal(null)
 
     try {
       const res = await fetch(`/api/users/${userId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: newRole })
+        body: JSON.stringify({ role: selectedRole })
       })
 
       if (!res.ok) {
@@ -202,7 +199,7 @@ export default function UsersPage() {
                         </td>
                         <td className="px-6 py-4">
                           <button
-                            onClick={() => handleRoleChange(user.id, user.role)}
+                            onClick={() => handleRoleChange(user.id, user.role, user.name || user.email || 'Unknown')}
                             disabled={user.id === session.user.id}
                             className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
                               user.role === 'site_admin'
@@ -295,7 +292,7 @@ export default function UsersPage() {
                     {/* 役割 */}
                     <div className="mb-3">
                       <button
-                        onClick={() => handleRoleChange(user.id, user.role)}
+                        onClick={() => handleRoleChange(user.id, user.role, user.name || user.email || 'Unknown')}
                         disabled={user.id === session.user.id}
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold w-full justify-center touch-manipulation ${
                           user.role === 'site_admin'
@@ -380,6 +377,111 @@ export default function UsersPage() {
           </div>
         </div>
       </div>
+
+      {/* 役割変更モーダル */}
+      {roleChangeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl max-w-md w-full border border-white/20 overflow-hidden">
+            {/* ヘッダー */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <Shield className="w-6 h-6" />
+                役割の変更
+              </h3>
+              <button
+                onClick={() => setRoleChangeModal(null)}
+                className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+            </div>
+
+            {/* コンテンツ */}
+            <div className="p-6">
+              <div className="mb-4">
+                <p className="text-white/80 mb-1">ユーザー:</p>
+                <p className="text-white font-semibold">{roleChangeModal.userName}</p>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-white/80 mb-3">新しい役割を選択:</p>
+                <div className="space-y-3">
+                  <label className="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 border border-white/10 transition-colors">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="site_admin"
+                      checked={selectedRole === 'site_admin'}
+                      onChange={(e) => setSelectedRole(e.target.value)}
+                      className="w-5 h-5 text-red-600 focus:ring-red-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-red-300" />
+                        <span className="font-semibold text-red-300">サイト管理者</span>
+                      </div>
+                      <p className="text-xs text-white/60 mt-1">すべての権限（ユーザー管理含む）</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 border border-white/10 transition-colors">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="admin"
+                      checked={selectedRole === 'admin'}
+                      onChange={(e) => setSelectedRole(e.target.value)}
+                      className="w-5 h-5 text-purple-600 focus:ring-purple-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-purple-300" />
+                        <span className="font-semibold text-purple-300">管理者</span>
+                      </div>
+                      <p className="text-xs text-white/60 mt-1">投稿・イベント・スケジュール管理</p>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center gap-3 p-4 bg-white/5 rounded-lg cursor-pointer hover:bg-white/10 border border-white/10 transition-colors">
+                    <input
+                      type="radio"
+                      name="role"
+                      value="member"
+                      checked={selectedRole === 'member'}
+                      onChange={(e) => setSelectedRole(e.target.value)}
+                      className="w-5 h-5 text-blue-600 focus:ring-blue-500"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <User className="w-5 h-5 text-white/80" />
+                        <span className="font-semibold text-white">一般ユーザー</span>
+                      </div>
+                      <p className="text-xs text-white/60 mt-1">閲覧・コメント・参加登録</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* ボタン */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setRoleChangeModal(null)}
+                  className="flex-1 px-4 py-3 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors font-semibold border border-white/20"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={confirmRoleChange}
+                  disabled={selectedRole === roleChangeModal.currentRole}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:scale-105 transition-all font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  変更する
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   )
 }
