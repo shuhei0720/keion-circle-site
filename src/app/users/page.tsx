@@ -28,11 +28,20 @@ export default function UsersPage() {
 
   const isSiteAdmin = session?.user?.role === 'site_admin'
 
+  // デバッグ用ログ
+  useEffect(() => {
+    console.log('[UsersPage] Status:', status)
+    console.log('[UsersPage] Session:', session)
+    console.log('[UsersPage] User role:', session?.user?.role)
+    console.log('[UsersPage] isSiteAdmin:', isSiteAdmin)
+  }, [session, status, isSiteAdmin])
+
   useEffect(() => {
     // 認証状態が確定するまで待つ
     if (status === 'loading') return
     
     if (!session || !isSiteAdmin) {
+      console.log('[UsersPage] Access denied - redirecting to /')
       router.replace('/')
       return
     }
