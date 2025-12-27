@@ -134,7 +134,8 @@ export default function Home() {
                 </Link>
               </div>
             )}
-          </ScrollAnimation>
+          </div>
+        </ScrollAnimation>
         </div>
       </div>
 
