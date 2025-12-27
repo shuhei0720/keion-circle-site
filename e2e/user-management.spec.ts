@@ -55,24 +55,25 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     await page.goto('/users')
     await page.waitForLoadState('networkidle')
     
-    // ユーザーの役割バッジをクリック
-    const roleBadges = page.locator('button').filter({ hasText: /サイト|管理者|通常/ })
-    const count = await roleBadges.count()
+    // 一般ユーザー（member）の役割バッジをクリック
+    const memberBadge = page.locator('button').filter({ hasText: '通常' }).first()
+    await memberBadge.click()
     
-    if (count > 1) {
-      await roleBadges.nth(1).click()
-      
-      // 管理者を選択
-      await page.locator('input[value="admin"]').click()
-      
-      // 変更ボタンをクリック
-      await page.locator('button:has-text("変更する")').click()
-      
-      // モーダルが閉じることを確認
-      await expect(page.locator('text=役割の変更')).not.toBeVisible()
-    } else {
-      test.skip()
-    }
+    // モーダルが表示されることを確認
+    await expect(page.locator('text=役割の変更')).toBeVisible()
+    
+    // 管理者を選択（memberから変更するので、adminを選択すればボタンがenableになる）
+    await page.locator('input[value="admin"]').click()
+    
+    // 変更ボタンがenableになるまで待つ
+    const changeButton = page.locator('button:has-text("変更する")')
+    await expect(changeButton).toBeEnabled()
+    
+    // 変更ボタンをクリック
+    await changeButton.click()
+    
+    // モーダルが閉じることを確認
+    await expect(page.locator('text=役割の変更')).not.toBeVisible()
   })
 
   test('自分自身の役割を変更できない', async ({ page }) => {
