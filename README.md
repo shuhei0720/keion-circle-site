@@ -1462,6 +1462,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 ### コントリビューション手順
 
 1. **このリポジトリをフォーク**
+   ```bash
+   # GitHubでForkボタンをクリック後
+   git clone https://github.com/YOUR_USERNAME/keion-circle-site.git
+   cd keion-circle-site
+   ```
 
 2. **機能ブランチを作成**
    ```bash
@@ -1479,6 +1484,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
    ```
 
 5. **プルリクエストを作成**
+   - GitHubでフォークしたリポジトリを開く
+   - 「Compare & pull request」ボタンをクリック
+   - 変更内容を詳しく説明してプルリクエストを作成
 
 ### コーディング規約
 
