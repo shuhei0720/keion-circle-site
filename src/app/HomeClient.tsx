@@ -148,14 +148,16 @@ export default function HomeClient({ posts, popularPosts }: HomeClientProps) {
               <ScrollAnimation animation="scale" delay={index * 100} key={post.id}>
                 <Link
                   href={`/posts/${post.id}`}
-                  className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20"
+                  className="block group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20"
                 >
-                  <div className="absolute top-4 right-4 bg-linear-to-r from-pink-500 to-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {post.likes.length} いいね
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <h3 className="text-xl font-bold text-white line-clamp-2 group-hover:text-pink-400 transition-colors flex-1">
+                      {post.title}
+                    </h3>
+                    <div className="bg-linear-to-r from-pink-500 to-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                      {post.likes.length} いいね
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2 line-clamp-2 pr-20 group-hover:text-pink-400 transition-colors">
-                    {post.title}
-                  </h3>
                   <p className="text-white/60 text-sm mb-4 line-clamp-2">{post.content}</p>
                   <div className="flex items-center gap-2 text-sm text-white/50">
                     <User className="w-4 h-4" />

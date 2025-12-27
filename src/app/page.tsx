@@ -92,7 +92,7 @@ export default async function Home() {
       <div className="relative overflow-hidden min-h-[60vh] flex items-center">
         {/* 背景画像 (ぼかしとモバイル対応) */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-40 scale-110"></div>
+          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-[center_30%] opacity-40 scale-[1.15] blur-[2px]"></div>
           <div className="absolute inset-0 bg-linear-to-b from-slate-900/80 via-purple-900/70 to-slate-900/90"></div>
         </div>
         
@@ -198,6 +198,73 @@ export default async function Home() {
       </div>
 
       <HomeClient posts={posts} popularPosts={popularPosts} />
+
+      {/* フッター */}
+      <footer className="border-t border-white/10 bg-white/5 backdrop-blur-md">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* メニュー */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">メニュー</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/posts" className="text-white/60 hover:text-white transition-colors text-sm">
+                    活動報告
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/events" className="text-white/60 hover:text-white transition-colors text-sm">
+                    イベント
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/activity-schedules" className="text-white/60 hover:text-white transition-colors text-sm">
+                    活動スケジュール
+                  </Link>
+                </li>
+                {session?.user?.role === 'admin' && (
+                  <li>
+                    <Link href="/users" className="text-white/60 hover:text-white transition-colors text-sm">
+                      ユーザー管理
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {/* アカウント */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">アカウント</h4>
+              <ul className="space-y-2">
+                {session ? (
+                  <li>
+                    <Link href="/profile" className="text-white/60 hover:text-white transition-colors text-sm">
+                      マイページ
+                    </Link>
+                  </li>
+                ) : (
+                  <>
+                    <li>
+                      <Link href="/auth/signin" className="text-white/60 hover:text-white transition-colors text-sm">
+                        ログイン
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/auth/signup" className="text-white/60 hover:text-white transition-colors text-sm">
+                        新規登録
+                      </Link>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <div className="text-center pt-8 border-t border-white/10">
+            <p className="text-sm text-white/40">&copy; 2025 BOLD 軽音. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
