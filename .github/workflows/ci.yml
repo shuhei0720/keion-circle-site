@@ -202,8 +202,6 @@ jobs:
       
       - name: Build application
         run: npm run build
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
       
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -212,18 +210,8 @@ jobs:
           path: .next/
           retention-days: 7
 
-  deploy:
-    name: Deploy to Vercel
-    runs-on: ubuntu-latest
-    needs: [build, integration-tests, e2e-tests]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Deploy to Vercel Production
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+  # Note: デプロイはVercelのGitHub統合で自動実行されます
+  # Vercel Dashboard > Project Settings > Git で以下を確認:
+  # - Production Branch: main
+  # - Preview Branches: develop
+  # GitHub ActionsのテストがパスしたコミットのみVercelがデプロイします
