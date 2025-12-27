@@ -253,7 +253,6 @@ erDiagram
     User ||--o{ Comment : writes
     User ||--o{ EventParticipant : participates
     User ||--o{ ActivityParticipant : participates
-    User ||--o{ ScheduleResponse : responds
     User ||--o{ Account : has
     User ||--o{ Session : has
     
@@ -268,9 +267,6 @@ erDiagram
     
     ActivitySchedule ||--o{ ActivityParticipant : has
     ActivitySchedule ||--o{ Comment : has
-    
-    Schedule ||--o{ ScheduleDate : has
-    ScheduleDate ||--o{ ScheduleResponse : has
     
     User {
         string id PK
@@ -323,21 +319,6 @@ erDiagram
         datetime updatedAt
     }
     
-    Schedule {
-        string id PK
-        string title
-        string description
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    ScheduleDate {
-        string id PK
-        string scheduleId FK
-        datetime date
-        datetime createdAt
-    }
-    
     PostParticipant {
         string id PK
         string postId FK
@@ -375,15 +356,6 @@ erDiagram
         string id PK
         string activityScheduleId FK
         string userId FK
-        datetime createdAt
-    }
-    
-    ScheduleResponse {
-        string id PK
-        string scheduleDateId FK
-        string userId FK
-        string status
-        string comment
         datetime createdAt
     }
     
@@ -425,10 +397,6 @@ erDiagram
 - `location` / `locationUrl`: 場所情報とGoogle Mapsリンク
 - 活動終了後、活動報告（Post）に変換可能
 
-#### Schedule / ScheduleDate（スケジュール調整）
-- 複数候補日を持つスケジュール調整
-- 各候補日（ScheduleDate）に対してメンバーが投票（ScheduleResponse）
-
 #### Comment（コメント）
 - 投稿、イベント、活動スケジュールに対するコメント
 - ポリモーフィック関連（postId / eventId / activityScheduleId）
@@ -439,11 +407,11 @@ erDiagram
 
 ### 📊 APIサマリー
 
-- **総エンドポイント数**: 38
-- **公開アクセス可能**: 8（認証不要）
+- **総エンドポイント数**: 35
+- **公開アクセス可能**: 6（認証不要）
 - **メンバー権限**: 19（member/admin）
-- **管理者専用**: 11（admin）
-- **HTTPメソッド**: GET (9), POST (22), PUT (4), PATCH (2), DELETE (5)
+- **管理者専用**: 10（admin）
+- **HTTPメソッド**: GET (8), POST (20), PUT (4), PATCH (2), DELETE (5)
 
 ### 🔐 認証・認可フロー
 
@@ -594,35 +562,6 @@ sequenceDiagram
 | POST | `/api/activity-schedules/[id]/participate` | 必須 | member/admin | 参加登録/解除 |
 | POST | `/api/activity-schedules/[id]/report` | 必須 | admin | 活動報告を作成 |
 
-#### スケジュール調整 (Schedules) - `/api/schedules`
-
-| メソッド | エンドポイント | 認証 | 権限 | 説明 |
-|---------|--------------|------|------|------|
-| GET | `/api/schedules` | 不要 | public | スケジュール一覧を取得 |
-| POST | `/api/schedules` | 必須 | admin | スケジュールを作成 |
-| POST | `/api/schedules/[id]/response` | 必須 | member/admin | 候補日に回答・コメント |
-
-**リクエスト例: POST `/api/schedules`**
-```json
-{
-  "title": "1月の練習日程調整",
-  "description": "以下の候補日から参加可能な日を選んでください",
-  "dates": [
-    "2025-01-10T14:00:00Z",
-    "2025-01-17T14:00:00Z",
-    "2025-01-24T14:00:00Z"
-  ]
-}
-```
-
-**リクエスト例: POST `/api/schedules/[id]/response`**
-```json
-{
-  "status": "available",
-  "comment": "この日は参加できます！"
-}
-```
-
 #### ユーザー (Users) - `/api/users`
 
 | メソッド | エンドポイント | 認証 | 権限 | 説明 |
@@ -646,16 +585,6 @@ sequenceDiagram
   "instruments": "ギター、ベース"
 }
 ```
-
-#### その他
-
-| メソッド | エンドポイント | 認証 | 権限 | 説明 |
-|---------|--------------|------|------|------|
-| GET | `/api/messages` | 不要 | public | メッセージ一覧を取得 |
-| POST | `/api/messages` | 必須 | member/admin | メッセージを送信 |
-| GET | `/api/templates` | 不要 | public | テンプレートを取得 |
-| PUT | `/api/templates` | 必須 | admin | テンプレートを更新 |
-| POST | `/api/upload` | 必須 | member/admin | ファイルをアップロード |
 
 ---
 
@@ -681,15 +610,10 @@ keion-circle-site/
 │   │   │   │   └── [id]/            # 個別イベント操作
 │   │   │   ├── activity-schedules/   # 活動スケジュールAPI
 │   │   │   │   └── [id]/            # 個別スケジュール操作
-│   │   │   ├── schedules/            # スケジュール調整API
-│   │   │   │   └── [id]/response/   # 回答投稿
 │   │   │   ├── users/                # ユーザー管理API
 │   │   │   │   └── [id]/            # 個別ユーザー操作
-│   │   │   ├── profile/              # プロフィールAPI
-│   │   │   │   └── avatar/          # アバター画像
-│   │   │   ├── messages/             # メッセージAPI
-│   │   │   ├── templates/            # テンプレートAPI
-│   │   │   └── upload/               # ファイルアップロード
+│   │   │   └── profile/              # プロフィールAPI
+│   │   │       └── avatar/          # アバター画像
 │   │   ├── posts/                    # 活動報告ページ
 │   │   │   ├── [id]/                 # 個別投稿ページ
 │   │   │   ├── new/                  # 新規投稿作成
@@ -702,10 +626,6 @@ keion-circle-site/
 │   │   │   └── page.tsx              # イベント一覧
 │   │   ├── activity-schedules/       # 活動スケジュールページ
 │   │   │   └── (同上)
-│   │   ├── schedules/                # スケジュール調整ページ
-│   │   │   ├── [id]/                 # 個別スケジュール
-│   │   │   ├── new/                  # 新規作成
-│   │   │   └── page.tsx              # 一覧
 │   │   ├── users/                    # ユーザー管理ページ
 │   │   │   ├── [id]/                 # ユーザー詳細
 │   │   │   └── page.tsx              # ユーザー一覧
@@ -736,19 +656,12 @@ keion-circle-site/
 ├── prisma/
 │   └── schema.prisma                 # データベーススキーマ
 ├── scripts/
-│   ├── create-admin.js               # 管理者作成スクリプト
-│   └── create-admin-simple.js        # 簡易管理者作成
-├── docs/
-│   └── textbook/                     # 完全開発ガイド（28章+4付録）
-│       ├── 00-目次.md
-│       ├── 01-はじめに.md
-│       ├── ...
-│       ├── 28-ライブラリとユーティリティの詳細解説.md
-│       ├── 付録A-用語集.md
-│       ├── 付録B-よく使うコマンド.md
-│       ├── 付録C-参考リソース.md
-│       └── 付録D-コード索引.md
+│   └── create-admin.js               # 管理者作成スクリプト
 ├── public/                           # 静的ファイル
+│   ├── icon.svg                      # PWAアイコン
+│   ├── apple-touch-icon.svg          # iOS用アイコン
+│   ├── manifest.json                 # PWAマニフェスト
+│   └── hero-bg.jpg                   # ヒーロー背景画像
 ├── .env.example                      # 環境変数テンプレート
 ├── next.config.ts                    # Next.js設定
 ├── package.json                      # 依存関係・スクリプト
@@ -941,19 +854,6 @@ export async function POST(req: NextRequest) {
 - **E2E Tests**: Playwright
 - **API Tests**: Supertest
 
-### 📚 完全ガイドの参照
-
-このREADMEはプロジェクトの仕様書です。実装の詳細な手順については、[完全開発ガイド](./docs/textbook/00-目次.md)（全28章+4付録、約73,000行）を参照してください。
-
-**ガイドの構成:**
-- 第Ⅰ部: 基礎知識編（Chapters 1-7）
-- 第Ⅱ部: セットアップ編（Chapters 8-13）
-- 第Ⅲ部: 機能実装編（Chapters 14-20）
-- 第Ⅳ部: デプロイと運用編（Chapters 21-23）
-- 第Ⅴ部: 応用編（Chapters 24-25）
-- 第Ⅵ部: コード詳細解説編（Chapters 26-28）
-- 付録A-D: 用語集、コマンド集、参考リソース、コード索引
-
 ---
 
 ## 🔐 セキュリティ
@@ -999,6 +899,6 @@ export async function POST(req: NextRequest) {
 
 © 2025 BOLD 軽音. All rights reserved.
 
-[📚 完全ガイドを読む](./docs/textbook/00-目次.md) | [🐛 バグ報告](https://github.com/shuhei0720/keion-circle-site/issues/new) | [💡 機能リクエスト](https://github.com/shuhei0720/keion-circle-site/issues/new)
+[ バグ報告](https://github.com/shuhei0720/keion-circle-site/issues/new) | [💡 機能リクエスト](https://github.com/shuhei0720/keion-circle-site/issues/new)
 
 </div>
