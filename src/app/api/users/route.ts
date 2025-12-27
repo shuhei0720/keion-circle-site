@@ -27,8 +27,7 @@ export async function GET() {
         _count: {
           select: {
             posts: true,
-            messages: true,
-            schedules: true
+            messages: true
           }
         }
       },

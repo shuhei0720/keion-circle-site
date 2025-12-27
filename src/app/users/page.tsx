@@ -17,7 +17,6 @@ interface UserData {
   _count: {
     posts: number
     messages: number
-    schedules: number
   }
 }
 
@@ -248,7 +247,6 @@ export default function UsersPage() {
                           <div className="space-y-1">
                             <div>投稿: {user._count.posts}</div>
                             <div>メッセージ: {user._count.messages}</div>
-                            <div>スケジュール投票: {user._count.schedules}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -357,10 +355,6 @@ export default function UsersPage() {
                       <div className="text-center">
                         <div className="text-xs text-white/50">メッセージ</div>
                         <div className="text-lg font-semibold text-white">{user._count.messages}</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xs text-white/50">投票</div>
-                        <div className="text-lg font-semibold text-white">{user._count.schedules}</div>
                       </div>
                     </div>
 
