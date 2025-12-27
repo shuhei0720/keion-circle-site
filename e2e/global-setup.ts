@@ -1,6 +1,11 @@
 import { chromium, FullConfig } from '@playwright/test'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import dotenv from 'dotenv'
+import path from 'path'
+
+// .env.localを読み込む
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') })
 
 /**
  * E2Eテストのグローバルセットアップ
@@ -33,20 +38,19 @@ async function globalSetup(config: FullConfig) {
       })
       console.log('[Global Setup] Created site_admin user:', adminUser.email)
     } else {
-      // 存在する場合はsite_adminに昇格
-      if (adminUser.role !== 'site_admin') {
-        console.log('[Global Setup] Upgrading existing user to site_admin...')
-        await prisma.user.update({
-          where: { email: 'admin@example.com' },
-          data: { 
-            role: 'site_admin',
-            emailVerified: adminUser.emailVerified || new Date() // 検証済みでなければ検証する
-          }
-        })
-        console.log('[Global Setup] Upgraded to site_admin')
-      } else {
-        console.log('[Global Setup] site_admin user already exists')
-      }
+      // 存在する場合はsite_adminに昇格し、パスワードを更新
+      console.log('[Global Setup] Updating existing user to site_admin...')
+      const hashedPassword = await bcrypt.hash('password123', 10)
+      
+      await prisma.user.update({
+        where: { email: 'admin@example.com' },
+        data: { 
+          role: 'site_admin',
+          password: hashedPassword, // テスト用パスワードに更新
+          emailVerified: adminUser.emailVerified || new Date() // 検証済みでなければ検証する
+        }
+      })
+      console.log('[Global Setup] Updated to site_admin with test password')
     }
     
     // テスト用の一般ユーザーも作成（オプション）
