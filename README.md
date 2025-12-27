@@ -9,7 +9,7 @@
 [![Prisma](https://img.shields.io/badge/Prisma-5.22-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
 
-[🌐 本番環境](https://keion-circle-site.vercel.app/) | [📚 完全ガイド](./docs/textbook/00-目次.md)
+[🌐 本番環境](https://keion-circle-site.vercel.app/)
 
 </div>
 
@@ -36,7 +36,8 @@ BOLD 軽音メンバーサイトは、軽音サークルの活動を支援する
 
 - 🚀 **高速**: Next.js 16 App Router による最適化されたパフォーマンス
 - 📱 **レスポンシブ**: モバイルファーストデザインで全デバイスに対応
-- 🔒 **セキュア**: NextAuth.js v5 による堅牢な認証システム
+- � **PWA対応**: ホーム画面に追加してアプリのように利用可能
+- �🔒 **セキュア**: NextAuth.js v5 による堅牢な認証システム
 - 🎭 **役割管理**: 管理者と一般メンバーの権限分離
 - ⚡ **リアルタイム**: 楽観的UI による即座のフィードバック
 - 🎥 **メディア対応**: YouTube動画埋め込みと画像アップロード
@@ -183,44 +184,14 @@ graph TD
 - 💬 **コメント機能**: スケジュールに対するコメント投稿
 - 📝 **活動報告への変換**: スケジュール情報をテンプレートとして活動報告を作成
 
-### 5️⃣ スケジュール調整（複数候補日）
-
-**管理者が作成 | メンバー全員が投票可能 | 公開アクセス可能（ログイン不要で閲覧）**
-
-```mermaid
-graph LR
-    Admin[管理者] -->|作成| Schedule[スケジュール<br/>複数候補日]
-    Schedule --> Vote1[候補日1<br/>投票・コメント]
-    Schedule --> Vote2[候補日2<br/>投票・コメント]
-    Schedule --> Vote3[候補日3<br/>投票・コメント]
-    Members[メンバー] -->|投票| Vote1
-    Members -->|投票| Vote2
-    Members -->|投票| Vote3
-    Vote1 --> Result[最有力候補<br/>自動表示]
-    Vote2 --> Result
-    Vote3 --> Result
-    
-    style Admin fill:#e3f2fd
-    style Schedule fill:#fff3e0
-    style Members fill:#e8f5e9
-    style Result fill:#ffebee
-```
-
-**機能詳細:**
-- 📆 **複数候補日設定**: 1つのスケジュールに複数の日時候補を登録
-- 🗳️ **投票システム**: ⭕（参加可能）、🔺（未定）、❌（参加不可）の3段階評価
-- 💬 **候補日別コメント**: 各候補日にコメントを投稿可能
-- 🏆 **最有力候補の自動表示**: 参加可能人数が最も多い日程をハイライト
-- ⚡ **楽観的UI**: 投票結果が即座に画面に反映
-
-### 6️⃣ ユーザープロフィール
+### 5️⃣ ユーザープロフィール
 
 - 🖼️ **アバター画像**: Supabase Storageによる画像管理
 - ✏️ **自己紹介**: プロフィール情報の編集
 - 🎸 **担当楽器**: 楽器情報の登録
 - 📊 **活動履歴**: 参加した活動の一覧表示
 
-### 7️⃣ ユーザー管理（管理者のみ）
+### 6️⃣ ユーザー管理（管理者のみ）
 
 - 👥 **メンバー一覧**: 全ユーザーの表示
 - 🔄 **役割変更**: 一般メンバー ↔ 管理者の切り替え
