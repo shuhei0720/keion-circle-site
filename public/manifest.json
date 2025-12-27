@@ -1,0 +1,22 @@
+{
+  "name": "BOLD 軽音 - メンバーサイト",
+  "short_name": "BOLD軽音",
+  "description": "BOLD 軽音のメンバー専用コミュニティサイト",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1b4b",
+  "theme_color": "#8b5cf6",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml"
+    }
+  ]
+}

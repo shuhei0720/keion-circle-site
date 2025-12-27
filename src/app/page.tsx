@@ -92,7 +92,7 @@ export default async function Home() {
       <div className="relative overflow-hidden min-h-[60vh] flex items-center">
         {/* 背景画像 (ぼかしとモバイル対応) */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-[center_30%] opacity-40 scale-[1.15] blur-[2px]"></div>
+          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-[center_30%] opacity-40 scale-[1.5] blur-[2px]"></div>
           <div className="absolute inset-0 bg-linear-to-b from-slate-900/80 via-purple-900/70 to-slate-900/90"></div>
         </div>
         
