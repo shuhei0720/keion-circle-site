@@ -391,6 +391,7 @@ export default function UsersPage() {
               <button
                 onClick={() => setRoleChangeModal(null)}
                 className="p-1 hover:bg-white/20 rounded-lg transition-colors"
+                aria-label="閉じる"
               >
                 <X className="w-5 h-5 text-white" />
               </button>
