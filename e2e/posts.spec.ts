@@ -1,13 +1,10 @@
 import { test, expect } from '@playwright/test';
+import { loginAsAdmin } from './helpers';
 
 test.describe('Posts Management', () => {
   test.beforeEach(async ({ page }) => {
     // 管理者としてログイン
-    await page.goto('/auth/signin');
-    await page.fill('input[name="email"]', 'admin@example.com');
-    await page.fill('input[name="password"]', 'password123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/');
+    await loginAsAdmin(page);
   });
 
   test('admin can create a new post', async ({ page }) => {
