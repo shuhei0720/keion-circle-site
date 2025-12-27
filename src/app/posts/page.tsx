@@ -319,22 +319,6 @@ export default function PostsPage() {
     return match ? match[1] : null
   }
 
-  const handleCopyContent = async (postId: string, content: string) => {
-    try {
-      // HTMLタグを除去してテキストのみを抽出
-      const tempDiv = document.createElement('div')
-      tempDiv.innerHTML = content
-      const textContent = tempDiv.textContent || tempDiv.innerText || ''
-      
-      await navigator.clipboard.writeText(textContent)
-      setCopiedPostId(postId)
-      setTimeout(() => setCopiedPostId(null), 2000)
-    } catch (error) {
-      console.error('コピーに失敗しました:', error)
-      alert('コピーに失敗しました')
-    }
-  }
-
   // ページネーション計算
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE)
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE
