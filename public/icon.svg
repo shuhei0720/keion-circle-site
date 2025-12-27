@@ -11,13 +11,13 @@
   <rect width="512" height="512" rx="120" fill="url(#bgGrad)"/>
   
   <!-- Musical Note (Eighth Note) -->
-  <g transform="translate(256, 256)">
+  <g transform="translate(256, 220)">
     <!-- Note stem -->
-    <rect x="30" y="-80" width="12" height="120" rx="6" fill="white"/>
+    <rect x="-6" y="-80" width="12" height="120" rx="6" fill="white"/>
     <!-- Note head (ellipse rotated) -->
-    <ellipse cx="30" cy="40" rx="28" ry="20" transform="rotate(-20 30 40)" fill="white"/>
+    <ellipse cx="0" cy="40" rx="28" ry="20" transform="rotate(-20 0 40)" fill="white"/>
     <!-- Flag -->
-    <path d="M 42 -80 Q 70 -70 75 -50 Q 72 -40 60 -45 Q 50 -50 42 -60 Z" fill="white"/>
+    <path d="M 6 -80 Q 34 -70 39 -50 Q 36 -40 24 -45 Q 14 -50 6 -60 Z" fill="white"/>
   </g>
   
   <!-- BOLD text -->
