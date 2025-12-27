@@ -74,6 +74,27 @@ async function globalSetup(config: FullConfig) {
       console.log('[Global Setup] Created member user: test@example.com')
     }
     
+    // テスト用のadminロールユーザーも作成
+    const adminRoleUser = await prisma.user.findUnique({
+      where: { email: 'admin-role@example.com' }
+    })
+    
+    if (!adminRoleUser) {
+      console.log('[Global Setup] Creating admin-role@example.com...')
+      const hashedPassword = await bcrypt.hash('password123', 10)
+      
+      await prisma.user.create({
+        data: {
+          email: 'admin-role@example.com',
+          name: 'Admin Role User',
+          password: hashedPassword,
+          role: 'admin',
+          emailVerified: new Date(),
+        }
+      })
+      console.log('[Global Setup] Created admin role user: admin-role@example.com')
+    }
+    
     console.log('[Global Setup] Complete!')
   } catch (error) {
     console.error('[Global Setup] Error:', error)

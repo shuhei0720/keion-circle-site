@@ -43,3 +43,14 @@ export async function loginAsMember(page: Page) {
   await page.getByRole('button', { name: 'ログイン', exact: true }).click();
   await page.waitForURL('/');
 }
+
+/**
+ * 管理者（adminロール）としてログイン (admin-role@example.com)
+ */
+export async function loginAsAdminRole(page: Page) {
+  await page.goto('/auth/signin');
+  await page.getByRole('textbox', { name: 'メールアドレス' }).fill('admin-role@example.com');
+  await page.getByLabel('パスワード').fill('password123');
+  await page.getByRole('button', { name: 'ログイン', exact: true }).click();
+  await page.waitForURL('/');
+}

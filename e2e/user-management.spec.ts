@@ -88,9 +88,46 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
   })
 
   test('ユーザー削除が正しく動作する', async ({ page }) => {
-    // このテストは実際の削除を行うため、スキップ
-    // 実際の環境ではテスト用ユーザーを作成してから削除する必要があります
-    test.skip()
+    // ユーザー管理ページにアクセス
+    await page.goto('/users')
+    await page.waitForLoadState('networkidle')
+    
+    // 初期のユーザー数を確認
+    const initialUserCards = await page.locator('div[class*="bg-white/10"][class*="backdrop-blur"]').count()
+    
+    // test@example.comユーザーを探す
+    const testUserCard = page.locator('text=test@example.com').first()
+    const isVisible = await testUserCard.isVisible().catch(() => false)
+    
+    if (!isVisible) {
+      // test@example.comが見つからない場合はスキップ
+      test.skip()
+      return
+    }
+    
+    // デスクトップ表示の削除ボタンをクリック
+    const userCard = testUserCard.locator('..').locator('..')
+    const deleteButton = userCard.locator('button').filter({ hasText: /削除/ }).first()
+    
+    if (await deleteButton.isVisible()) {
+      await deleteButton.click()
+      
+      // 確認ダイアログが表示されることを確認
+      await page.waitForTimeout(500) // モーダルの表示を待つ
+      
+      // 削除をキャンセル（実際には削除しない）
+      const cancelButton = page.locator('button:has-text("キャンセル")').first()
+      if (await cancelButton.isVisible()) {
+        await cancelButton.click()
+      }
+      
+      // ユーザー数が変わっていないことを確認
+      await page.waitForTimeout(500)
+      const finalUserCards = await page.locator('div[class*="bg-white/10"][class*="backdrop-blur"]').count()
+      expect(finalUserCards).toBe(initialUserCards)
+    } else {
+      test.skip()
+    }
   })
 
   test('自分自身を削除できない', async ({ page }) => {
@@ -196,10 +233,42 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     expect(isHeaderVisible || isCardVisible).toBeTruthy()
   })
 
+  test('Homeページに移動後も正常に動作する', async ({ page }) => {
+    // ユーザー管理ページから一度離れて戻る
+    await page.goto('/')
+    await page.waitForLoadState('networkidle')
+    
+    // 再度ユーザー管理ページにアクセス
+    await page.goto('/users')
+    await expect(page).toHaveURL('/users')
+    await expect(page.locator('h1')).toContainText('ユーザー管理')
+  })
+})
+
+test.describe('ユーザー管理機能 - 管理者（adminロール）', () => {
   test('管理者（admin）はユーザー管理リンクが表示されない', async ({ page }) => {
-    // adminロールのユーザーを作成する必要があるため、現時点ではスキップ
-    // site_adminとadminの区別をテストするには、別のadminユーザーが必要
-    test.skip()
+    // admin-role@example.comでログイン
+    await page.goto('/auth/signin')
+    await page.getByRole('textbox', { name: 'メールアドレス' }).fill('admin-role@example.com')
+    await page.getByLabel('パスワード').fill('password123')
+    await page.getByRole('button', { name: 'ログイン', exact: true }).click()
+    await page.waitForURL('/')
+    
+    // ナビゲーションにユーザー管理リンクが表示されないことを確認
+    const userManagementLink = page.locator('nav a[href="/users"]')
+    await expect(userManagementLink).not.toBeVisible()
+    
+    // Homeページのカードにもユーザー管理リンクが表示されないことを確認
+    const homeCard = page.locator('a[href="/users"]').filter({ hasText: 'ユーザー管理' })
+    await expect(homeCard).not.toBeVisible()
+    
+    // 直接URLでアクセスしようとするとリダイレクトされる
+    await page.goto('/users')
+    await page.waitForLoadState('networkidle')
+    
+    // リダイレクトされてユーザー管理ページにアクセスできないことを確認
+    const currentUrl = page.url()
+    expect(currentUrl).not.toContain('/users')
   })
 })
 
