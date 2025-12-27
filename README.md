@@ -570,9 +570,17 @@ graph LR
 **機能:**
 - ✅ Google OAuth 2.0 ログイン（ワンクリック）
 - ✅ メールアドレス + パスワードログイン
-- ✅ 自動ユーザー登録（Google: 名前・メール・アバター）
+- ✅ **メールアドレス検証機能**
+  - 新規登録時に検証メール送信（24時間有効）
+  - 検証済みユーザーのみログイン可能
+  - 検証メール再送信機能
+- ✅ **パスワードリセット機能**
+  - パスワード忘れ時のリセットメール送信（1時間有効）
+  - セキュアなトークン生成・検証
+- ✅ 自動ユーザー登録（Google: 名前・メール・アバター、検証済み）
 - ✅ パスワードハッシュ化（bcryptjs）
 - ✅ 役割ベースアクセス制御（admin / member）
+- ✅ メール送信（Resend、本番環境のみ）
 
 ### 2️⃣ 投稿機能（活動報告）
 
@@ -811,6 +819,19 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabaseのanon public キー>
 |--------|------|----------|
 | `NEXT_PUBLIC_SUPABASE_URL` | SupabaseプロジェクトのURL | **Supabase Dashboard** → **Project Settings** → **API** → **Project URL** |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabaseの公開API キー | **Supabase Dashboard** → **Project Settings** → **API** → **Project API keys** → **anon public** |
+
+##### Resend設定（メール送信）
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `RESEND_API_KEY` | ResendのAPIキー | [Resend Dashboard](https://resend.com/api-keys) → **Create API Key**<br/>無料プランで月100通まで送信可能 |
+| `RESEND_FROM_EMAIL` | 送信元メールアドレス（省略可） | ドメインを持っている場合のみ設定<br/>省略時は `onboarding@resend.dev` を使用 |
+
+> **📧 メール送信について**
+> - **開発環境**: メールは送信されず、サーバーログに検証URLが出力されます
+> - **本番環境**: Resendを使用してメールが送信されます
+> - メールアドレス検証（新規登録時、24時間有効）
+> - パスワードリセット（1時間有効）
 
 #### 7. データベースの初期化
 
