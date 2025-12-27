@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
-import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube, FilePenLine, Trash2, Heart } from 'lucide-react'
+import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube, FilePenLine, Trash2, Heart, Copy, Check } from 'lucide-react'
 import YouTube from 'react-youtube'
 
 interface User {
@@ -70,6 +70,7 @@ export default function EventsPage() {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
+  const [copiedEventId, setCopiedEventId] = useState<string | null>(null)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // フォーム状態
@@ -135,6 +136,105 @@ export default function EventsPage() {
     const event = events.find(e => e.id === eventId)
     if (!isExpanded && (!event?.comments || event.comments.length === 0)) {
       fetchComments(eventId)
+    }
+  }
+
+  const handleCopyEvent = async (event: Event) => {
+    try {
+      // HTMLタグを除去してテキストのみを抽出
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = event.content
+      const textContent = tempDiv.textContent || tempDiv.innerText || ''
+      
+      // 課題曲を解析
+      let songsData: Array<{
+        title: string
+        artist: string
+        youtubeUrl: string
+        sheetMusicUrl: string
+        parts: { [key: string]: string }
+      }> = []
+      
+      try {
+        songsData = event.songs ? JSON.parse(event.songs) : []
+      } catch (e) {
+        console.error('課題曲の解析エラー:', e)
+      }
+      
+      // コピーする内容を構築
+      let copyText = `━━━━━━━━━━━━━━━━━━\n`
+      copyText += `🎵 ${event.title}\n`
+      copyText += `━━━━━━━━━━━━━━━━━━\n\n`
+      
+      copyText += `📅 開催日時\n${new Date(event.date).toLocaleString('ja-JP', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}\n\n`
+      
+      if (event.locationName) {
+        copyText += `📍 会場\n${event.locationName}\n`
+        if (event.locationUrl) {
+          copyText += `🔗 地図: ${event.locationUrl}\n`
+        }
+        copyText += '\n'
+      }
+      
+      copyText += `📝 内容\n${textContent}\n\n`
+      
+      // 課題曲情報
+      if (songsData.length > 0) {
+        copyText += `🎼 課題曲一覧\n`
+        copyText += `━━━━━━━━━━━━━━━━━━\n`
+        
+        songsData.forEach((song, index) => {
+          copyText += `\n【曲 ${index + 1}】${song.title}\n`
+          if (song.artist) {
+            copyText += `アーティスト: ${song.artist}\n`
+          }
+          
+          // パート担当
+          const partNames: { [key: string]: string } = {
+            vocal: 'ボーカル',
+            guitar: 'ギター',
+            bass: 'ベース',
+            drums: 'ドラム',
+            keyboard: 'キーボード',
+            other: 'その他'
+          }
+          
+          const assignedParts = Object.entries(song.parts || {})
+            .filter(([_, value]) => value)
+            .map(([key, value]) => `  ${partNames[key] || key}: ${value}`)
+          
+          if (assignedParts.length > 0) {
+            copyText += '\nパート担当:\n'
+            copyText += assignedParts.join('\n') + '\n'
+          }
+          
+          if (song.youtubeUrl) {
+            copyText += `🎥 動画: ${song.youtubeUrl}\n`
+          }
+          if (song.sheetMusicUrl) {
+            copyText += `📄 楽譜: ${song.sheetMusicUrl}\n`
+          }
+        })
+        
+        copyText += '\n'
+      }
+      
+      copyText += `━━━━━━━━━━━━━━━━━━\n`
+      copyText += `【大阪軽音部WebサイトURL】\n${window.location.origin}/events`
+      
+      await navigator.clipboard.writeText(copyText)
+      setCopiedEventId(event.id)
+      setTimeout(() => setCopiedEventId(null), 2000)
+    } catch (error) {
+      console.error('コピーに失敗しました:', error)
+      alert('コピーに失敗しました')
     }
   }
 
@@ -761,22 +861,35 @@ ${event.content}
                         )}
                       </div>
                     </div>
-                    {session?.user?.role === 'admin' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(event)}
-                          className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all"
-                        >
-                          <Edit2 className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(event.id)}
-                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleCopyEvent(event)}
+                        className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg border border-white/20 transition"
+                        title="イベント情報をコピー"
+                      >
+                        {copiedEventId === event.id ? (
+                          <Check className="w-5 h-5 text-green-400" />
+                        ) : (
+                          <Copy className="w-5 h-5" />
+                        )}
+                      </button>
+                      {session?.user?.role === 'admin' && (
+                        <>
+                          <button
+                            onClick={() => handleEdit(event)}
+                            className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all"
+                          >
+                            <Edit2 className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(event.id)}
+                            className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
 
                   {/* 内容 */}

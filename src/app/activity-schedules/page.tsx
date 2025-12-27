@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
-import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, FilePenLine, Trash2 } from 'lucide-react'
+import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, FilePenLine, Trash2, Copy, Check } from 'lucide-react'
 
 interface User {
   id: string
@@ -54,6 +54,7 @@ export default function ActivitySchedulesPage() {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
+  const [copiedScheduleId, setCopiedScheduleId] = useState<string | null>(null)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   // フォーム状態
@@ -114,6 +115,47 @@ export default function ActivitySchedulesPage() {
     const schedule = schedules.find(s => s.id === scheduleId)
     if (!isExpanded && (!schedule?.comments || schedule.comments.length === 0)) {
       fetchComments(scheduleId)
+    }
+  }
+
+  const handleCopySchedule = async (schedule: ActivitySchedule) => {
+    try {
+      // HTMLタグを除去してテキストのみを抽出
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = schedule.content
+      const textContent = tempDiv.textContent || tempDiv.innerText || ''
+      
+      // コピーする内容を構築
+      let copyText = `【${schedule.title}】\n\n`
+      copyText += `📅 日時: ${new Date(schedule.date).toLocaleString('ja-JP', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}\n\n`
+      
+      if (schedule.location) {
+        copyText += `📍 場所: ${schedule.location}\n`
+      }
+      
+      if (schedule.locationUrl) {
+        copyText += `🔗 地図: ${schedule.locationUrl}\n`
+      }
+      
+      if (schedule.location || schedule.locationUrl) {
+        copyText += '\n'
+      }
+      
+      copyText += `📝 内容:\n${textContent}\n\n`
+      copyText += `【大阪軽音部WebサイトURL】\n${window.location.origin}/activity-schedules`
+      
+      await navigator.clipboard.writeText(copyText)
+      setCopiedScheduleId(schedule.id)
+      setTimeout(() => setCopiedScheduleId(null), 2000)
+    } catch (error) {
+      console.error('コピーに失敗しました:', error)
+      alert('コピーに失敗しました')
     }
   }
 
@@ -517,22 +559,35 @@ ${schedule.content}
                       )}
                     </div>
                   </div>
-                  {session?.user?.role === 'admin' && (
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(schedule)}
-                        className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg border border-blue-400/30 transition"
-                      >
-                        <Edit2 className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(schedule.id)}
-                        className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg border border-red-400/30 transition"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
-                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleCopySchedule(schedule)}
+                      className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg border border-white/20 transition"
+                      title="スケジュールをコピー"
+                    >
+                      {copiedScheduleId === schedule.id ? (
+                        <Check className="w-5 h-5 text-green-400" />
+                      ) : (
+                        <Copy className="w-5 h-5" />
+                      )}
+                    </button>
+                    {session?.user?.role === 'admin' && (
+                      <>
+                        <button
+                          onClick={() => handleEdit(schedule)}
+                          className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg border border-blue-400/30 transition"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(schedule.id)}
+                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg border border-red-400/30 transition"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {/* 内容 */}

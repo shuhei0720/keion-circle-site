@@ -5,6 +5,7 @@ import { Music, Calendar, MessageCircle, FileText, User, Users } from 'lucide-re
 import { useState, useEffect } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 interface Post {
   id: string
@@ -182,11 +183,7 @@ export default function Home() {
           </span>
         </h2>
         {isLoading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
-            </div>
-          </div>
+          <LoadingSpinner size="lg" />
         ) : posts.length > 0 ? (
           <>
             <div className="space-y-6 max-w-4xl mx-auto">
@@ -295,9 +292,89 @@ export default function Home() {
       )}
 
       {/* フッター */}
-      <div className="text-center py-12 text-white/40 border-t border-white/10">
-        <p className="text-sm">&copy; 2025 BOLD 軽音. All rights reserved.</p>
-      </div>
+      <footer className="border-t border-white/10 bg-white/5 backdrop-blur-md">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* サイト情報 */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Music className="w-6 h-6 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">BOLD 軽音</h3>
+              </div>
+              <p className="text-white/60 text-sm">
+                大阪の軽音楽サークル。音楽を愛する仲間たちが集う、創造と交流の場。
+              </p>
+            </div>
+
+            {/* メニュー */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">メニュー</h4>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/posts" className="text-white/60 hover:text-white transition-colors text-sm">
+                    活動報告
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/events" className="text-white/60 hover:text-white transition-colors text-sm">
+                    イベント
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/activity-schedules" className="text-white/60 hover:text-white transition-colors text-sm">
+                    活動スケジュール
+                  </Link>
+                </li>
+                {session?.user?.role === 'admin' && (
+                  <li>
+                    <Link href="/users" className="text-white/60 hover:text-white transition-colors text-sm">
+                      ユーザー管理
+                    </Link>
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {/* アカウント */}
+            <div>
+              <h4 className="text-lg font-semibold text-white mb-4">アカウント</h4>
+              <ul className="space-y-2">
+                {session ? (
+                  <>
+                    <li>
+                      <Link href="/dashboard" className="text-white/60 hover:text-white transition-colors text-sm">
+                        ダッシュボード
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href={`/users/${session.user.id}`} className="text-white/60 hover:text-white transition-colors text-sm">
+                        マイページ
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link href="/auth/signin" className="text-white/60 hover:text-white transition-colors text-sm">
+                        ログイン
+                      </Link>
+                    </li>
+                    <li>
+                      <Link href="/auth/signup" className="text-white/60 hover:text-white transition-colors text-sm">
+                        新規登録
+                      </Link>
+                    </li>
+                  </>
+                )}
+              </ul>
+            </div>
+          </div>
+
+          <div className="text-center pt-8 border-t border-white/10">
+            <p className="text-sm text-white/40">&copy; 2025 BOLD 軽音. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

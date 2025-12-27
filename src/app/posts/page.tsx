@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 interface User {
   id: string
@@ -99,7 +100,7 @@ export default function PostsPage() {
       
       // YouTube URLを追加
       if (youtubeUrls && youtubeUrls.length > 0) {
-        copyText += '\n\n【YouTube URL】\n'
+        copyText += '\n\n【軽音動画】\n'
         youtubeUrls.forEach((url, index) => {
           copyText += `${index + 1}. ${url}\n`
         })
@@ -107,7 +108,7 @@ export default function PostsPage() {
       
       // ページURLを追加
       const pageUrl = `${window.location.origin}/posts`
-      copyText += `\n【投稿ページ】\n${pageUrl}`
+      copyText += `\n【大阪軽音部WebサイトURL】\n${pageUrl}`
       
       await navigator.clipboard.writeText(copyText)
       setCopiedPostId(postId)
@@ -348,9 +349,7 @@ export default function PostsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-white">活動一覧</h1>
 
           {fetchingPosts ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
+            <LoadingSpinner size="lg" />
           ) : (
             <>
               {/* 投稿一覧 */}
@@ -690,9 +689,7 @@ export default function PostsPage() {
       {/* メインコンテンツ */}
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
         {fetchingPosts ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-          </div>
+          <LoadingSpinner size="lg" />
         ) : (
           <>
             <div className="space-y-4 sm:space-y-6 mb-8">

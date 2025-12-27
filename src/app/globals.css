@@ -73,3 +73,17 @@ body {
 .animate-fade-in-delay {
   animation: fadeIn 1s ease-out 0.3s both;
 }
+
+/* 逆回転アニメーション */
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 1s linear infinite;
+}
