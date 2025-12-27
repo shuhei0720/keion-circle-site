@@ -670,15 +670,9 @@ graph TB
 
 ---
 
-## 🚀 開発ガイド
+## �‍💻 開発ガイド
 
-### 前提条件
-
-- Node.js 18.17+ 
-- npm または yarn
-- Git
-
-### ローカル開発環境セットアップ
+### クイックスタート
 
 #### 1. リポジトリのクローン
 
@@ -693,87 +687,378 @@ cd keion-circle-site
 npm install
 ```
 
-#### 3. 環境変数の設定
+#### 3. Supabaseプロジェクトの作成
 
-`.env.local` ファイルを作成：
+1. [Supabase Dashboard](https://supabase.com/dashboard) にアクセスしてログイン
+2. **New project** をクリックしてプロジェクトを作成
+3. **Project Settings** → **API** → **Project URL** と **anon public** キーをコピー
+4. **Storage** → **Create a new bucket** → `avatars` という名前で **Public** バケットを作成
+
+#### 4. Google OAuth設定
+
+1. [Google Cloud Console](https://console.cloud.google.com/) にアクセス
+2. **APIとサービス** → **認証情報** を開く
+3. **OAuth 同意画面** を設定:
+   - User Type: 外部
+   - アプリ名、サポートメール、デベロッパーの連絡先を入力
+4. **認証情報を作成** → **OAuth クライアント ID** を選択:
+   - アプリケーションの種類: ウェブアプリケーション
+   - 承認済みのリダイレクトURI:
+     - `http://localhost:3000/api/auth/callback/google`（開発）
+     - `https://your-domain.vercel.app/api/auth/callback/google`（本番）
+5. クライアントIDとクライアントシークレットをコピー
+
+#### 5. AUTH_SECRETの生成
+
+```bash
+openssl rand -base64 32
+```
+
+このコマンドで生成された文字列をコピーします。
+
+#### 6. 環境変数の設定
+
+`.env.local` ファイルを作成:
 
 ```bash
 cp .env.example .env.local
 ```
 
-以下の環境変数を設定：
+以下を設定してください:
 
 ```env
-# 認証（NextAuth.js）
+# 認証設定
 AUTH_URL=http://localhost:3000
-AUTH_SECRET=<ランダムな文字列（32文字以上推奨）>
+AUTH_SECRET=<先ほど生成した32文字のランダム文字列>
 AUTH_TRUST_HOST=true
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=<AUTH_SECRETと同じ値>
 
-# データベース（開発環境: SQLite）
-DATABASE_URL="file:./dev.db"
+# データベース設定（Supabase PostgreSQL）
+# 開発環境・本番環境共に: Transaction pooler（ポート6543）を使用
+DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.xxxxx.supabase.co:6543/postgres
 
-# Google OAuth
-GOOGLE_CLIENT_ID=<Google Cloud Console で取得>
-GOOGLE_CLIENT_SECRET=<Google Cloud Console で取得>
+# Google OAuth設定
+GOOGLE_CLIENT_ID=<Google Cloud Consoleで取得したクライアントID>
+GOOGLE_CLIENT_SECRET=<Google Cloud Consoleで取得したクライアントシークレット>
 
-# Supabase（画像ストレージ）
-NEXT_PUBLIC_SUPABASE_URL=<Supabase Project URL>
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
+# Supabase設定
+NEXT_PUBLIC_SUPABASE_URL=<SupabaseプロジェクトのURL>
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabaseのanon public キー>
 ```
 
-#### 4. データベースの初期化
+#### 環境変数の説明
+
+##### 認証設定
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `AUTH_URL` | アプリケーションのベースURL | 開発: `http://localhost:3000`<br/>本番: `https://your-domain.vercel.app` |
+| `AUTH_SECRET` | NextAuth.jsの暗号化キー | `openssl rand -base64 32` で生成 |
+| `AUTH_TRUST_HOST` | Vercelでのホスト検証を無効化 | 常に `true` |
+| `NEXTAUTH_URL` | NextAuth v5用のURL | `AUTH_URL`と同じ値 |
+| `NEXTAUTH_SECRET` | NextAuth v5用のシークレット | `AUTH_SECRET`と同じ値 |
+
+##### データベース設定
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `DATABASE_URL` | PostgreSQL接続文字列 | **Supabase Dashboard** → **Project Settings** → **Database** → **Connection String** → **Transaction pooler**<br/>`postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:6543/postgres` |
+
+##### Google OAuth設定
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `GOOGLE_CLIENT_ID` | Google OAuthクライアントID | [Google Cloud Console](https://console.cloud.google.com/) → **APIとサービス** → **認証情報** → 作成したOAuth 2.0クライアントIDをクリック |
+| `GOOGLE_CLIENT_SECRET` | Google OAuthクライアントシークレット | 同上 |
+
+##### Supabase設定
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | SupabaseプロジェクトのURL | **Supabase Dashboard** → **Project Settings** → **API** → **Project URL** |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabaseの公開API キー | **Supabase Dashboard** → **Project Settings** → **API** → **Project API keys** → **anon public** |
+
+#### 7. データベースの初期化
 
 ```bash
-# DATABASE_URL環境変数を設定
-export DATABASE_URL="file:./dev.db"
-
 # Prisma Clientの生成
 npx prisma generate
-
-# データベーススキーマの適用
-npx prisma db push
 ```
 
-**⚠️ `prisma db push` が失敗する場合:**
+次に、Supabase SQL Editorでデータベーステーブルを作成します:
 
-Supabase SQLエディターから直接SQL実行が必要です：
+1. [Supabase Dashboard](https://supabase.com/dashboard) → プロジェクトを選択 → **SQL Editor** を開く
+2. **New query** をクリック
+3. 以下のSQLをコピーして貼り付け
+4. **Run** をクリック
 
-1. [Supabase Dashboard](https://app.supabase.com/) にログイン
-2. プロジェクト → SQL Editor を開く
-3. `prisma/schema.prisma` のスキーマに基づいてテーブル作成SQLを実行
+<details>
+<summary>📋 データベース初期化SQL（クリックして展開）</summary>
 
 ```sql
--- Userテーブル作成例
+-- 既存のテーブルを削除（クリーンスタート）
+DROP TABLE IF EXISTS "Template" CASCADE;
+DROP TABLE IF EXISTS "EventParticipant" CASCADE;
+DROP TABLE IF EXISTS "Event" CASCADE;
+DROP TABLE IF EXISTS "ActivityParticipant" CASCADE;
+DROP TABLE IF EXISTS "ActivitySchedule" CASCADE;
+DROP TABLE IF EXISTS "Comment" CASCADE;
+DROP TABLE IF EXISTS "ScheduleResponse" CASCADE;
+DROP TABLE IF EXISTS "ScheduleDate" CASCADE;
+DROP TABLE IF EXISTS "Schedule" CASCADE;
+DROP TABLE IF EXISTS "Message" CASCADE;
+DROP TABLE IF EXISTS "PostLike" CASCADE;
+DROP TABLE IF EXISTS "PostParticipant" CASCADE;
+DROP TABLE IF EXISTS "Post" CASCADE;
+DROP TABLE IF EXISTS "VerificationToken" CASCADE;
+DROP TABLE IF EXISTS "Session" CASCADE;
+DROP TABLE IF EXISTS "Account" CASCADE;
+DROP TABLE IF EXISTS "User" CASCADE;
+
+-- Userテーブル
 CREATE TABLE "User" (
-  "id" TEXT NOT NULL PRIMARY KEY,
-  "name" TEXT NOT NULL,
-  "email" TEXT NOT NULL UNIQUE,
-  "password" TEXT,
-  "role" TEXT NOT NULL DEFAULT 'member',
-  "avatarUrl" TEXT,
-  "bio" TEXT,
-  "instruments" TEXT,
-  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP(3) NOT NULL
+    "id" TEXT PRIMARY KEY,
+    "name" TEXT,
+    "email" TEXT UNIQUE,
+    "password" TEXT,
+    "avatarUrl" TEXT,
+    "bio" TEXT,
+    "instruments" TEXT,
+    "role" TEXT NOT NULL DEFAULT 'member',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
--- 他のテーブルも同様に作成
+-- Accountテーブル
+CREATE TABLE "Account" (
+    "id" TEXT PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+    CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("provider", "providerAccountId")
+);
+
+-- Sessionテーブル
+CREATE TABLE "Session" (
+    "id" TEXT PRIMARY KEY,
+    "sessionToken" TEXT NOT NULL UNIQUE,
+    "userId" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+-- VerificationTokenテーブル
+CREATE TABLE "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL UNIQUE,
+    "expires" TIMESTAMP(3) NOT NULL,
+    UNIQUE("identifier", "token")
+);
+
+-- Postテーブル
+CREATE TABLE "Post" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "youtubeUrls" TEXT[] NOT NULL DEFAULT '{}',
+    "images" TEXT[] NOT NULL DEFAULT '{}',
+    "userId" TEXT NOT NULL,
+    "eventId" TEXT,
+    "activityScheduleId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+-- PostParticipantテーブル
+CREATE TABLE "PostParticipant" (
+    "id" TEXT PRIMARY KEY,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "PostParticipant_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE,
+    CONSTRAINT "PostParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("postId", "userId")
+);
+
+-- PostLikeテーブル
+CREATE TABLE "PostLike" (
+    "id" TEXT PRIMARY KEY,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "PostLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE,
+    CONSTRAINT "PostLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("postId", "userId")
+);
+
+-- Messageテーブル
+CREATE TABLE "Message" (
+    "id" TEXT PRIMARY KEY,
+    "content" TEXT NOT NULL,
+    "fileUrl" TEXT,
+    "fileName" TEXT,
+    "fileType" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+-- Scheduleテーブル
+CREATE TABLE "Schedule" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ScheduleDateテーブル
+CREATE TABLE "ScheduleDate" (
+    "id" TEXT PRIMARY KEY,
+    "scheduleId" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ScheduleDate_scheduleId_fkey" FOREIGN KEY ("scheduleId") REFERENCES "Schedule"("id") ON DELETE CASCADE
+);
+
+-- ScheduleResponseテーブル
+CREATE TABLE "ScheduleResponse" (
+    "id" TEXT PRIMARY KEY,
+    "scheduleDateId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
+    "comment" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ScheduleResponse_scheduleDateId_fkey" FOREIGN KEY ("scheduleDateId") REFERENCES "ScheduleDate"("id") ON DELETE CASCADE,
+    CONSTRAINT "ScheduleResponse_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("scheduleDateId", "userId")
+);
+
+-- ActivityScheduleテーブル
+CREATE TABLE "ActivitySchedule" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "date" TIMESTAMP(3),
+    "location" TEXT,
+    "locationUrl" TEXT,
+    "userId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ActivitySchedule_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL
+);
+
+-- ActivityParticipantテーブル
+CREATE TABLE "ActivityParticipant" (
+    "id" TEXT PRIMARY KEY,
+    "activityScheduleId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ActivityParticipant_activityScheduleId_fkey" FOREIGN KEY ("activityScheduleId") REFERENCES "ActivitySchedule"("id") ON DELETE CASCADE,
+    CONSTRAINT "ActivityParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("activityScheduleId", "userId")
+);
+
+-- Eventテーブル
+CREATE TABLE "Event" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "date" TIMESTAMP(3),
+    "locationName" TEXT,
+    "locationUrl" TEXT,
+    "songs" TEXT,
+    "userId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Event_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL
+);
+
+-- EventParticipantテーブル
+CREATE TABLE "EventParticipant" (
+    "id" TEXT PRIMARY KEY,
+    "eventId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "EventParticipant_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE,
+    CONSTRAINT "EventParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("eventId", "userId")
+);
+
+-- Commentテーブル
+CREATE TABLE "Comment" (
+    "id" TEXT PRIMARY KEY,
+    "content" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "postId" TEXT,
+    "activityScheduleId" TEXT,
+    "eventId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    CONSTRAINT "Comment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE,
+    CONSTRAINT "Comment_activityScheduleId_fkey" FOREIGN KEY ("activityScheduleId") REFERENCES "ActivitySchedule"("id") ON DELETE CASCADE,
+    CONSTRAINT "Comment_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE
+);
+
+-- Templateテーブル
+CREATE TABLE "Template" (
+    "id" TEXT PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Post.eventId外部キー制約を追加
+ALTER TABLE "Post" ADD CONSTRAINT "Post_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE SET NULL;
+
+-- Post.activityScheduleId外部キー制約を追加
+ALTER TABLE "Post" ADD CONSTRAINT "Post_activityScheduleId_fkey" FOREIGN KEY ("activityScheduleId") REFERENCES "ActivitySchedule"("id") ON DELETE SET NULL;
+
+-- インデックスを追加（パフォーマンス向上）
+CREATE INDEX "Account_userId_idx" ON "Account"("userId");
+CREATE INDEX "Session_userId_idx" ON "Session"("userId");
+CREATE INDEX "Post_userId_idx" ON "Post"("userId");
+CREATE INDEX "Post_eventId_idx" ON "Post"("eventId");
+CREATE INDEX "PostParticipant_postId_idx" ON "PostParticipant"("postId");
+CREATE INDEX "PostParticipant_userId_idx" ON "PostParticipant"("userId");
+CREATE INDEX "PostLike_postId_idx" ON "PostLike"("postId");
+CREATE INDEX "PostLike_userId_idx" ON "PostLike"("userId");
+CREATE INDEX "Comment_postId_idx" ON "Comment"("postId");
+CREATE INDEX "Comment_eventId_idx" ON "Comment"("eventId");
+CREATE INDEX "Comment_activityScheduleId_idx" ON "Comment"("activityScheduleId");
 ```
 
-#### 5. 管理者ユーザーの作成
+</details>
+
+#### 8. 管理者ユーザーの作成
 
 ```bash
-export DATABASE_URL="file:./dev.db"
-node scripts/create-admin.js admin@example.com password123 "管理者名"
+export $(cat .env.local | grep DATABASE_URL | xargs) && node scripts/create-admin.js admin@example.com password123 "管理者名"
 ```
 
-#### 6. 開発サーバーの起動
+#### 9. 開発サーバーの起動
 
 ```bash
 npm run dev
 ```
 
-ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてログイン:
+- メール: `admin@example.com`
+- パスワード: `password123`
 
 ### 開発用コマンド
 
@@ -1127,23 +1412,36 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 
 ## 📝 ライセンス
 
-MIT License
+このプロジェクトは MIT ライセンスの下でライセンスされています。
 
 ---
 
-## 👤 作成者
+## 🤝 コントリビューション
 
-**BOLD 軽音サークル**
+プルリクエストを歓迎します！バグ報告や機能リクエストは [GitHub Issues](https://github.com/shuhei0720/keion-circle-site/issues) にお願いします。
 
-- Website: [https://keion-circle-site.vercel.app/](https://keion-circle-site.vercel.app/)
-- GitHub: [@shuhei0720](https://github.com/shuhei0720/keion-circle-site)
+### コントリビューション手順
+
+1. このリポジトリをフォーク
+2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
+3. 変更をコミット (`git commit -m 'Add amazing feature'`)
+4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
+5. プルリクエストを作成
+
+---
+
+## 📞 お問い合わせ
+
+質問や提案がある場合は、[GitHub Issues](https://github.com/shuhei0720/keion-circle-site/issues) を作成してください。
 
 ---
 
 <div align="center">
 
-**🎸 BOLD 軽音メンバーサイト**
+**Built with ❤️ by BOLD 軽音**
 
-Made with ❤️ by BOLD 軽音サークル
+© 2025 BOLD 軽音. All rights reserved.
+
+[🐛 バグ報告](https://github.com/shuhei0720/keion-circle-site/issues) | [💡 機能リクエスト](https://github.com/shuhei0720/keion-circle-site/issues)
 
 </div>
