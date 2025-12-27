@@ -207,10 +207,14 @@ export default function EventsPage() {
             other: 'その他'
           }
           
-          if (song.parts && typeof song.parts === 'object') {
-            const assignedParts = Object.entries(song.parts)
-              .filter(([_, value]) => value && typeof value === 'string' && value.trim() !== '')
-              .map(([key, value]) => `  ${partNames[key] || key}: ${value}`)
+          if (song.parts && Array.isArray(song.parts) && song.parts.length > 0) {
+            const assignedParts = song.parts
+              .filter((part: { instrument: string; player: string }) => 
+                part.instrument && part.player && part.player.trim() !== ''
+              )
+              .map((part: { instrument: string; player: string }) => 
+                `  ${partNames[part.instrument] || part.instrument}: ${part.player}`
+              )
             
             if (assignedParts.length > 0) {
               copyText += '\nパート担当:\n'
