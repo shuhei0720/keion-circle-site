@@ -28,13 +28,13 @@ export default function SignIn() {
     console.log('[Client SignIn] Status:', result?.status)
     console.log('[Client SignIn] URL:', result?.url)
     
-    // result?.okがtrueの場合のみリダイレクト
-    if (result?.ok === true) {
+    // errorフィールドがない、またはnullの場合のみ成功とみなす
+    if (result && !result.error) {
       console.log('[Client SignIn] Success! Redirecting to /')
       router.push('/')
     } else {
-      // それ以外の場合は必ずアラートを表示
-      console.error('[Client SignIn] Login failed - result:', result)
+      // エラーがある場合は必ずアラートを表示
+      console.error('[Client SignIn] Login failed - error:', result?.error)
       alert(`ログインに失敗しました。\nエラー: ${result?.error || '認証エラー'}\nメールアドレスとパスワードを確認してください。`)
     }
   }
