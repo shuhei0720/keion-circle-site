@@ -1,18 +1,21 @@
-<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg">
+<svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
-      <!-- 縦線 -->
-      <line x1="30" y1="0" x2="30" y2="60" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-      <!-- 横線 -->
-      <line x1="0" y1="30" x2="60" y2="30" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
-      <!-- 中心点 -->
-      <circle cx="30" cy="30" r="1.5" fill="rgba(255,255,255,0.15)"/>
-      <!-- 四隅の点 -->
-      <circle cx="0" cy="0" r="1" fill="rgba(255,255,255,0.1)"/>
-      <circle cx="60" cy="0" r="1" fill="rgba(255,255,255,0.1)"/>
-      <circle cx="0" cy="60" r="1" fill="rgba(255,255,255,0.1)"/>
-      <circle cx="60" cy="60" r="1" fill="rgba(255,255,255,0.1)"/>
+    <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+      <!-- メイングリッド -->
+      <path d="M 80 0 L 0 0 0 80" fill="none" stroke="rgba(147,51,234,0.2)" stroke-width="1.5"/>
+      <!-- サブグリッド -->
+      <path d="M 40 0 L 40 80 M 0 40 L 80 40" fill="none" stroke="rgba(59,130,246,0.15)" stroke-width="1"/>
+      <!-- 光るドット -->
+      <circle cx="0" cy="0" r="2" fill="rgba(147,51,234,0.4)"/>
+      <circle cx="40" cy="40" r="3" fill="rgba(59,130,246,0.5)">
+        <animate attributeName="r" values="3;4;3" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.5;0.8;0.5" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="80" cy="80" r="2" fill="rgba(147,51,234,0.4)"/>
+      <!-- 斜め線（装飾） -->
+      <line x1="0" y1="0" x2="20" y2="20" stroke="rgba(59,130,246,0.1)" stroke-width="0.5"/>
+      <line x1="60" y1="60" x2="80" y2="80" stroke="rgba(147,51,234,0.1)" stroke-width="0.5"/>
     </pattern>
   </defs>
-  <rect width="60" height="60" fill="url(#grid)"/>
+  <rect width="80" height="80" fill="url(#grid)"/>
 </svg>
