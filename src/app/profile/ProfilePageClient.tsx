@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import ProfileEditClient from './ProfileEditClient'
 import { User, Mail, Calendar, FileText, MessageSquare } from 'lucide-react'
@@ -33,9 +33,11 @@ interface ProfilePageClientProps {
 }
 
 export default function ProfilePageClient({ user }: ProfilePageClientProps) {
-  // ページ表示時にスクロールをトップに戻す
-  useEffect(() => {
-    window.scrollTo(0, 0)
+  // ページ表示時にスクロールをトップに戻す（レンダリング前に実行）
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
   }, [])
 
   return (
