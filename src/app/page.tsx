@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import ScrollAnimation from '@/components/ScrollAnimation'
 
 interface Post {
   id: string
@@ -91,25 +92,32 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-30 animate-pulse"></div>
+      {/* Hero Section with Background Image */}
+      <div className="relative overflow-hidden min-h-[60vh] flex items-center">
+        {/* 背景画像 (public/hero-bg.jpg をアップロードしてください) */}
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-20"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-purple-900/70 to-slate-900/90"></div>
+          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20"></div>
+        </div>
+        
         <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative">
-          <div className="text-center mb-12 space-y-6">
-            <div className="inline-flex items-center justify-center mb-6 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 blur-2xl opacity-50 animate-pulse"></div>
-              <Music className="w-20 h-20 text-white relative z-10" />
-            </div>
-            <h1 className="text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient">
-              BOLD 軽音
-            </h1>
-            <p className="text-2xl md:text-3xl text-white/90 font-light">
-              メンバーサイト
-            </p>
-            <p className="text-lg text-white/70 max-w-2xl mx-auto">
-              音楽を愛する仲間たちが集う、創造と交流の場
-            </p>
-            {!session && (
+          <ScrollAnimation animation="fade-up" delay={0}>
+            <div className="text-center mb-12 space-y-6">
+              <div className="inline-flex items-center justify-center mb-6 relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 blur-2xl opacity-50 animate-pulse"></div>
+                <Music className="w-20 h-20 text-white relative z-10" />
+              </div>
+              <h1 className="text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient">
+                BOLD 軽音
+              </h1>
+              <p className="text-2xl md:text-3xl text-white/90 font-light">
+                メンバーサイト
+              </p>
+              <p className="text-lg text-white/70 max-w-2xl mx-auto">
+                音楽を愛する仲間たちが集う、創造と交流の場
+              </p>
+              {!session && (
               <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
                 <Link 
                   href="/auth/signin"
@@ -126,19 +134,22 @@ export default function Home() {
                 </Link>
               </div>
             )}
-          </div>
+          </ScrollAnimation>
         </div>
       </div>
 
       {/* Features Section */}
       <div className="container mx-auto px-4 py-16">
-        <h2 className="text-4xl font-bold text-white mb-12 text-center">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-            機能
-          </span>
-        </h2>
+        <ScrollAnimation animation="fade-up" delay={100}>
+          <h2 className="text-4xl font-bold text-white mb-12 text-center">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+              機能
+            </span>
+          </h2>
+        </ScrollAnimation>
         <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 max-w-7xl mx-auto ${session?.user?.role === 'admin' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
-          <Link href="/posts" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
+          <ScrollAnimation animation="scale" delay={200}>
+            <Link href="/posts" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
               <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/50">
@@ -147,9 +158,10 @@ export default function Home() {
               <h3 className="text-2xl font-bold text-white mb-3">活動報告</h3>
               <p className="text-white/70">練習の成果や演奏動画を共有</p>
             </div>
-          </Link>
+          </ScrollAnimation>
           
-          <Link href="/events" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
+          <ScrollAnimation animation="scale" delay={250}>
+            <Link href="/events" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-purple-500/50">
@@ -159,7 +171,9 @@ export default function Home() {
               <p className="text-white/70">ライブや発表会の準備と管理</p>
             </div>
           </Link>
+          </ScrollAnimation>
 
+          <ScrollAnimation animation="scale" delay={300}>
           <Link href="/activity-schedules" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
@@ -170,7 +184,10 @@ export default function Home() {
               <p className="text-white/70">練習日程を簡単に調整</p>
             </div>
           </Link>
+          </ScrollAnimation>
+
           {session?.user?.role === 'admin' && (
+            <ScrollAnimation animation="scale" delay={350}>
             <Link
               href="/users"
               className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20 overflow-hidden"
@@ -184,17 +201,20 @@ export default function Home() {
                 <p className="text-white/70">メンバー情報を管理</p>
               </div>
             </Link>
+            </ScrollAnimation>
           )}
         </div>
       </div>
 
       {/* 最新の投稿 */}
       <div className="container mx-auto px-4 py-16">
+        <ScrollAnimation animation="fade-up" delay={0}>
         <h2 className="text-4xl font-bold text-white mb-12 text-center">
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
             最新の活動
           </span>
         </h2>
+        </ScrollAnimation>
         {isLoading ? (
           <LoadingSpinner size="lg" />
         ) : posts.length > 0 ? (
