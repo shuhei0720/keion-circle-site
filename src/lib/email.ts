@@ -2,7 +2,18 @@ import crypto from 'crypto'
 import prisma from './prisma'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Resendインスタンスを遅延初期化（ビルド時エラー回避）
+let resendInstance: Resend | null = null
+
+function getResend(): Resend {
+  if (!resendInstance && process.env.RESEND_API_KEY) {
+    resendInstance = new Resend(process.env.RESEND_API_KEY)
+  }
+  if (!resendInstance) {
+    throw new Error('RESEND_API_KEY is not set')
+  }
+  return resendInstance
+}
 
 /**
  * メールアドレス検証トークンを生成して保存
@@ -117,6 +128,7 @@ export async function sendVerificationEmail(email: string, token: string) {
   
   // 本番環境ではResendでメール送信
   try {
+    const resend = getResend()
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
       to: email,
@@ -169,6 +181,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   
   // 本番環境ではResendでメール送信
   try {
+    const resend = getResend()
     await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
       to: email,
