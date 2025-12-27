@@ -18,13 +18,12 @@
 ## 📋 目次
 
 - [プロジェクト概要](#-プロジェクト概要)
-- [システムアーキテクチャ](#-システムアーキテクチャ)
-- [機能一覧](#-機能一覧)
 - [技術スタック](#-技術スタック)
-- [データモデル](#-データモデル)
-- [API仕様](#-api仕様)
-- [ディレクトリ構成](#-ディレクトリ構成)
+- [機能一覧](#-機能一覧)
 - [開発ガイド](#-開発ガイド)
+- [テスト](#-テスト)
+- [CI/CD](#-cicd-パイプライン)
+- [API仕様](#-api仕様)
 
 ---
 
@@ -45,84 +44,9 @@ BOLD 軽音メンバーサイトは、軽音サークルの活動を支援する
 
 ---
 
-## 🏗 システムアーキテクチャ
-
-```mermaid
-graph TB
-    subgraph "クライアント層"
-        Browser[ブラウザ]
-        Mobile[モバイル]
-    end
-    
-    subgraph "Next.js アプリケーション層"
-        Pages[Pages<br/>React Components]
-        API[API Routes<br/>RESTful API]
-        Auth[NextAuth.js<br/>認証・認可]
-        ServerActions[Server Actions<br/>サーバーアクション]
-    end
-    
-    subgraph "データ層"
-        Prisma[Prisma ORM]
-        DB[(PostgreSQL<br/>Supabase)]
-        Storage[Supabase Storage<br/>画像保存]
-    end
-    
-    subgraph "外部サービス"
-        Google[Google OAuth 2.0]
-        YouTube[YouTube API<br/>動画埋め込み]
-    end
-    
-    Browser --> Pages
-    Mobile --> Pages
-    Pages --> API
-    Pages --> ServerActions
-    API --> Auth
-    Auth --> Google
-    API --> Prisma
-    ServerActions --> Prisma
-    Prisma --> DB
-    API --> Storage
-    Pages --> YouTube
-    
-    style Browser fill:#e3f2fd
-    style Mobile fill:#e3f2fd
-    style Pages fill:#fff3e0
-    style API fill:#fff3e0
-    style Auth fill:#f3e5f5
-    style Prisma fill:#e8f5e9
-    style DB fill:#e8f5e9
-    style Storage fill:#e8f5e9
-```
-
-### レイヤー説明
-
-1. **クライアント層**: ユーザーがアクセスするWebブラウザ・モバイルブラウザ
-2. **アプリケーション層**: Next.js App Routerによる統合されたフロントエンド・バックエンド
-3. **データ層**: Prisma経由でPostgreSQLとSupabase Storageにアクセス
-4. **外部サービス層**: Google OAuthとYouTube埋め込み
-
----
-
 ## ✨ 機能一覧
 
 ### 1️⃣ 認証システム
-
-```mermaid
-graph LR
-    User[ユーザー] --> Choice{ログイン方法}
-    Choice -->|Google| OAuth[Google OAuth 2.0]
-    Choice -->|メール| EmailPass[メール+パスワード]
-    OAuth --> Session[セッション生成]
-    EmailPass --> Verify[パスワード検証<br/>bcryptjs]
-    Verify --> Session
-    Session --> Dashboard[ダッシュボード]
-    
-    style User fill:#e3f2fd
-    style OAuth fill:#fbbc04
-    style EmailPass fill:#4285f4
-    style Session fill:#34a853
-    style Dashboard fill:#ea4335
-```
 
 **機能詳細:**
 - **Google OAuth 2.0**: ワンクリックログイン（名前、メールアドレス、アバター画像を自動登録）
@@ -147,22 +71,6 @@ graph LR
 ### 3️⃣ イベント管理
 
 **管理者のみ作成可能 | メンバー全員が閲覧・参加可能**
-
-```mermaid
-graph TD
-    Create[イベント作成] --> Details[基本情報入力<br/>タイトル/日時/場所]
-    Details --> Songs[課題曲追加]
-    Songs --> Parts[パート割り当て<br/>ボーカル/ギター/ベース<br/>ドラム/キーボード]
-    Parts --> Participants[参加者募集]
-    Participants --> Report[活動報告作成]
-    Report --> Post[投稿として公開]
-    
-    style Create fill:#e3f2fd
-    style Songs fill:#fff3e0
-    style Parts fill:#f3e5f5
-    style Report fill:#e8f5e9
-    style Post fill:#ffebee
-```
 
 **機能詳細:**
 - 📅 **イベント作成**: 日時、場所、内容の設定
@@ -239,170 +147,6 @@ graph TD
 
 ---
 
-## 🗄 データモデル
-
-### ER図
-
-```mermaid
-erDiagram
-    User ||--o{ Post : creates
-    User ||--o{ Event : creates
-    User ||--o{ ActivitySchedule : creates
-    User ||--o{ PostParticipant : participates
-    User ||--o{ PostLike : likes
-    User ||--o{ Comment : writes
-    User ||--o{ EventParticipant : participates
-    User ||--o{ ActivityParticipant : participates
-    User ||--o{ Account : has
-    User ||--o{ Session : has
-    
-    Post ||--o{ PostParticipant : has
-    Post ||--o{ PostLike : has
-    Post ||--o{ Comment : has
-    Post }o--|| Event : references
-    
-    Event ||--o{ EventParticipant : has
-    Event ||--o{ Comment : has
-    Event ||--o{ Post : generates
-    
-    ActivitySchedule ||--o{ ActivityParticipant : has
-    ActivitySchedule ||--o{ Comment : has
-    
-    User {
-        string id PK
-        string name
-        string email UK
-        string password
-        string avatarUrl
-        string bio
-        string instruments
-        string role
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    Post {
-        string id PK
-        string title
-        string content
-        array youtubeUrls
-        array images
-        string userId FK
-        string eventId FK
-        string activityScheduleId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    Event {
-        string id PK
-        string title
-        string content
-        datetime date
-        string locationName
-        string locationUrl
-        string songs
-        string userId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    ActivitySchedule {
-        string id PK
-        string title
-        string content
-        datetime date
-        string location
-        string locationUrl
-        string userId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    PostParticipant {
-        string id PK
-        string postId FK
-        string userId FK
-        string status
-        datetime createdAt
-    }
-    
-    PostLike {
-        string id PK
-        string postId FK
-        string userId FK
-        datetime createdAt
-    }
-    
-    Comment {
-        string id PK
-        string content
-        string userId FK
-        string postId FK
-        string activityScheduleId FK
-        string eventId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-    
-    EventParticipant {
-        string id PK
-        string eventId FK
-        string userId FK
-        datetime createdAt
-    }
-    
-    ActivityParticipant {
-        string id PK
-        string activityScheduleId FK
-        string userId FK
-        datetime createdAt
-    }
-    
-    Account {
-        string id PK
-        string userId FK
-        string provider
-        string providerAccountId
-    }
-    
-    Session {
-        string id PK
-        string userId FK
-        string sessionToken UK
-        datetime expires
-    }
-```
-
-### 主要モデル説明
-
-#### User（ユーザー）
-- サークルメンバーの基本情報を管理
-- `role`: "admin" または "member" で権限を制御
-- `instruments`: 演奏可能な楽器情報（JSON形式）
-
-#### Post（投稿・活動報告）
-- サークルの活動報告を管理
-- `youtubeUrls`: 複数のYouTube動画URL（配列）
-- `images`: 複数の画像URL（配列、Supabase Storage）
-- `eventId` / `activityScheduleId`: イベント・スケジュールからの自動生成時に参照
-
-#### Event（イベント）
-- ライブやセッションなどのイベント情報
-- `songs`: 課題曲情報（JSON形式）[{title, sheetUrl, youtubeUrl, parts: {instrument: player}}]
-- イベント終了後、活動報告（Post）に変換可能
-
-#### ActivitySchedule（活動スケジュール）
-- 練習日程などの活動スケジュール
-- `location` / `locationUrl`: 場所情報とGoogle Mapsリンク
-- 活動終了後、活動報告（Post）に変換可能
-
-#### Comment（コメント）
-- 投稿、イベント、活動スケジュールに対するコメント
-- ポリモーフィック関連（postId / eventId / activityScheduleId）
-
----
-
 ## 🔌 API仕様
 
 ### 📊 APIサマリー
@@ -413,41 +157,7 @@ erDiagram
 - **管理者専用**: 10（admin）
 - **HTTPメソッド**: GET (8), POST (20), PUT (4), PATCH (2), DELETE (5)
 
-### 🔐 認証・認可フロー
-
-```mermaid
-sequenceDiagram
-    participant Client as クライアント
-    participant API as API Route
-    participant Auth as NextAuth.js
-    participant DB as Database
-    
-    Client->>API: リクエスト + Cookie
-    API->>Auth: getServerSession()
-    Auth->>DB: セッション検証
-    DB-->>Auth: User情報
-    Auth-->>API: Session + User
-    
-    alt 認証必須エンドポイント
-        API->>API: session存在チェック
-        alt セッションなし
-            API-->>Client: 401 Unauthorized
-        end
-    end
-    
-    alt 管理者専用エンドポイント
-        API->>API: user.role === "admin"
-        alt 管理者でない
-            API-->>Client: 403 Forbidden
-        end
-    end
-    
-    API->>DB: データ操作
-    DB-->>API: 結果
-    API-->>Client: レスポンス
-```
-
-### 📝 API エンドポイント一覧
+###  API エンドポイント一覧
 
 #### 投稿 (Posts) - `/api/posts`
 
@@ -584,91 +294,6 @@ sequenceDiagram
   "bio": "ギター担当です。よろしくお願いします！",
   "instruments": "ギター、ベース"
 }
-```
-
----
-
-## 📁 ディレクトリ構成
-
-```
-keion-circle-site/
-├── src/
-│   ├── app/                          # Next.js App Router
-│   │   ├── api/                      # API Routes
-│   │   │   ├── auth/                 # NextAuth.js 認証
-│   │   │   │   └── [...nextauth]/   # 動的認証ルート
-│   │   │   ├── posts/                # 投稿API
-│   │   │   │   ├── [id]/            # 個別投稿操作
-│   │   │   │   │   ├── route.ts     # GET/PUT/DELETE
-│   │   │   │   │   ├── details/     # 詳細取得
-│   │   │   │   │   ├── comments/    # コメント
-│   │   │   │   │   ├── like/        # いいね
-│   │   │   │   │   └── participate/ # 参加登録
-│   │   │   │   ├── image/           # 画像アップロード
-│   │   │   │   └── route.ts         # GET/POST（一覧・作成）
-│   │   │   ├── events/               # イベントAPI
-│   │   │   │   └── [id]/            # 個別イベント操作
-│   │   │   ├── activity-schedules/   # 活動スケジュールAPI
-│   │   │   │   └── [id]/            # 個別スケジュール操作
-│   │   │   ├── users/                # ユーザー管理API
-│   │   │   │   └── [id]/            # 個別ユーザー操作
-│   │   │   └── profile/              # プロフィールAPI
-│   │   │       └── avatar/          # アバター画像
-│   │   ├── posts/                    # 活動報告ページ
-│   │   │   ├── [id]/                 # 個別投稿ページ
-│   │   │   ├── new/                  # 新規投稿作成
-│   │   │   ├── edit/[id]/            # 投稿編集
-│   │   │   └── page.tsx              # 投稿一覧
-│   │   ├── events/                   # イベントページ
-│   │   │   ├── [id]/                 # 個別イベントページ
-│   │   │   ├── new/                  # 新規イベント作成
-│   │   │   ├── edit/[id]/            # イベント編集
-│   │   │   └── page.tsx              # イベント一覧
-│   │   ├── activity-schedules/       # 活動スケジュールページ
-│   │   │   └── (同上)
-│   │   ├── users/                    # ユーザー管理ページ
-│   │   │   ├── [id]/                 # ユーザー詳細
-│   │   │   └── page.tsx              # ユーザー一覧
-│   │   ├── profile/                  # プロフィールページ
-│   │   │   └── page.tsx
-│   │   ├── auth/                     # 認証ページ
-│   │   │   ├── signin/               # サインイン
-│   │   │   └── signup/               # サインアップ
-│   │   ├── layout.tsx                # ルートレイアウト
-│   │   └── page.tsx                  # ホームページ（ダッシュボード）
-│   ├── components/                   # 共通コンポーネント
-│   │   ├── DashboardLayout.tsx       # ダッシュボードレイアウト
-│   │   ├── Navigation.tsx            # ナビゲーションバー
-│   │   ├── LoginForm.tsx             # ログインフォーム
-│   │   ├── RichTextEditor.tsx        # Markdownエディタ
-│   │   ├── YouTubeEmbed.tsx          # YouTube埋め込み
-│   │   ├── Avatar.tsx                # アバター表示
-│   │   ├── Button.tsx                # ボタン
-│   │   ├── Card.tsx                  # カード
-│   │   └── Modal.tsx                 # モーダル
-│   ├── lib/                          # ユーティリティ
-│   │   ├── auth.ts                   # NextAuth設定
-│   │   ├── prisma.ts                 # Prismaクライアント
-│   │   ├── permissions.ts            # 権限チェック関数
-│   │   └── supabase.ts               # Supabaseクライアント
-│   └── types/                        # 型定義
-│       └── next-auth.d.ts            # NextAuth型拡張
-├── prisma/
-│   └── schema.prisma                 # データベーススキーマ
-├── scripts/
-│   └── create-admin.js               # 管理者作成スクリプト
-├── public/                           # 静的ファイル
-│   ├── icon.svg                      # PWAアイコン
-│   ├── apple-touch-icon.svg          # iOS用アイコン
-│   ├── manifest.json                 # PWAマニフェスト
-│   └── hero-bg.jpg                   # ヒーロー背景画像
-├── .env.example                      # 環境変数テンプレート
-├── next.config.ts                    # Next.js設定
-├── package.json                      # 依存関係・スクリプト
-├── tsconfig.json                     # TypeScript設定
-├── tailwind.config.ts                # Tailwind CSS設定
-├── postcss.config.mjs                # PostCSS設定
-└── README.md                         # このファイル
 ```
 
 ---
@@ -1047,32 +672,9 @@ npm run dev
 - メール: `admin@example.com`
 - パスワード: `password123`
 
-### 📝 有用なコマンド
+---
 
-```bash
-# 開発サーバー起動
-npm run dev
-
-# 本番ビルド
-npm run build
-
-# 本番サーバー起動
-npm start
-
-# Lintチェック
-npm run lint
-
-# Prisma Studio でデータベース確認
-npm run db:studio
-
-# Prisma Client 再生成
-npm run db:generate
-
-# データベーススキーマ適用
-npm run db:push
-```
-
-### 🔧 環境変数の詳細
+## 🧪 テスト
 
 #### 認証設定
 
