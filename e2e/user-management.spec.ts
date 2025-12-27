@@ -2,12 +2,8 @@ import { test, expect } from '@playwright/test'
 import { loginAsSiteAdmin } from './helpers'
 
 test.describe('ユーザー管理機能', () => {
-  // 注意: このテストを実行する前に、admin@example.comをsite_adminに昇格させる必要があります
-  // Supabase SQL Editor:
-  // UPDATE "User" SET role = 'site_admin' WHERE email = 'admin@example.com';
-  
   test.beforeEach(async ({ page }) => {
-    // サイト管理者としてログイン
+    // グローバルセットアップで作成されたsite_adminユーザーでログイン
     await loginAsSiteAdmin(page)
   })
 
