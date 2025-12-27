@@ -33,24 +33,37 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetchPosts()
-  }, [])
+    let isMounted = true
 
-  const fetchPosts = async () => {
-    try {
-      const res = await fetch('/api/posts')
-      const data = await res.json()
-      setPosts(data.slice(0, 3)) // 最新3件のみ表示
-      
-      // いいね数でソートして人気の投稿を取得（最大3件）
-      const sorted = [...data].sort((a, b) => b.likes.length - a.likes.length)
-      setPopularPosts(sorted.slice(0, 3).filter(p => p.likes.length > 0))
-    } catch (error) {
-      console.error('Failed to fetch posts:', error)
-    } finally {
-      setIsLoading(false)
+    const fetchPosts = async () => {
+      try {
+        const res = await fetch('/api/posts')
+        const data = await res.json()
+        
+        // コンポーネントがアンマウントされていない場合のみstateを更新
+        if (isMounted) {
+          setPosts(data.slice(0, 3)) // 最新3件のみ表示
+          
+          // いいね数でソートして人気の投稿を取得（最大3件）
+          const sorted = [...data].sort((a, b) => b.likes.length - a.likes.length)
+          setPopularPosts(sorted.slice(0, 3).filter(p => p.likes.length > 0))
+        }
+      } catch (error) {
+        console.error('Failed to fetch posts:', error)
+      } finally {
+        if (isMounted) {
+          setIsLoading(false)
+        }
+      }
     }
-  }
+
+    fetchPosts()
+
+    // クリーンアップ関数
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const extractYouTubeId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/(?:watch\?v=|live\/|shorts\/|embed\/)|youtu\.be\/)([^&\n?#]+)/)
