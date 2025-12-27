@@ -87,14 +87,29 @@ export default function PostsPage() {
     }
   }, [])
 
-  const handleCopyContent = async (postId: string, content: string) => {
+  const handleCopyContent = async (postId: string, content: string, youtubeUrls?: string[]) => {
     try {
       // HTMLタグを除去してテキストのみを抽出
       const tempDiv = document.createElement('div')
       tempDiv.innerHTML = content
       const textContent = tempDiv.textContent || tempDiv.innerText || ''
       
-      await navigator.clipboard.writeText(textContent)
+      // コピーする内容を構築
+      let copyText = textContent
+      
+      // YouTube URLを追加
+      if (youtubeUrls && youtubeUrls.length > 0) {
+        copyText += '\n\n【YouTube URL】\n'
+        youtubeUrls.forEach((url, index) => {
+          copyText += `${index + 1}. ${url}\n`
+        })
+      }
+      
+      // ページURLを追加
+      const pageUrl = `${window.location.origin}/posts`
+      copyText += `\n【投稿ページ】\n${pageUrl}`
+      
+      await navigator.clipboard.writeText(copyText)
       setCopiedPostId(postId)
       setTimeout(() => setCopiedPostId(null), 2000)
     } catch (error) {
@@ -394,7 +409,7 @@ export default function PostsPage() {
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <div className="flex-1 text-sm sm:text-base text-white/80 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                             <button
-                              onClick={() => handleCopyContent(post.id, post.content)}
+                              onClick={() => handleCopyContent(post.id, post.content, post.youtubeUrls)}
                               className="flex-shrink-0 p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors border border-white/10"
                               title="投稿内容をコピー"
                             >
@@ -713,7 +728,7 @@ export default function PostsPage() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 text-sm sm:text-base text-white/80 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
                           <button
-                            onClick={() => handleCopyContent(post.id, post.content)}
+                            onClick={() => handleCopyContent(post.id, post.content, post.youtubeUrls)}
                             className="flex-shrink-0 p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors border border-white/10"
                             title="投稿内容をコピー"
                           >
