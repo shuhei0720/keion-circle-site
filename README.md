@@ -693,6 +693,39 @@ npm install
 2. **New project** をクリックしてプロジェクトを作成
 3. **Project Settings** → **API** → **Project URL** と **anon public** キーをコピー
 4. **Storage** → **Create a new bucket** → `avatars` という名前で **Public** バケットを作成
+5. **SQL Editor**を開いて、以下のSQLを実行してStorageのRLSポリシーを設定:
+
+```sql
+-- avatarsバケットへのアクセスポリシー設定
+-- すべての操作を許可（開発環境のみ推奨）
+CREATE POLICY "Allow all operations on avatars"
+ON storage.objects
+FOR ALL
+USING ( bucket_id = 'avatars' )
+WITH CHECK ( bucket_id = 'avatars' );
+```
+
+または、より安全なポリシー（本番環境推奨）:
+
+```sql
+-- 誰でも読み取り可能
+CREATE POLICY "Public Access"
+ON storage.objects FOR SELECT
+USING ( bucket_id = 'avatars' );
+
+-- 認証済みユーザーはアップロード・更新・削除可能
+CREATE POLICY "Authenticated users can upload"
+ON storage.objects FOR INSERT
+WITH CHECK ( bucket_id = 'avatars' AND auth.role() = 'authenticated' );
+
+CREATE POLICY "Authenticated users can update"
+ON storage.objects FOR UPDATE
+USING ( bucket_id = 'avatars' AND auth.role() = 'authenticated' );
+
+CREATE POLICY "Authenticated users can delete"
+ON storage.objects FOR DELETE
+USING ( bucket_id = 'avatars' AND auth.role() = 'authenticated' );
+```
 
 #### 4. Google OAuth設定
 
