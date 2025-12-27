@@ -215,7 +215,7 @@ erDiagram
     User ||--o{ PostLike : "いいね"
     User ||--o{ PostParticipant : "参加"
     User ||--o{ EventParticipant : "参加"
-    User ||--o{ ScheduleParticipant : "参加"
+    User ||--o{ ActivityParticipant : "参加"
     User ||--o{ Account : "連携"
     User ||--o{ Session : "持つ"
     
@@ -228,7 +228,7 @@ erDiagram
     Event ||--o{ Post : "変換"
     
     ActivitySchedule ||--o{ Comment : "持つ"
-    ActivitySchedule ||--o{ ScheduleParticipant : "持つ"
+    ActivitySchedule ||--o{ ActivityParticipant : "持つ"
     ActivitySchedule ||--o{ Post : "変換"
     
     User {
@@ -303,7 +303,6 @@ erDiagram
 - `postParticipants[]` - 投稿参加
 - `eventParticipants[]` - イベント参加
 - `activityParticipants[]` - 活動スケジュール参加
-- `schedules[]` - スケジュール回答
 - `messages[]` - チャットメッセージ
 
 </details>
@@ -537,56 +536,6 @@ NextAuth.jsで使用。メール検証・パスワードリセット用トーク
 </details>
 
 <details>
-<summary><strong>📋 Schedule（スケジュール調整）</strong></summary>
-
-複数候補日でのスケジュール調整機能。
-
-| フィールド | 型 | 説明 |
-|-----------|-----|------|
-| `id` | `string` | UUID（主キー） |
-| `title` | `string` | スケジュール名 |
-| `description` | `string?` | 説明文 |
-| `createdAt` | `DateTime` | 作成日時 |
-| `updatedAt` | `DateTime` | 更新日時 |
-
-**関連:**
-- `dates[]` - 候補日
-
-</details>
-
-<details>
-<summary><strong>📆 ScheduleDate（候補日）</strong></summary>
-
-| フィールド | 型 | 説明 |
-|-----------|-----|------|
-| `id` | `string` | UUID（主キー） |
-| `scheduleId` | `string` | スケジュールID（外部キー） |
-| `date` | `DateTime` | 候補日時 |
-| `createdAt` | `DateTime` | 作成日時 |
-
-**関連:**
-- `schedule` - スケジュール
-- `responses[]` - 回答
-
-</details>
-
-<details>
-<summary><strong>✅ ScheduleResponse（候補日回答）</strong></summary>
-
-| フィールド | 型 | 説明 |
-|-----------|-----|------|
-| `id` | `string` | UUID（主キー） |
-| `scheduleDateId` | `string` | 候補日ID（外部キー） |
-| `userId` | `string` | ユーザーID（外部キー） |
-| `status` | `string` | `available`, `maybe`, `unavailable` |
-| `comment` | `string?` | コメント |
-| `createdAt` | `DateTime` | 作成日時 |
-
-**一意制約:** `[scheduleDateId, userId]`
-
-</details>
-
-<details>
 <summary><strong>💬 Message（チャットメッセージ）</strong></summary>
 
 | フィールド | 型 | 説明 |
@@ -619,10 +568,10 @@ NextAuth.jsで使用。メール検証・パスワードリセット用トーク
 
 </details>
 
-### 📊 モデル一覧（16モデル）
+### 📊 モデル一覧（14モデル）
 
 | # | モデル名 | 説明 | 主要用途 |
-|---|---------|------|---------|
+|---|---------|---------|
 | 1 | `User` | ユーザー | 認証、権限管理、プロフィール |
 | 2 | `Account` | OAuth連携 | Google OAuth等の外部プロバイダー情報 |
 | 3 | `Session` | セッション | NextAuth.jsセッション管理 |
@@ -635,11 +584,8 @@ NextAuth.jsで使用。メール検証・パスワードリセット用トーク
 | 10 | `EventParticipant` | イベント参加 | イベント参加登録 |
 | 11 | `ActivitySchedule` | 活動スケジュール | 練習、ミーティング等 |
 | 12 | `ActivityParticipant` | 活動参加 | 活動スケジュール参加登録 |
-| 13 | `Schedule` | スケジュール調整 | 複数候補日での日程調整 |
-| 14 | `ScheduleDate` | 候補日 | スケジュール候補日 |
-| 15 | `ScheduleResponse` | 候補日回答 | 参加可否回答 |
-| 16 | `Message` | チャットメッセージ | チャット機能 |
-| 17 | `Template` | テンプレート | 投稿・イベント作成用テンプレート |
+| 13 | `Message` | チャットメッセージ | チャット機能 |
+| 14 | `Template` | テンプレート | 投稿・イベント作成用テンプレート |
 
 </details>
 

@@ -51,7 +51,6 @@ model User {
   sessions      Session[]
   posts         Post[]
   messages      Message[]
-  schedules     ScheduleResponse[]
   postParticipants PostParticipant[]
   postLikes     PostLike[]
   activitySchedules ActivitySchedule[]
@@ -125,38 +124,6 @@ model Message {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-}
-
-// スケジュール調整機能
-model Schedule {
-  id          String             @id @default(cuid())
-  title       String
-  description String?
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
-  dates       ScheduleDate[]
-}
-
-model ScheduleDate {
-  id         String             @id @default(cuid())
-  scheduleId String
-  date       DateTime
-  schedule   Schedule           @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  responses  ScheduleResponse[]
-  createdAt  DateTime           @default(now())
-}
-
-model ScheduleResponse {
-  id             String       @id @default(cuid())
-  scheduleDateId String
-  userId         String
-  status         String       // "available", "maybe", "unavailable"
-  comment        String?
-  scheduleDate   ScheduleDate @relation(fields: [scheduleDateId], references: [id], onDelete: Cascade)
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt      DateTime     @default(now())
-
-  @@unique([scheduleDateId, userId])
 }
 
 // コメント機能（投稿、活動スケジュール、イベント用）
