@@ -207,7 +207,7 @@ export default function DashboardLayout({
                 <span className="font-medium">イベント</span>
               </Link>
 
-              {session.user.role === 'admin' && (
+              {session.user.role === 'site_admin' && (
                 <Link
                   href="/users"
                   onClick={() => setMobileMenuOpen(false)}

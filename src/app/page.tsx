@@ -194,7 +194,7 @@ export default async function Home() {
             </div>
           </Link>
 
-          {session?.user?.role === 'admin' && (
+          {session?.user?.role === 'site_admin' && (
             <Link
               href="/users"
                 className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20 overflow-hidden"
@@ -238,7 +238,7 @@ export default async function Home() {
                     活動スケジュール
                   </Link>
                 </li>
-                {session?.user?.role === 'admin' && (
+                {session?.user?.role === 'site_admin' && (
                   <li>
                     <Link href="/users" className="text-white/60 hover:text-white transition-colors text-sm">
                       ユーザー管理
