@@ -8,12 +8,12 @@ import Link from 'next/link'
 export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('[Client SignIn] Attempting credentials login...')
-    console.log('[Client SignIn] Email:', email)
+    setError('')
     
     const result = await signIn('credentials', {
       email,
@@ -22,20 +22,12 @@ export default function SignIn() {
       callbackUrl: '/'
     })
     
-    console.log('[Client SignIn] Result:', JSON.stringify(result, null, 2))
-    console.log('[Client SignIn] OK:', result?.ok)
-    console.log('[Client SignIn] Error:', result?.error)
-    console.log('[Client SignIn] Status:', result?.status)
-    console.log('[Client SignIn] URL:', result?.url)
-    
     // errorフィールドがない、またはnullの場合のみ成功とみなす
     if (result && !result.error) {
-      console.log('[Client SignIn] Success! Redirecting to /')
       router.push('/')
     } else {
-      // エラーがある場合は必ずアラートを表示
-      console.error('[Client SignIn] Login failed - error:', result?.error)
-      alert(`ログインに失敗しました。\nエラー: ${result?.error || '認証エラー'}\nメールアドレスとパスワードを確認してください。`)
+      // エラーメッセージを表示
+      setError('メールアドレスまたはパスワードが正しくありません')
     }
   }
 
@@ -58,6 +50,11 @@ export default function SignIn() {
         <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center text-gray-800">
           BOLD 軽音
         </h1>
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
