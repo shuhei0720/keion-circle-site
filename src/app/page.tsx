@@ -94,11 +94,10 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Hero Section with Background Image */}
       <div className="relative overflow-hidden min-h-[60vh] flex items-center">
-        {/* 背景画像 (public/hero-bg.jpg をアップロードしてください) */}
+        {/* 背景画像 (ぼかしとモバイル対応) */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-20"></div>
+          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-center blur-md opacity-30 scale-110"></div>
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-purple-900/70 to-slate-900/90"></div>
-          <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20"></div>
         </div>
         
         <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative">
@@ -190,19 +189,19 @@ export default function Home() {
 
           {session?.user?.role === 'admin' && (
             <ScrollAnimation animation="scale" delay={350}>
-            <Link
-              href="/users"
-              className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20 overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-500/50">
-                  <Users className="w-8 h-8 text-white" />
+              <Link
+                href="/users"
+                className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative">
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-500/50">
+                    <Users className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-white mb-3">ユーザー管理</h3>
+                  <p className="text-white/70">メンバー情報を管理</p>
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-3">ユーザー管理</h3>
-                <p className="text-white/70">メンバー情報を管理</p>
-              </div>
-            </Link>
+              </Link>
             </ScrollAnimation>
           )}
         </div>
@@ -222,9 +221,10 @@ export default function Home() {
         ) : posts.length > 0 ? (
           <>
             <div className="space-y-6 max-w-4xl mx-auto">
-              {posts.map((post) => {
+              {posts.map((post, index) => {
                 return (
-                  <div key={post.id} className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 border border-white/10 hover:border-white/20">
+                  <ScrollAnimation animation="fade-up" delay={index * 100} key={post.id}>
+                    <div className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 border border-white/10 hover:border-white/20">
                     <div className="flex items-center gap-3 mb-4">
                       <Link href={`/users/${post.userId}`} className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
                         <User className="w-6 h-6 text-white" />
@@ -271,6 +271,7 @@ export default function Home() {
                       </div>
                     )}
                   </div>
+                  </ScrollAnimation>
                 )
               })}
             </div>
@@ -293,15 +294,17 @@ export default function Home() {
       {/* 人気の投稿 */}
       {!isLoading && popularPosts.length > 0 && (
         <div className="container mx-auto px-4 py-16">
+          <ScrollAnimation animation="fade-up" delay={0}>
           <h2 className="text-4xl font-bold text-white mb-12 text-center">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-400">
               人気の投稿
             </span>
           </h2>
+          </ScrollAnimation>
           <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {popularPosts.map((post) => (
+            {popularPosts.map((post, index) => (
+              <ScrollAnimation animation="scale" delay={index * 100} key={post.id}>
               <Link
-                key={post.id}
                 href="/posts"
                 className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20"
               >
@@ -321,6 +324,7 @@ export default function Home() {
                   </div>
                 </div>
               </Link>
+              </ScrollAnimation>
             ))}
           </div>
         </div>
