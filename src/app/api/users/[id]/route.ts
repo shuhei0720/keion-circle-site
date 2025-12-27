@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
-import { isAdmin } from '@/lib/permissions'
+import { isSiteAdmin } from '@/lib/permissions'
 
-// ユーザー削除（管理者のみ）
+// ユーザー削除（サイト管理者のみ）
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,9 +14,9 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const admin = await isAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'ユーザーの削除は管理者のみ可能です' }, { status: 403 })
+    const siteAdmin = await isSiteAdmin()
+    if (!siteAdmin) {
+      return NextResponse.json({ error: 'ユーザーの削除はサイト管理者のみ可能です' }, { status: 403 })
     }
 
     const { id } = await params
@@ -47,7 +47,7 @@ export async function DELETE(
   }
 }
 
-// ユーザー役割の更新（管理者のみ）
+// ユーザー役割の更新（サイト管理者のみ）
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -58,16 +58,16 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const admin = await isAdmin()
-    if (!admin) {
-      return NextResponse.json({ error: 'ユーザー役割の変更は管理者のみ可能です' }, { status: 403 })
+    const siteAdmin = await isSiteAdmin()
+    if (!siteAdmin) {
+      return NextResponse.json({ error: 'ユーザー役割の変更はサイト管理者のみ可能です' }, { status: 403 })
     }
 
     const { id } = await params
     const body = await request.json()
     const { role } = body
 
-    if (!role || !['admin', 'member'].includes(role)) {
+    if (!role || !['site_admin', 'admin', 'member'].includes(role)) {
       return NextResponse.json({ error: '無効な役割です' }, { status: 400 })
     }
 

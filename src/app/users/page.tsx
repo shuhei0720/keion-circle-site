@@ -26,19 +26,19 @@ export default function UsersPage() {
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
 
-  const isAdmin = session?.user?.role === 'admin'
+  const isSiteAdmin = session?.user?.role === 'site_admin'
 
   useEffect(() => {
     // 認証状態が確定するまで待つ
     if (status === 'loading') return
     
-    if (!session || !isAdmin) {
+    if (!session || !isSiteAdmin) {
       router.replace('/')
       return
     }
     
     fetchUsers()
-  }, [session, isAdmin, router, status])
+  }, [session, isSiteAdmin, router, status])
 
   const fetchUsers = async () => {
     try {
@@ -85,8 +85,27 @@ export default function UsersPage() {
   }
 
   const handleRoleChange = async (userId: string, currentRole: string) => {
-    const newRole = currentRole === 'admin' ? 'member' : 'admin'
-    if (!confirm(`このユーザーの役割を「${newRole === 'admin' ? '管理者' : '通常ユーザー'}」に変更しますか？`)) {
+    // 役割選択ダイアログ
+    const roleOptions = [
+      { value: 'site_admin', label: 'サイト管理者' },
+      { value: 'admin', label: '管理者' },
+      { value: 'member', label: '一般ユーザー' }
+    ]
+    
+    const message = roleOptions.map((opt, idx) => `${idx + 1}. ${opt.label}`).join('\n')
+    const choice = prompt(`新しい役割を選択してください（番号を入力）:\n${message}`, '3')
+    
+    if (!choice || !['1', '2', '3'].includes(choice)) {
+      return
+    }
+    
+    const newRole = roleOptions[parseInt(choice) - 1].value
+    if (newRole === currentRole) {
+      return
+    }
+    
+    const roleLabel = roleOptions.find(opt => opt.value === newRole)?.label || newRole
+    if (!confirm(`このユーザーの役割を「${roleLabel}」に変更しますか？`)) {
       return
     }
 
@@ -116,7 +135,7 @@ export default function UsersPage() {
     }
   }
 
-  if (!isAdmin) {
+  if (!isSiteAdmin) {
     return null
   }
 
@@ -177,12 +196,19 @@ export default function UsersPage() {
                             onClick={() => handleRoleChange(user.id, user.role)}
                             disabled={user.id === session.user.id}
                             className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
-                              user.role === 'admin'
+                              user.role === 'site_admin'
+                                ? 'bg-red-500/20 text-red-300 border border-red-400/30'
+                                : user.role === 'admin'
                                 ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
                                 : 'bg-white/10 text-white/80 border border-white/20'
                             } ${user.id !== session.user.id ? 'hover:opacity-75 cursor-pointer' : 'opacity-50'}`}
                           >
-                            {user.role === 'admin' ? (
+                            {user.role === 'site_admin' ? (
+                              <>
+                                <Shield className="h-3 w-3" />
+                                サイト管理者
+                              </>
+                            ) : user.role === 'admin' ? (
                               <>
                                 <Shield className="h-3 w-3" />
                                 管理者
@@ -263,12 +289,19 @@ export default function UsersPage() {
                         onClick={() => handleRoleChange(user.id, user.role)}
                         disabled={user.id === session.user.id}
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold w-full justify-center touch-manipulation ${
-                          user.role === 'admin'
+                          user.role === 'site_admin'
+                            ? 'bg-red-500/20 text-red-300 border border-red-400/30'
+                            : user.role === 'admin'
                             ? 'bg-purple-500/20 text-purple-300 border border-purple-400/30'
                             : 'bg-white/10 text-white border border-white/20'
                         } ${user.id !== session.user.id ? 'hover:opacity-75 active:scale-95' : 'opacity-50'}`}
                       >
-                        {user.role === 'admin' ? (
+                        {user.role === 'site_admin' ? (
+                          <>
+                            <Shield className="h-4 w-4" />
+                            サイト管理者
+                          </>
+                        ) : user.role === 'admin' ? (
                           <>
                             <Shield className="h-4 w-4" />
                             管理者
@@ -332,7 +365,7 @@ export default function UsersPage() {
               <ul className="list-disc list-inside space-y-1">
                 <li>ユーザーを削除すると、そのユーザーの投稿、メッセージ、スケジュール投票もすべて削除されます</li>
                 <li>自分自身を削除または役割変更することはできません</li>
-                <li>役割をタップすると管理者⇔通常ユーザーを切り替えられます</li>
+                <li>役割をタップすると、サイト管理者・管理者・一般ユーザーを選択できます</li>
               </ul>
             </div>
           </div>

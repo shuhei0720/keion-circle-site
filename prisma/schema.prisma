@@ -46,7 +46,7 @@ model User {
   avatarUrl     String?
   bio           String?   // 自己紹介
   instruments   String?   // 演奏できる楽器リスト（JSON文字列形式）
-  role          String    @default("member") // admin, member
+  role          String    @default("member") // site_admin, admin, member
   accounts      Account[]
   sessions      Session[]
   posts         Post[]
