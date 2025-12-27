@@ -122,13 +122,22 @@ export default function HomeClient({ posts, popularPosts }: HomeClientProps) {
                       <MessageCircle className="w-4 h-4" />
                       <span>{post.likes.length} いいね</span>
                     </div>
-                    <Link href={`/posts/${post.id}`} className="text-blue-400 hover:text-blue-300 transition-colors">
-                      詳細を見る →
-                    </Link>
                   </div>
                 </div>
               </ScrollAnimation>
             ))}
+          </div>
+        )}
+        
+        {/* もっと見るボタン */}
+        {posts.length > 0 && (
+          <div className="text-center mt-12">
+            <Link 
+              href="/posts"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-linear-to-r from-blue-600 to-purple-600 rounded-full hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-purple-500/50"
+            >
+              もっと見る
+            </Link>
           </div>
         )}
       </div>
@@ -146,10 +155,7 @@ export default function HomeClient({ posts, popularPosts }: HomeClientProps) {
           <div className="max-w-4xl mx-auto space-y-6">
             {popularPosts.map((post, index) => (
               <ScrollAnimation animation="scale" delay={index * 100} key={post.id}>
-                <Link
-                  href={`/posts/${post.id}`}
-                  className="block group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20"
-                >
+                <div className="block group relative bg-white/10 backdrop-blur-md rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <h3 className="text-xl font-bold text-white line-clamp-2 group-hover:text-pink-400 transition-colors flex-1">
                       {post.title}
@@ -163,9 +169,19 @@ export default function HomeClient({ posts, popularPosts }: HomeClientProps) {
                     <User className="w-4 h-4" />
                     <span>{post.user.name}</span>
                   </div>
-                </Link>
+                </div>
               </ScrollAnimation>
             ))}
+          </div>
+          
+          {/* もっと見るボタン */}
+          <div className="text-center mt-12">
+            <Link 
+              href="/posts"
+              className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-linear-to-r from-pink-500 to-yellow-500 rounded-full hover:scale-105 transition-all duration-300 shadow-2xl hover:shadow-pink-500/50"
+            >
+              もっと見る
+            </Link>
           </div>
         </div>
       )}
