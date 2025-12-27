@@ -579,7 +579,10 @@ graph LR
   - セキュアなトークン生成・検証
 - ✅ 自動ユーザー登録（Google: 名前・メール・アバター、検証済み）
 - ✅ パスワードハッシュ化（bcryptjs）
-- ✅ 役割ベースアクセス制御（admin / member）
+- ✅ **役割ベースアクセス制御（3段階）**
+  - **site_admin（サイト管理者）**: すべての権限（ユーザー管理含む）
+  - **admin（管理者）**: 投稿・イベント・スケジュール作成
+  - **member（一般ユーザー）**: 閲覧・コメント・参加登録
 - ✅ メール送信（Resend、本番環境のみ）
 
 ### 2️⃣ 投稿機能（活動報告）
@@ -671,9 +674,14 @@ graph TB
 
 ### 6️⃣ ユーザー管理
 
-**管理者専用機能:**
+**サイト管理者（site_admin）専用機能:**
 - ✅ ユーザー一覧表示
-- ✅ 役割変更（admin ↔ member）
+- ✅ **役割変更（site_admin / admin / member）**
+  - モーダルUIで役割を選択
+  - 各役割の説明を表示
+  - 楽観的UI（即座に反映）
+- ✅ ユーザー削除
+  - 投稿・メッセージ・スケジュール投票も連動削除
 - ✅ ユーザー詳細表示
 
 ---
@@ -829,7 +837,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabaseのanon public キー>
 
 > **📧 メール送信について**
 > - **開発環境**: メールは送信されず、サーバーログに検証URLが出力されます
+>   - `RESEND_API_KEY`は `.env.example` のダミー値をそのまま使用
+>   - サーバーログ（ターミナル）に検証URLが表示されるので、それをブラウザで開く
 > - **本番環境**: Resendを使用してメールが送信されます
+>   - [Resend](https://resend.com/)でアカウント作成し、APIキーを取得
+>   - 無料プランで月100通まで送信可能
 > - メールアドレス検証（新規登録時、24時間有効）
 > - パスワードリセット（1時間有効）
 
@@ -1103,6 +1115,25 @@ CREATE INDEX "Comment_activityScheduleId_idx" ON "Comment"("activityScheduleId")
 ```bash
 export $(cat .env.local | grep DATABASE_URL | xargs) && node scripts/create-admin.js admin@example.com password123 "管理者名"
 ```
+
+作成されたユーザーは`member`役割で登録されます。**サイト管理者**に昇格するには、Supabase SQL Editorで以下を実行:
+
+```sql
+-- 管理者をサイト管理者に昇格
+UPDATE "User"
+SET role = 'site_admin'
+WHERE email = 'admin@example.com';
+
+-- 確認
+SELECT id, name, email, role 
+FROM "User" 
+WHERE email = 'admin@example.com';
+```
+
+> **💡 役割の違い**
+> - **site_admin**: ユーザー管理（削除・役割変更）+ 投稿・イベント管理
+> - **admin**: 投稿・イベント・スケジュール管理のみ
+> - **member**: 閲覧・コメント・参加登録のみ
 
 #### 9. 開発サーバーの起動
 
