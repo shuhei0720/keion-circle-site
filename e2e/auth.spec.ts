@@ -8,7 +8,7 @@ test.describe('Authentication Flow', () => {
   test('displays login page for unauthenticated users', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'BOLD 軽音' })).toBeVisible();
     await expect(page.getByText('メールアドレス')).toBeVisible();
-    await expect(page.getByText('パスワード')).toBeVisible();
+    await expect(page.getByLabel('パスワード')).toBeVisible();
   });
 
   test('redirects to home after successful login', async ({ page }) => {

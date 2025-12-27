@@ -222,15 +222,12 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
   test('ナビゲーションにユーザー管理リンクが表示される', async ({ page }) => {
     await page.goto('/')
     
-    // デスクトップヘッダーまたはHomeページカードにリンクが表示されることを確認
-    const headerLink = page.locator('nav a[href="/users"]').first()
-    const homeCard = page.locator('a[href="/users"]').filter({ hasText: 'ユーザー管理' }).first()
+    // Footerにユーザー管理リンクが表示されることを確認
+    const footerLink = page.locator('footer a[href="/users"]')
     
-    // いずれかが表示されていることを確認
-    const isHeaderVisible = await headerLink.isVisible().catch(() => false)
-    const isCardVisible = await homeCard.isVisible().catch(() => false)
-    
-    expect(isHeaderVisible || isCardVisible).toBeTruthy()
+    // リンクが表示されていることを確認
+    await expect(footerLink).toBeVisible()
+    await expect(footerLink).toContainText('ユーザー管理')
   })
 
   test('Homeページに移動後も正常に動作する', async ({ page }) => {
