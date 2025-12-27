@@ -1449,20 +1449,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 
 ---
 
-## 🤝 コントリビューション
-
-プルリクエストを歓迎します！バグ報告や機能リクエストは [GitHub Issues](https://github.com/shuhei0720/keion-circle-site/issues) にお願いします。
-
-### コントリビューション手順
-
-1. このリポジトリをフォーク
-2. 機能ブランチを作成 (`git checkout -b feature/amazing-feature`)
-3. 変更をコミット (`git commit -m 'Add amazing feature'`)
-4. ブランチにプッシュ (`git push origin feature/amazing-feature`)
-5. プルリクエストを作成
-
----
-
 ## 📞 お問い合わせ
 
 質問や提案がある場合は、[GitHub Issues](https://github.com/shuhei0720/keion-circle-site/issues) を作成してください。
