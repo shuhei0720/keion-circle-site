@@ -35,9 +35,30 @@ interface ProfilePageClientProps {
 export default function ProfilePageClient({ user }: ProfilePageClientProps) {
   // ページ表示時にスクロールをトップに戻す（レンダリング前に実行）
   useLayoutEffect(() => {
+    console.log('=== Profile Page Mount ===')
+    console.log('Before reset - window.scrollY:', window.scrollY)
+    console.log('Before reset - document.documentElement.scrollTop:', document.documentElement.scrollTop)
+    console.log('Before reset - document.body.scrollTop:', document.body.scrollTop)
+    
     window.scrollTo({ top: 0, behavior: 'instant' })
     document.documentElement.scrollTop = 0
     document.body.scrollTop = 0
+    
+    // 少し遅延させて再度確認
+    setTimeout(() => {
+      console.log('After reset (100ms) - window.scrollY:', window.scrollY)
+      console.log('After reset (100ms) - document.documentElement.scrollTop:', document.documentElement.scrollTop)
+      if (window.scrollY > 0) {
+        console.warn('Still scrolled! Forcing again...')
+        window.scrollTo({ top: 0, behavior: 'instant' })
+        document.documentElement.scrollTop = 0
+        document.body.scrollTop = 0
+      }
+    }, 100)
+    
+    setTimeout(() => {
+      console.log('After reset (500ms) - window.scrollY:', window.scrollY)
+    }, 500)
   }, [])
 
   return (
