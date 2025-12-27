@@ -829,7 +829,7 @@ npm run db:push
 
 | 変数名 | 説明 | 取得方法 |
 |--------|------|----------|
-| `DATABASE_URL` | PostgreSQL接続文字列 | **Supabase Dashboard** → **Project Settings** → **Database** → **Connection String** → **Session pooler**<br/>`postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres`<br/>⚠️ 本番環境では **Transaction pooler**（ポート6543）を使用 |
+| `DATABASE_URL` | PostgreSQL接続文字列 | **Supabase Dashboard** → **Project Settings** → **Database** → **Connection String** → **Session pooler**<br/>`postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres`<br/>または **Transaction pooler**（ポート6543）も使用可能 |
 
 #### Google OAuth設定
 
@@ -854,8 +854,7 @@ npm run db:push
 **解決策**:
 1. Supabaseプロジェクトが起動しているか確認（無料プランは1週間非アクティブで一時停止）
 2. `DATABASE_URL`のパスワードが正しいか確認
-3. 開発環境では **Session pooler**（ポート5432）を使用
-4. 本番環境（Vercel）では **Transaction pooler**（ポート6543）を使用
+3. Session pooler（ポート5432）またはTransaction pooler（ポート6543）を使用
 
 #### Google OAuth認証エラー
 
