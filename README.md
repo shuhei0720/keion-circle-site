@@ -593,7 +593,7 @@ graph TB
 
 **機能:**
 - ✅ 管理者のみ作成・編集・削除
-- ✅ Markdownエディタ（プレビュー機能）
+- ✅ テキスト形式での投稿
 - ✅ YouTube動画複数埋め込み（5形式対応）
 - ✅ 画像アップロード（Supabase Storage）
 - ✅ いいね機能（楽観的UI）
@@ -683,7 +683,7 @@ graph TB
 #### 1. リポジトリのクローン
 
 ```bash
-git clone https://github.com/your-username/keion-circle-site.git
+git clone https://github.com/shuhei0720/keion-circle-site.git
 cd keion-circle-site
 ```
 
@@ -734,6 +734,32 @@ npx prisma generate
 npx prisma db push
 ```
 
+**⚠️ `prisma db push` が失敗する場合:**
+
+Supabase SQLエディターから直接SQL実行が必要です：
+
+1. [Supabase Dashboard](https://app.supabase.com/) にログイン
+2. プロジェクト → SQL Editor を開く
+3. `prisma/schema.prisma` のスキーマに基づいてテーブル作成SQLを実行
+
+```sql
+-- Userテーブル作成例
+CREATE TABLE "User" (
+  "id" TEXT NOT NULL PRIMARY KEY,
+  "name" TEXT NOT NULL,
+  "email" TEXT NOT NULL UNIQUE,
+  "password" TEXT,
+  "role" TEXT NOT NULL DEFAULT 'member',
+  "avatarUrl" TEXT,
+  "bio" TEXT,
+  "instruments" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL
+);
+
+-- 他のテーブルも同様に作成
+```
+
 #### 5. 管理者ユーザーの作成
 
 ```bash
@@ -778,7 +804,24 @@ npm run test:e2e
 
 ## 🧪 テスト
 
-### E2Eテスト（Playwright）
+### テスト戦略
+
+```mermaid
+graph TB
+    A[テスト戦略] --> B[E2Eテスト]
+    A --> C[型チェック]
+    A --> D[Lintチェック]
+    A --> E[ビルドテスト]
+    
+    B --> B1[Playwright]
+    C --> C1[TypeScript]
+    D --> D1[ESLint]
+    E --> E1[Next.js Build]
+```
+
+### 1️⃣ E2Eテスト（Playwright）
+
+**実行方法:**
 
 ```bash
 # 全テスト実行
@@ -789,18 +832,26 @@ npx playwright test --ui
 
 # 特定のブラウザで実行
 npx playwright test --project=chromium
+npx playwright test --project=firefox
+npx playwright test --project=webkit
+
+# ヘッドレスモードで実行
+npx playwright test --headed
+
+# デバッグモード
+npx playwright test --debug
 ```
 
-### テストカバレッジ
+**テストカバレッジ:**
 
-| カテゴリ | テスト数 | 説明 |
-|---------|---------|------|
-| 🔐 認証 | 4件 | ログイン・ログアウト |
-| 📝 投稿 | 5件 | 作成・いいね・コメント・削除 |
-| 🎪 イベント | 4件 | 作成・参加・課題曲・報告変換 |
-| **合計** | **13件** | |
+| カテゴリ | ファイル | テスト数 | 内容 |
+|---------|---------|---------|------|
+| 🔐 **認証** | `e2e/auth.spec.ts` | 4件 | ログイン画面表示、成功ログイン、エラーハンドリング、ログアウト |
+| 📝 **投稿** | `e2e/posts.spec.ts` | 5件 | 投稿作成、一覧表示、いいね、コメント、削除 |
+| 🎪 **イベント** | `e2e/events.spec.ts` | 4件 | イベント作成、参加登録、課題曲追加、活動報告変換 |
+| **合計** | | **13件** | |
 
-### テストフロー例
+**テストフロー例:**
 
 ```mermaid
 graph LR
@@ -808,8 +859,74 @@ graph LR
     B --> C[投稿作成]
     C --> D[いいね]
     D --> E[コメント投稿]
-    E --> F[ログアウト]
-    F --> G[テスト終了]
+    E --> F[削除]
+    F --> G[ログアウト]
+    G --> H[テスト終了]
+```
+
+### 2️⃣ 型チェック（TypeScript）
+
+```bash
+# 型チェック実行
+npx tsc --noEmit
+
+# Watchモード
+npx tsc --noEmit --watch
+```
+
+**チェック内容:**
+- TypeScript型の整合性
+- 未使用変数の検出
+- 型推論の検証
+
+### 3️⃣ Lintチェック（ESLint）
+
+```bash
+# Lint実行
+npm run lint
+
+# 自動修正
+npm run lint -- --fix
+```
+
+**チェック内容:**
+- コーディング規約違反
+- 潜在的なバグ
+- ベストプラクティス違反
+
+### 4️⃣ ビルドテスト
+
+```bash
+# 本番ビルド
+npm run build
+
+# ビルド結果確認
+npm start
+```
+
+**チェック内容:**
+- ビルドエラーの検出
+- バンドルサイズの確認
+- 静的解析
+
+### テスト環境
+
+| 項目 | 設定 |
+|------|------|
+| **データベース** | SQLite（`dev.db`） |
+| **認証** | テストユーザー（`admin@example.com`） |
+| **ポート** | `3000` |
+| **ブラウザ** | Chromium、Firefox、Webkit |
+
+### CI/CDでのテスト
+
+GitHub Actionsで自動実行されるテスト：
+
+```yaml
+# .github/workflows/ci.yml
+- Lint & Type Check
+- Build Test
+- E2E Tests (Chromium)
 ```
 
 ---
@@ -953,6 +1070,61 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 
 ---
 
+## 🤝 コントリビューション
+
+コントリビューションを歓迎します！
+
+### コントリビュート方法
+
+1. **Issueを作成**
+   - バグ報告、機能要望、質問など
+   - [Issues](https://github.com/shuhei0720/keion-circle-site/issues)
+
+2. **Pull Requestを送信**
+   ```bash
+   # 1. リポジトリをフォーク
+   # 2. ブランチを作成
+   git checkout -b feature/amazing-feature
+   
+   # 3. 変更をコミット
+   git commit -m 'Add amazing feature'
+   
+   # 4. プッシュ
+   git push origin feature/amazing-feature
+   
+   # 5. Pull Requestを作成
+   ```
+
+3. **コーディング規約**
+   - TypeScriptの型を適切に使用
+   - ESLintルールに従う
+   - テストを追加（E2Eテスト）
+   - コミットメッセージは明確に
+
+4. **テストの実行**
+   ```bash
+   # Lintチェック
+   npm run lint
+   
+   # 型チェック
+   npx tsc --noEmit
+   
+   # ビルドテスト
+   npm run build
+   
+   # E2Eテスト
+   npm run test:e2e
+   ```
+
+### 開発ガイドライン
+
+- コードレビューに対応する
+- 既存のコードスタイルに従う
+- ドキュメントを更新する
+- 変更内容を詳細に説明する
+
+---
+
 ## 📝 ライセンス
 
 MIT License
@@ -964,7 +1136,7 @@ MIT License
 **BOLD 軽音サークル**
 
 - Website: [https://keion-circle-site.vercel.app/](https://keion-circle-site.vercel.app/)
-- GitHub: [https://github.com/your-username/keion-circle-site](https://github.com/your-username/keion-circle-site)
+- GitHub: [@shuhei0720](https://github.com/shuhei0720/keion-circle-site)
 
 ---
 
