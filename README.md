@@ -677,30 +677,116 @@ keion-circle-site/
 
 ### 🚀 クイックスタート
 
+#### 1. リポジトリのクローンと依存関係のインストール
+
 ```bash
-# リポジトリのクローン
 git clone https://github.com/shuhei0720/keion-circle-site.git
 cd keion-circle-site
-
-# 依存関係のインストール
 npm install
+```
 
-# 環境変数の設定（.env.exampleをコピーして編集）
+#### 2. Supabaseプロジェクトの作成
+
+1. [Supabase](https://supabase.com) にアクセスしてアカウントを作成
+2. **New Project** をクリック
+3. プロジェクト名、データベースパスワードを設定して **Create new project** をクリック
+4. プロジェクトが作成されるまで数分待機
+
+**必要な情報を取得**:
+- **Project Settings** → **Database** → **Connection String** タブ
+  - **Session pooler** の接続文字列をコピー（ポート5432、開発環境用）
+  - `[YOUR-PASSWORD]` を実際のパスワードに置き換え
+- **Project Settings** → **API** タブ
+  - **Project URL**: `https://xxxxx.supabase.co` をコピー
+  - **Project API keys** → `anon` `public` キーをコピー
+
+**Storageバケットの作成**:
+1. **Storage** → **Create a new bucket** をクリック
+2. Bucket name: `avatars`
+3. **Public bucket** をONにして **Create bucket** をクリック
+
+#### 3. Google OAuth認証の設定
+
+1. [Google Cloud Console](https://console.cloud.google.com/) にアクセス
+2. **新しいプロジェクトを作成** または既存のプロジェクトを選択
+3. **APIとサービス** → **OAuth同意画面** に移動
+   - User Type: **外部** を選択して **作成**
+   - アプリ名、ユーザーサポートメール、デベロッパーの連絡先情報を入力
+   - **保存して次へ** → **保存して次へ** → **ダッシュボードに戻る**
+4. **認証情報** → **認証情報を作成** → **OAuth 2.0 クライアントID** を選択
+   - アプリケーションの種類: **ウェブアプリケーション**
+   - 名前: `BOLD軽音サイト`
+   - **承認済みのリダイレクトURI** に以下を追加:
+     - `http://localhost:3000/api/auth/callback/google` (開発環境)
+     - `https://your-domain.vercel.app/api/auth/callback/google` (本番環境)
+   - **作成** をクリック
+5. **クライアントID** と **クライアントシークレット** をコピー
+
+#### 4. AUTH_SECRETの生成
+
+以下のコマンドで安全なランダム文字列を生成:
+
+```bash
+openssl rand -base64 32
+```
+
+または
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+出力された文字列（例: `hJuxPYaghehoKsbochfayrxjOLm3g+Z+CKoqrBsaCas=`）をコピー
+
+#### 5. 環境変数の設定
+
+```bash
 cp .env.example .env.local
-# .env.localを開いて、Supabaseの接続情報を設定してください
+```
 
-# データベースの初期化
-npx prisma generate
-npx prisma db push
+`.env.local` を開いて以下を設定:
+
+```env
+# 認証設定
+AUTH_URL=http://localhost:3000
+AUTH_SECRET=<ステップ4で生成した文字列>
+AUTH_TRUST_HOST=true
+
+# NextAuth v5用
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=<AUTH_SECRETと同じ値>
+
+# データベース設定（Supabaseから取得）
+DATABASE_URL="postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres"
+
+# Google OAuth（Google Cloud Consoleから取得）
+GOOGLE_CLIENT_ID=123456789-xxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxxxx
+
+# Supabase設定（Supabase Dashboardから取得）
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
+```
+
+#### 6. データベースの初期化
+
+```bash
+# 環境変数を読み込んでPrismaスキーマを適用
+export $(cat .env.local | grep DATABASE_URL | xargs) && npx prisma generate && npx prisma db push
 
 # 管理者ユーザーの作成
-node scripts/create-admin.js admin@example.com password123 "管理者名"
+export $(cat .env.local | grep DATABASE_URL | xargs) && node scripts/create-admin.js admin@example.com password123 "管理者名"
+```
 
-# 開発サーバーの起動
+#### 7. 開発サーバーの起動
+
+```bash
 npm run dev
 ```
 
-ブラウザで [http://localhost:3000](http://localhost:3000) を開いてください。
+ブラウザで [http://localhost:3000](http://localhost:3000) を開いてログイン:
+- メール: `admin@example.com`
+- パスワード: `password123`
 
 ### 📝 有用なコマンド
 
@@ -727,26 +813,72 @@ npm run db:generate
 npm run db:push
 ```
 
-### 🔧 環境変数の設定
+### 🔧 環境変数の詳細
 
-`.env.local` ファイル:
+#### 認証設定
 
-```env
-# 認証設定
-AUTH_URL=http://localhost:3000
-AUTH_SECRET=your-random-secret-key-at-least-32-chars
-AUTH_TRUST_HOST=true
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `AUTH_URL` | アプリケーションのベースURL | 開発: `http://localhost:3000`<br/>本番: `https://your-domain.vercel.app` |
+| `AUTH_SECRET` | NextAuth.jsの暗号化キー | `openssl rand -base64 32` で生成 |
+| `AUTH_TRUST_HOST` | Vercelでのホスト検証を無効化 | 常に `true` |
+| `NEXTAUTH_URL` | NextAuth v5用のURL | `AUTH_URL`と同じ値 |
+| `NEXTAUTH_SECRET` | NextAuth v5用のシークレット | `AUTH_SECRET`と同じ値 |
 
-# NextAuth v5用（本番環境でも同じ値を設定）
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-random-secret-key-at-least-32-chars
+#### データベース設定
 
-# データベース設定（Supabase PostgreSQL）
-# Supabase Dashboard → Project Settings → Database → Connection String (Transaction pooler)
-DATABASE_URL="postgresql://postgres.xxxxx:password@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `DATABASE_URL` | PostgreSQL接続文字列 | **Supabase Dashboard** → **Project Settings** → **Database** → **Connection String** → **Session pooler**<br/>`postgresql://postgres:[PASSWORD]@db.xxxxx.supabase.co:5432/postgres`<br/>⚠️ 本番環境では **Transaction pooler**（ポート6543）を使用 |
 
-# Google OAuth認証（Google Cloud Consoleで取得）
-# 承認済みのリダイレクトURI: http://localhost:3000/api/auth/callback/google
+#### Google OAuth設定
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `GOOGLE_CLIENT_ID` | Google OAuthクライアントID | [Google Cloud Console](https://console.cloud.google.com/) → **APIとサービス** → **認証情報** → 作成したOAuth 2.0クライアントIDをクリック |
+| `GOOGLE_CLIENT_SECRET` | Google OAuthクライアントシークレット | 同上 |
+
+#### Supabase設定
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | SupabaseプロジェクトURL | **Supabase Dashboard** → **Project Settings** → **API** → **Project URL** |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase匿名アクセスキー | **Supabase Dashboard** → **Project Settings** → **API** → **Project API keys** → `anon` `public` |
+
+### 🔍 トラブルシューティング
+
+#### データベース接続エラー
+
+**エラー**: `Can't reach database server`
+
+**解決策**:
+1. Supabaseプロジェクトが起動しているか確認（無料プランは1週間非アクティブで一時停止）
+2. `DATABASE_URL`のパスワードが正しいか確認
+3. 開発環境では **Session pooler**（ポート5432）を使用
+4. 本番環境（Vercel）では **Transaction pooler**（ポート6543）を使用
+
+#### Google OAuth認証エラー
+
+**エラー**: `redirect_uri_mismatch`
+
+**解決策**:
+1. Google Cloud Consoleの **承認済みのリダイレクトURI** に以下が追加されているか確認:
+   - 開発: `http://localhost:3000/api/auth/callback/google`
+   - 本番: `https://your-domain.vercel.app/api/auth/callback/google`
+2. URIに余分なスペースや改行がないか確認
+3. HTTPSとHTTPを間違えていないか確認
+
+#### Prisma Client生成エラー
+
+**エラー**: `Environment variable not found: DATABASE_URL`
+
+**解決策**:
+```bash
+export $(cat .env.local | grep DATABASE_URL | xargs)
+npx prisma generate
+```
+
+または、`.env.local`が正しい場所にあるか確認してください。
 GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 
