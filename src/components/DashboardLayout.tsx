@@ -124,6 +124,7 @@ export default function DashboardLayout({
               <div className="flex items-center gap-2 ml-4 pl-4 border-l border-white/20">
                 <Link
                   href="/profile"
+                  scroll={false}
                   className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all relative ${
                     isActive('/profile') 
                       ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/50 scale-105' 
@@ -224,6 +225,7 @@ export default function DashboardLayout({
               <div className="border-t border-white/10 my-2 pt-2">
                 <Link
                   href="/profile"
+                  scroll={false}
                   onClick={() => setMobileMenuOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                     isActive('/profile') 
