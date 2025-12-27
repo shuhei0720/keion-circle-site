@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, Mail, Calendar, Edit2, Save, X, Music } from 'lucide-react'
 import AvatarUpload from '@/components/AvatarUpload'
 
@@ -46,6 +46,11 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
   )
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl)
   const [saving, setSaving] = useState(false)
+
+  // ページ表示時にスクロールをトップに戻す
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const handleInstrumentToggle = (instrument: string) => {
     setInstruments(prev => 
