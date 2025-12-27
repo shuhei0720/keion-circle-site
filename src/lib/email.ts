@@ -1,5 +1,8 @@
 import crypto from 'crypto'
 import prisma from './prisma'
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 /**
  * メールアドレス検証トークンを生成して保存
@@ -48,26 +51,53 @@ export async function verifyEmailToken(token: string): Promise<string | null> {
 }
 
 /**
- * メールアドレス検証メールを送信（開発環境用ログ出力）
+ * メールアドレス検証メールを送信
  */
 export async function sendVerificationEmail(email: string, token: string) {
-  const verificationUrl = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${token}`
+  const verificationUrl = `${process.env.NEXTAUTH_URL || process.env.AUTH_URL || 'http://localhost:3000'}/api/auth/verify-email?token=${token}`
   
-  // 本番環境ではメール送信サービス（Resend, SendGrid等）を使用
   // 開発環境ではログに出力
-  console.log('\n========================================')
-  console.log('📧 メールアドレス検証リンク')
-  console.log('========================================')
-  console.log(`宛先: ${email}`)
-  console.log(`検証URL: ${verificationUrl}`)
-  console.log('========================================\n')
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('\n========================================')
+    console.log('📧 メールアドレス検証リンク')
+    console.log('========================================')
+    console.log(`宛先: ${email}`)
+    console.log(`検証URL: ${verificationUrl}`)
+    console.log('========================================\n')
+    return
+  }
   
-  // TODO: 本番環境でメール送信を実装
-  // 例: Resendを使用する場合
-  // await resend.emails.send({
-  //   from: 'noreply@example.com',
-  //   to: email,
-  //   subject: 'メールアドレスを確認してください',
-  //   html: `<a href="${verificationUrl}">こちらをクリックしてメールアドレスを確認</a>`
-  // })
+  // 本番環境ではResendでメール送信
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+      to: email,
+      subject: 'BOLD 軽音 - メールアドレスを確認してください',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h1 style="color: #2563eb;">BOLD 軽音</h1>
+          <p>メールアドレスの確認をお願いします。</p>
+          <p>以下のボタンをクリックしてメールアドレスを確認してください：</p>
+          <a href="${verificationUrl}" 
+             style="display: inline-block; background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin: 16px 0;">
+            メールアドレスを確認
+          </a>
+          <p style="color: #6b7280; font-size: 14px;">
+            このリンクは24時間有効です。<br>
+            心当たりがない場合は、このメールを無視してください。
+          </p>
+        </div>
+      `
+    })
+  } catch (error) {
+    console.error('Failed to send verification email:', error)
+    // エラーが発生してもユーザー登録は継続する
+    // 開発環境用のログを出力
+    console.log('\n========================================')
+    console.log('📧 メールアドレス検証リンク (Resend送信失敗)')
+    console.log('========================================')
+    console.log(`宛先: ${email}`)
+    console.log(`検証URL: ${verificationUrl}`)
+    console.log('========================================\n')
+  }
 }

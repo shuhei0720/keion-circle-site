@@ -37,7 +37,8 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-image-crop": "^11.0.10",
-    "react-youtube": "^10.1.0"
+    "react-youtube": "^10.1.0",
+    "resend": "^6.6.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
