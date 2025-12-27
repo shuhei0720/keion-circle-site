@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Music, Calendar, MessageCircle, FileText, User } from 'lucide-react'
+import { Music, Calendar, MessageCircle, FileText, User, Users } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
@@ -123,7 +123,7 @@ export default function Home() {
             機能
           </span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 max-w-7xl mx-auto ${session?.user?.role === 'admin' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'}`}>
           <Link href="/posts" className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20">
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative">
@@ -156,6 +156,21 @@ export default function Home() {
               <p className="text-white/70">練習日程を簡単に調整</p>
             </div>
           </Link>
+          {session?.user?.role === 'admin' && (
+            <Link
+              href="/users"
+              className="group relative bg-white/10 backdrop-blur-md rounded-2xl p-8 hover:bg-white/15 transition-all duration-300 hover:scale-105 border border-white/10 hover:border-white/20 overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-orange-500/50">
+                  <Users className="w-8 h-8 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-3">ユーザー管理</h3>
+                <p className="text-white/70">メンバー情報を管理</p>
+              </div>
+            </Link>
+          )}
         </div>
       </div>
 

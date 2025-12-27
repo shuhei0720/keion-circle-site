@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
-import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2 } from 'lucide-react'
+import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2, Copy, Check } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -66,6 +66,7 @@ export default function PostsPage() {
   const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [postId: string]: boolean }>({})
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
+  const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
 
   const isAdmin = session?.user?.role === 'admin'
 
@@ -85,6 +86,22 @@ export default function PostsPage() {
       setFetchingPosts(false)
     }
   }, [])
+
+  const handleCopyContent = async (postId: string, content: string) => {
+    try {
+      // HTMLタグを除去してテキストのみを抽出
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = content
+      const textContent = tempDiv.textContent || tempDiv.innerText || ''
+      
+      await navigator.clipboard.writeText(textContent)
+      setCopiedPostId(postId)
+      setTimeout(() => setCopiedPostId(null), 2000)
+    } catch (error) {
+      console.error('コピーに失敗しました:', error)
+      alert('コピーに失敗しました')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -302,6 +319,22 @@ export default function PostsPage() {
     return match ? match[1] : null
   }
 
+  const handleCopyContent = async (postId: string, content: string) => {
+    try {
+      // HTMLタグを除去してテキストのみを抽出
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = content
+      const textContent = tempDiv.textContent || tempDiv.innerText || ''
+      
+      await navigator.clipboard.writeText(textContent)
+      setCopiedPostId(postId)
+      setTimeout(() => setCopiedPostId(null), 2000)
+    } catch (error) {
+      console.error('コピーに失敗しました:', error)
+      alert('コピーに失敗しました')
+    }
+  }
+
   // ページネーション計算
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE)
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE
@@ -373,7 +406,22 @@ export default function PostsPage() {
                       </div>
 
                       {post.content && (
-                        <div className="text-sm sm:text-base text-white/80 mb-4 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
+                        <div className="mb-4">
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <div className="flex-1 text-sm sm:text-base text-white/80 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
+                            <button
+                              onClick={() => handleCopyContent(post.id, post.content)}
+                              className="flex-shrink-0 p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors border border-white/10"
+                              title="投稿内容をコピー"
+                            >
+                              {copiedPostId === post.id ? (
+                                <Check className="w-4 h-4 text-green-400" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
                       )}
 
                       {/* YouTube動画 */}
@@ -677,7 +725,22 @@ export default function PostsPage() {
                     </div>
 
                     {post.content && (
-                      <div className="text-sm sm:text-base text-white/80 mb-4 prose prose-sm max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
+                      <div className="mb-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 text-sm sm:text-base text-white/80 prose prose-sm prose-invert max-w-none whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: post.content }} />
+                          <button
+                            onClick={() => handleCopyContent(post.id, post.content)}
+                            className="flex-shrink-0 p-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors border border-white/10"
+                            title="投稿内容をコピー"
+                          >
+                            {copiedPostId === post.id ? (
+                              <Check className="w-4 h-4 text-green-400" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     )}
 
                     {/* 参加者表示 */}
