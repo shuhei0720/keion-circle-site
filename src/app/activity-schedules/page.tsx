@@ -413,7 +413,8 @@ ${schedule.content}
   const canCreateReport = (schedule: ActivitySchedule) => {
     const scheduleDate = new Date(schedule.date)
     const now = new Date()
-    return session?.user?.role === 'admin' && scheduleDate <= now
+    const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'site_admin'
+    return isAdmin && scheduleDate <= now
   }
 
   if (status === 'loading' || loading) {

@@ -577,7 +577,8 @@ ${event.content}
   const canCreateReport = (event: Event) => {
     const eventDate = new Date(event.date)
     const now = new Date()
-    return session?.user?.role === 'admin' && eventDate <= now
+    const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'site_admin'
+    return isAdmin && eventDate <= now
   }
 
   const getYoutubeVideoId = (url: string) => {
