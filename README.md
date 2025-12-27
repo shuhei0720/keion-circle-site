@@ -770,15 +770,274 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.xxxxx
 
 #### 6. データベースの初期化
 
-```bash
-# 環境変数を読み込んでPrismaスキーマを適用
-export $(cat .env.local | grep DATABASE_URL | xargs) && npx prisma generate && npx prisma db push
+Supabase DashboardのSQL Editorで直接SQLを実行してテーブルを作成します。
 
-# 管理者ユーザーの作成
+1. [Supabase Dashboard](https://supabase.com/dashboard) → プロジェクトを選択 → **SQL Editor** を開く
+2. **New query** をクリック
+3. 以下のSQLをコピーして貼り付け
+4. **Run** をクリック
+
+<details>
+<summary>📋 データベース初期化SQL（クリックして展開）</summary>
+
+```sql
+-- 既存のテーブルを削除（クリーンスタート）
+DROP TABLE IF EXISTS "Template" CASCADE;
+DROP TABLE IF EXISTS "EventParticipant" CASCADE;
+DROP TABLE IF EXISTS "Event" CASCADE;
+DROP TABLE IF EXISTS "ActivityParticipant" CASCADE;
+DROP TABLE IF EXISTS "ActivitySchedule" CASCADE;
+DROP TABLE IF EXISTS "Comment" CASCADE;
+DROP TABLE IF EXISTS "ScheduleResponse" CASCADE;
+DROP TABLE IF EXISTS "ScheduleDate" CASCADE;
+DROP TABLE IF EXISTS "Schedule" CASCADE;
+DROP TABLE IF EXISTS "Message" CASCADE;
+DROP TABLE IF EXISTS "PostLike" CASCADE;
+DROP TABLE IF EXISTS "PostParticipant" CASCADE;
+DROP TABLE IF EXISTS "Post" CASCADE;
+DROP TABLE IF EXISTS "VerificationToken" CASCADE;
+DROP TABLE IF EXISTS "Session" CASCADE;
+DROP TABLE IF EXISTS "Account" CASCADE;
+DROP TABLE IF EXISTS "User" CASCADE;
+
+-- Userテーブル
+CREATE TABLE "User" (
+    "id" TEXT PRIMARY KEY,
+    "name" TEXT,
+    "email" TEXT UNIQUE,
+    "password" TEXT,
+    "avatarUrl" TEXT,
+    "bio" TEXT,
+    "instruments" TEXT,
+    "role" TEXT NOT NULL DEFAULT 'member',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Accountテーブル
+CREATE TABLE "Account" (
+    "id" TEXT PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "provider" TEXT NOT NULL,
+    "providerAccountId" TEXT NOT NULL,
+    "refresh_token" TEXT,
+    "access_token" TEXT,
+    "expires_at" INTEGER,
+    "token_type" TEXT,
+    "scope" TEXT,
+    "id_token" TEXT,
+    "session_state" TEXT,
+    CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("provider", "providerAccountId")
+);
+
+-- Sessionテーブル
+CREATE TABLE "Session" (
+    "id" TEXT PRIMARY KEY,
+    "sessionToken" TEXT NOT NULL UNIQUE,
+    "userId" TEXT NOT NULL,
+    "expires" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+-- VerificationTokenテーブル
+CREATE TABLE "VerificationToken" (
+    "identifier" TEXT NOT NULL,
+    "token" TEXT NOT NULL UNIQUE,
+    "expires" TIMESTAMP(3) NOT NULL,
+    UNIQUE("identifier", "token")
+);
+
+-- Postテーブル
+CREATE TABLE "Post" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "youtubeUrls" TEXT[] NOT NULL DEFAULT '{}',
+    "images" TEXT[] NOT NULL DEFAULT '{}',
+    "userId" TEXT NOT NULL,
+    "eventId" TEXT,
+    "activityScheduleId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+-- PostParticipantテーブル
+CREATE TABLE "PostParticipant" (
+    "id" TEXT PRIMARY KEY,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "PostParticipant_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE,
+    CONSTRAINT "PostParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("postId", "userId")
+);
+
+-- PostLikeテーブル
+CREATE TABLE "PostLike" (
+    "id" TEXT PRIMARY KEY,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "PostLike_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE,
+    CONSTRAINT "PostLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("postId", "userId")
+);
+
+-- Messageテーブル
+CREATE TABLE "Message" (
+    "id" TEXT PRIMARY KEY,
+    "content" TEXT NOT NULL,
+    "fileUrl" TEXT,
+    "fileName" TEXT,
+    "fileType" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Message_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE
+);
+
+-- Scheduleテーブル
+CREATE TABLE "Schedule" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ScheduleDateテーブル
+CREATE TABLE "ScheduleDate" (
+    "id" TEXT PRIMARY KEY,
+    "scheduleId" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ScheduleDate_scheduleId_fkey" FOREIGN KEY ("scheduleId") REFERENCES "Schedule"("id") ON DELETE CASCADE
+);
+
+-- ScheduleResponseテーブル
+CREATE TABLE "ScheduleResponse" (
+    "id" TEXT PRIMARY KEY,
+    "scheduleDateId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "status" TEXT NOT NULL,
+    "comment" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ScheduleResponse_scheduleDateId_fkey" FOREIGN KEY ("scheduleDateId") REFERENCES "ScheduleDate"("id") ON DELETE CASCADE,
+    CONSTRAINT "ScheduleResponse_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("scheduleDateId", "userId")
+);
+
+-- ActivityScheduleテーブル
+CREATE TABLE "ActivitySchedule" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "date" TIMESTAMP(3),
+    "location" TEXT,
+    "locationUrl" TEXT,
+    "userId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ActivitySchedule_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL
+);
+
+-- ActivityParticipantテーブル
+CREATE TABLE "ActivityParticipant" (
+    "id" TEXT PRIMARY KEY,
+    "activityScheduleId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ActivityParticipant_activityScheduleId_fkey" FOREIGN KEY ("activityScheduleId") REFERENCES "ActivitySchedule"("id") ON DELETE CASCADE,
+    CONSTRAINT "ActivityParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("activityScheduleId", "userId")
+);
+
+-- Eventテーブル
+CREATE TABLE "Event" (
+    "id" TEXT PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "content" TEXT,
+    "date" TIMESTAMP(3),
+    "locationName" TEXT,
+    "locationUrl" TEXT,
+    "songs" TEXT,
+    "userId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Event_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL
+);
+
+-- EventParticipantテーブル
+CREATE TABLE "EventParticipant" (
+    "id" TEXT PRIMARY KEY,
+    "eventId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "EventParticipant_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE,
+    CONSTRAINT "EventParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    UNIQUE("eventId", "userId")
+);
+
+-- Commentテーブル
+CREATE TABLE "Comment" (
+    "id" TEXT PRIMARY KEY,
+    "content" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "postId" TEXT,
+    "activityScheduleId" TEXT,
+    "eventId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE,
+    CONSTRAINT "Comment_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE,
+    CONSTRAINT "Comment_activityScheduleId_fkey" FOREIGN KEY ("activityScheduleId") REFERENCES "ActivitySchedule"("id") ON DELETE CASCADE,
+    CONSTRAINT "Comment_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE CASCADE
+);
+
+-- Templateテーブル
+CREATE TABLE "Template" (
+    "id" TEXT PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Post.eventId外部キー制約を追加
+ALTER TABLE "Post" ADD CONSTRAINT "Post_eventId_fkey" FOREIGN KEY ("eventId") REFERENCES "Event"("id") ON DELETE SET NULL;
+
+-- インデックスを追加（パフォーマンス向上）
+CREATE INDEX "Account_userId_idx" ON "Account"("userId");
+CREATE INDEX "Session_userId_idx" ON "Session"("userId");
+CREATE INDEX "Post_userId_idx" ON "Post"("userId");
+CREATE INDEX "Post_eventId_idx" ON "Post"("eventId");
+CREATE INDEX "PostParticipant_postId_idx" ON "PostParticipant"("postId");
+CREATE INDEX "PostParticipant_userId_idx" ON "PostParticipant"("userId");
+CREATE INDEX "PostLike_postId_idx" ON "PostLike"("postId");
+CREATE INDEX "PostLike_userId_idx" ON "PostLike"("userId");
+CREATE INDEX "Comment_postId_idx" ON "Comment"("postId");
+CREATE INDEX "Comment_eventId_idx" ON "Comment"("eventId");
+CREATE INDEX "Comment_activityScheduleId_idx" ON "Comment"("activityScheduleId");
+```
+
+</details>
+
+5. Prisma Clientを生成:
+
+```bash
+npx prisma generate
+```
+
+#### 7. 管理者ユーザーの作成
+
+```bash
 export $(cat .env.local | grep DATABASE_URL | xargs) && node scripts/create-admin.js admin@example.com password123 "管理者名"
 ```
 
-#### 7. 開発サーバーの起動
+#### 8. 開発サーバーの起動
 
 ```bash
 npm run dev
