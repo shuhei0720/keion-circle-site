@@ -159,6 +159,7 @@ export default function Home() {
               <h3 className="text-2xl font-bold text-white mb-3">活動報告</h3>
               <p className="text-white/70">練習の成果や演奏動画を共有</p>
             </div>
+          </Link>
           </ScrollAnimation>
           
           <ScrollAnimation animation="scale" delay={250}>
