@@ -207,13 +207,15 @@ export default function EventsPage() {
             other: 'その他'
           }
           
-          const assignedParts = Object.entries(song.parts || {})
-            .filter(([_, value]) => value)
-            .map(([key, value]) => `  ${partNames[key] || key}: ${value}`)
-          
-          if (assignedParts.length > 0) {
-            copyText += '\nパート担当:\n'
-            copyText += assignedParts.join('\n') + '\n'
+          if (song.parts && typeof song.parts === 'object') {
+            const assignedParts = Object.entries(song.parts)
+              .filter(([_, value]) => value && typeof value === 'string' && value.trim() !== '')
+              .map(([key, value]) => `  ${partNames[key] || key}: ${value}`)
+            
+            if (assignedParts.length > 0) {
+              copyText += '\nパート担当:\n'
+              copyText += assignedParts.join('\n') + '\n'
+            }
           }
           
           if (song.youtubeUrl) {

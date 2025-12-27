@@ -81,7 +81,7 @@ export default function Home() {
       {/* Hero Section */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10"></div>
-        <div className="container mx-auto px-4 py-20 relative">
+        <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative">
           <div className="text-center mb-12 space-y-6">
             <div className="inline-flex items-center justify-center mb-6 relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 blur-2xl opacity-50 animate-pulse"></div>
