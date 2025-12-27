@@ -12,6 +12,17 @@ export async function loginAsAdmin(page: Page) {
 }
 
 /**
+ * サイト管理者としてログイン（admin@example.comがsite_adminに昇格済みと仮定）
+ */
+export async function loginAsSiteAdmin(page: Page) {
+  await page.goto('/auth/signin');
+  await page.getByRole('textbox', { name: 'メールアドレス' }).fill('admin@example.com');
+  await page.getByLabel('パスワード').fill('password123');
+  await page.getByRole('button', { name: 'ログイン', exact: true }).click();
+  await page.waitForURL('/');
+}
+
+/**
  * 一般ユーザーとしてログイン
  */
 export async function loginAsUser(page: Page, email: string, password: string) {
