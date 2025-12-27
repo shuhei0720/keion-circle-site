@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { useSession } from 'next-auth/react'
 import { Users, Trash2, Shield, User, Mail, Calendar } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -128,10 +129,7 @@ export default function UsersPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-            <p className="mt-4 text-gray-600">読み込み中...</p>
-          </div>
+          <LoadingSpinner size="lg" />
         ) : (
           <>
             {/* デスクトップ: テーブル表示 */}

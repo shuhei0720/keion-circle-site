@@ -294,18 +294,7 @@ export default function Home() {
       {/* フッター */}
       <footer className="border-t border-white/10 bg-white/5 backdrop-blur-md">
         <div className="container mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {/* サイト情報 */}
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Music className="w-6 h-6 text-blue-400" />
-                <h3 className="text-xl font-bold text-white">BOLD 軽音</h3>
-              </div>
-              <p className="text-white/60 text-sm">
-                大阪の軽音楽サークル。音楽を愛する仲間たちが集う、創造と交流の場。
-              </p>
-            </div>
-
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
             {/* メニュー */}
             <div>
               <h4 className="text-lg font-semibold text-white mb-4">メニュー</h4>
@@ -340,18 +329,11 @@ export default function Home() {
               <h4 className="text-lg font-semibold text-white mb-4">アカウント</h4>
               <ul className="space-y-2">
                 {session ? (
-                  <>
-                    <li>
-                      <Link href="/dashboard" className="text-white/60 hover:text-white transition-colors text-sm">
-                        ダッシュボード
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href={`/users/${session.user.id}`} className="text-white/60 hover:text-white transition-colors text-sm">
-                        マイページ
-                      </Link>
-                    </li>
-                  </>
+                  <li>
+                    <Link href="/profile" className="text-white/60 hover:text-white transition-colors text-sm">
+                      マイページ
+                    </Link>
+                  </li>
                 ) : (
                   <>
                     <li>

@@ -63,23 +63,23 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/10 p-6 mb-6">
-          <div className="flex items-start gap-6">
-            <div className="flex-shrink-0">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/10 p-4 sm:p-6 mb-6">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+            <div className="flex-shrink-0 mx-auto sm:mx-0">
               {user.avatarUrl ? (
-                <div className="w-32 h-32 rounded-full overflow-hidden bg-gray-200">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-gray-200">
                   <img src={user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
                 </div>
               ) : (
-                <div className="w-32 h-32 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-400/30">
                   <User size={48} className="text-blue-300" />
                 </div>
               )}
             </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold mb-2 text-white">{user.name}</h1>
-              <p className="text-white/60 mb-4">{user.email}</p>
+            <div className="flex-1 w-full">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-white text-center sm:text-left">{user.name}</h1>
+              <p className="text-white/60 mb-4 text-center sm:text-left break-words">{user.email}</p>
               
               {user.bio && (
                 <div className="mb-4 p-3 bg-white/5 rounded-lg border border-white/10">

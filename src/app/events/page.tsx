@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, MapPin, Music, FileSpreadsheet, Youtube, FilePenLine, Trash2, Heart, Copy, Check } from 'lucide-react'
 import YouTube from 'react-youtube'
 
@@ -573,9 +574,7 @@ ${event.content}
   if (status === 'loading' || loading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        </div>
+        <LoadingSpinner size="lg" />
       </DashboardLayout>
     )
   }

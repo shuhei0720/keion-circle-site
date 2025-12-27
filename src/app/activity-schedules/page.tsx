@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
+import LoadingSpinner from '@/components/LoadingSpinner'
 import { Calendar, Users, MessageCircle, Plus, Edit2, FileText, Loader2, FilePenLine, Trash2, Copy, Check } from 'lucide-react'
 
 interface User {
@@ -418,9 +419,7 @@ ${schedule.content}
   if (status === 'loading' || loading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-        </div>
+        <LoadingSpinner size="lg" />
       </DashboardLayout>
     )
   }
