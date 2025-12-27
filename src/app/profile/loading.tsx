@@ -1,11 +1,14 @@
 import DashboardLayout from '@/components/DashboardLayout'
-import LoadingSpinner from '@/components/LoadingSpinner'
+import { Loader2 } from 'lucide-react'
 
 export default function Loading() {
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto p-6 min-h-screen">
-        <LoadingSpinner variant="profile" size="lg" />
+      <div className="flex items-center justify-center py-12">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
+          <p className="text-gray-600">プロフィールを読み込み中...</p>
+        </div>
       </div>
     </DashboardLayout>
   )

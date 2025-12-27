@@ -89,11 +89,23 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-purple-900 to-slate-900 overflow-x-hidden">
       {/* Hero Section with Background Image */}
-      <div className="relative overflow-hidden min-h-[60vh] flex items-center">
-        {/* 背景画像 (ぼかしとモバイル対応) */}
+      <div className="relative overflow-hidden h-[40vh] md:h-[50vh] flex items-center">
+        {/* 背景画像 (横長デザイン) */}
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-[url('/hero-bg.jpg')] bg-cover bg-[center_30%] opacity-40 scale-[1.5] blur-[2px]"></div>
+          <div className="absolute inset-0 w-full h-full">
+            <div 
+              className="absolute w-[200%] h-full bg-[url('/hero-bg.jpg')] bg-cover bg-center opacity-40 blur-[2px] animate-[slide_30s_linear_infinite]"
+              style={{ backgroundSize: 'cover', backgroundPosition: 'center center' }}
+            ></div>
+          </div>
           <div className="absolute inset-0 bg-linear-to-b from-slate-900/80 via-purple-900/70 to-slate-900/90"></div>
+          {/* 浮かぶ光の粒子 */}
+          <div className="absolute inset-0">
+            <div className="absolute top-[20%] left-[10%] w-2 h-2 bg-white/30 rounded-full animate-[float_6s_ease-in-out_infinite]"></div>
+            <div className="absolute top-[60%] left-[30%] w-3 h-3 bg-blue-400/20 rounded-full animate-[float_8s_ease-in-out_infinite_2s]"></div>
+            <div className="absolute top-[40%] right-[20%] w-2 h-2 bg-purple-400/30 rounded-full animate-[float_7s_ease-in-out_infinite_1s]"></div>
+            <div className="absolute top-[70%] right-[40%] w-4 h-4 bg-pink-400/20 rounded-full animate-[float_9s_ease-in-out_infinite_3s]"></div>
+          </div>
         </div>
         
         <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative">

@@ -6,31 +6,22 @@
       <stop offset="50%" style="stop-color:#8b5cf6;stop-opacity:1" />
       <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
     </linearGradient>
-    <linearGradient id="musicGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
-    </linearGradient>
   </defs>
   
   <!-- Background -->
   <rect width="512" height="512" rx="120" fill="url(#bgGrad)"/>
   
   <!-- Music Note -->
-  <g transform="translate(160, 120)">
+  <g transform="translate(220, 150)">
     <!-- Note stem -->
-    <rect x="140" y="40" width="24" height="180" rx="12" fill="white"/>
-    <!-- Note head 1 -->
-    <ellipse cx="152" cy="220" rx="50" ry="35" fill="white"/>
-    <!-- Note head 2 -->
-    <ellipse cx="90" cy="240" rx="50" ry="35" fill="white"/>
-    <!-- Connecting beam -->
-    <path d="M 140 80 L 40 120 L 40 140 L 164 100 Z" fill="white"/>
-    <!-- Note stem 2 -->
-    <rect x="40" y="120" width="24" height="120" rx="12" fill="white"/>
-    <!-- Decoration circle -->
-    <circle cx="200" cy="60" r="25" fill="url(#musicGrad)" opacity="0.9"/>
+    <rect x="35" y="0" width="16" height="140" rx="8" fill="white"/>
+    <!-- Note head -->
+    <ellipse cx="43" cy="140" rx="35" ry="25" fill="white"/>
+    <!-- Music symbol accent -->
+    <circle cx="25" cy="30" r="8" fill="white" opacity="0.8"/>
+    <circle cx="65" cy="20" r="6" fill="white" opacity="0.6"/>
   </g>
   
   <!-- BOLD text -->
-  <text x="256" y="420" font-family="Arial, sans-serif" font-size="80" font-weight="900" text-anchor="middle" fill="white">BOLD</text>
+  <text x="256" y="380" font-family="Arial, sans-serif" font-size="72" font-weight="900" text-anchor="middle" fill="white">BOLD</text>
 </svg>

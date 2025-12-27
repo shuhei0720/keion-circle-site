@@ -87,3 +87,23 @@ body {
 .animate-spin-reverse {
   animation: spin-reverse 1s linear infinite;
 }
+
+/* スライドアニメーション */
+@keyframes slide {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* 浮かぶアニメーション */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+}
