@@ -101,8 +101,8 @@ export default function DashboardLayout({
                 )}
               </Link>
 
-              {/* 管理者のみ表示 */}
-              {session.user.role === 'admin' && (
+              {/* サイト管理者のみ表示 */}
+              {session.user.role === 'site_admin' && (
                 <>
                   <Link
                     href="/users"
