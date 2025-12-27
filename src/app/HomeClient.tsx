@@ -15,8 +15,8 @@ interface Post {
   createdAt: string
   user: {
     id: string
-    name: string
-    email: string
+    name: string | null
+    email: string | null
   }
   likes: {
     userId: string

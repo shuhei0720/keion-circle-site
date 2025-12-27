@@ -17,8 +17,8 @@ interface Post {
   createdAt: string
   user: {
     id: string
-    name: string
-    email: string
+    name: string | null
+    email: string | null
   }
   likes: {
     userId: string
@@ -54,7 +54,14 @@ export default async function Home() {
   // JSON化
   const posts = allPosts.slice(0, 3).map((post) => ({
     ...post,
+    content: post.content || '',
+    title: post.title || '',
     createdAt: post.createdAt.toISOString(),
+    user: {
+      id: post.user.id,
+      name: post.user.name || '',
+      email: post.user.email || '',
+    },
     likes: post.likes.map((like) => ({
       userId: like.userId,
       createdAt: like.createdAt.toISOString(),
@@ -65,7 +72,14 @@ export default async function Home() {
   const sorted = [...allPosts].sort((a, b) => b.likes.length - a.likes.length)
   const popularPosts = sorted.slice(0, 3).filter(p => p.likes.length > 0).map((post) => ({
     ...post,
+    content: post.content || '',
+    title: post.title || '',
     createdAt: post.createdAt.toISOString(),
+    user: {
+      id: post.user.id,
+      name: post.user.name || '',
+      email: post.user.email || '',
+    },
     likes: post.likes.map((like) => ({
       userId: like.userId,
       createdAt: like.createdAt.toISOString(),
