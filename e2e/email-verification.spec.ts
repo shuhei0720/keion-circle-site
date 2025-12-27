@@ -15,7 +15,7 @@ test.describe('Email Verification', () => {
     await page.getByLabel('メールアドレス', { exact: true }).fill(testEmail);
     await page.getByLabel('パスワード', { exact: true }).fill('password123');
     await page.getByLabel('パスワード(確認)').fill('password123');
-    await page.getByRole('button', { name: '登録' }).click();
+    await page.getByRole('button', { name: '登録', exact: true }).click();
 
     // 検証メール送信メッセージが表示される
     await expect(page.getByText(/メールアドレスに検証リンクを送信しました/)).toBeVisible();

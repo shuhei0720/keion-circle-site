@@ -222,8 +222,8 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
   test('ナビゲーションにユーザー管理リンクが表示される', async ({ page }) => {
     await page.goto('/')
     
-    // Footerにユーザー管理リンクが表示されることを確認
-    const footerLink = page.locator('footer a[href="/users"]')
+    // Footerにユーザー管理リンクが表示されることを確認（複数ある場合は最初の要素）
+    const footerLink = page.locator('footer a[href="/users"]').first()
     
     // リンクが表示されていることを確認
     await expect(footerLink).toBeVisible()
