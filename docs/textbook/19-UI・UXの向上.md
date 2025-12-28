@@ -621,7 +621,9 @@ UIを更新
 
 ### Step 1: いいねボタンの楽観的UI実装
 
-`src/components/LikeButton.tsx` を更新してください。
+`src/components/LikeButton.tsx` を開いて、以下のコードで**完全に上書き**してください。
+
+> 💡 **説明**: `useOptimistic` フックを使って、クリック時に即座にUIが更新される楽観的UIを実装します。
 
 ```typescript
 'use client';
@@ -715,9 +717,9 @@ export function LikeButton({
 
 ### Step 2: 投票ボタンの楽観的UI実装
 
-`src/components/CandidateVoteSection.tsx` を更新してください。
+`src/components/CandidateVoteSection.tsx` を開いて、以下のコードで**完全に上書き**してください。
 
-既存のコンポーネントに楽観的UIを追加します：
+> 💡 **説明**: 投票ボタンにも楽観的UIを追加します。
 
 ```typescript
 'use client';
@@ -981,7 +983,9 @@ export function CandidateVoteSection({
 
 ### Step 1: ヘッダーのレスポンシブ対応
 
-`src/components/Header.tsx` を更新してください。
+`src/components/Header.tsx` を開いて、以下のコードで**完全に上書き**してください。
+
+> 💡 **説明**: モバイルメニューを追加し、スマホでも使いやすいヘッダーにします。
 
 ```typescript
 'use client';
