@@ -28,10 +28,11 @@
 mkdir -p .github/workflows
 ```
 
-### Step 2: `.github/workflows/ci.yml` を開いて、以下のコードを**すべて**入力してください：
-
+### Step 2: `.github/workflows/ci.yml` を作成して、以下のコードを**すべて**入力してください：
 
 > 💡 **説明**: このファイルは、コードを push したときに自動でテストを実行する設定です
+
+```yaml
 
 ### GitHub Actions の特徴
 
