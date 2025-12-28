@@ -112,9 +112,13 @@ jobs:
       
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
       
       - name: Run database migrations
         run: npx prisma db push --skip-generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
       
       - name: Run integration tests
         run: npm run test:integration
@@ -161,12 +165,18 @@ jobs:
       
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
       
       - name: Run database migrations
         run: npx prisma db push --skip-generate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
       
       - name: Create test admin user
         run: node scripts/create-admin.js admin@example.com password123 "Test Admin"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
       
       - name: Build application
         run: npm run build
