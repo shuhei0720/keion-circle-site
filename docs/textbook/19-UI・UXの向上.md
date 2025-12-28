@@ -78,7 +78,9 @@
 
 ### Step 1: スケルトンコンポーネントを作成
 
-`src/components/Skeleton.tsx` を作成してください。
+`src/components/Skeleton.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: ローディング中に表示するスケルトンコンポーネントを作成します。
 
 ```typescript
 // スケルトンコンポーネント - ローディング中の仮表示
@@ -167,7 +169,9 @@ export function EventCardSkeleton() {
 
 ### Step 2: 投稿一覧のloading.tsxを作成
 
-`src/app/posts/loading.tsx` を作成してください。
+`src/app/posts/loading.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: 投稿一覧ページのローディング画面を作成します。
 
 ```typescript
 import { PostListSkeleton } from '@/components/Skeleton';
@@ -193,7 +197,9 @@ export default function PostsLoading() {
 
 ### Step 3: ユーザー一覧のloading.tsxを作成
 
-`src/app/users/loading.tsx` を作成してください。
+`src/app/users/loading.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: ユーザー一覧ページのローディング画面を作成します。
 
 ```typescript
 import { UserCardSkeleton } from '@/components/Skeleton';
@@ -223,7 +229,9 @@ export default function UsersLoading() {
 
 ### Step 4: イベント一覧のloading.tsxを作成
 
-`src/app/events/loading.tsx` を作成してください。
+`src/app/events/loading.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: イベント一覧ページのローディング画面を作成します。
 
 ```typescript
 import { EventCardSkeleton } from '@/components/Skeleton';
@@ -253,7 +261,9 @@ export default function EventsLoading() {
 
 ### Step 5: スケジュール一覧のloading.tsxを作成
 
-`src/app/schedules/loading.tsx` を作成してください。
+`src/app/schedules/loading.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: スケジュール一覧ページのローディング画面を作成します。
 
 ```typescript
 import { Skeleton } from '@/components/Skeleton';
@@ -328,7 +338,9 @@ export default function SchedulesLoading() {
 
 ### Step 1: エラーページコンポーネントを作成
 
-`src/components/ErrorDisplay.tsx` を作成してください。
+`src/components/ErrorDisplay.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: エラー画面用の共通コンポーネントを作成します。
 
 ```typescript
 'use client';
@@ -463,7 +475,9 @@ export function ErrorDisplay({
 
 ### Step 2: 投稿一覧のerror.tsxを作成
 
-`src/app/posts/error.tsx` を作成してください。
+`src/app/posts/error.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: 投稿一覧ページのエラー画面を作成します。
 
 ```typescript
 'use client';
@@ -484,7 +498,9 @@ export default function PostsError({
 
 ### Step 3: ユーザー一覧のerror.tsxを作成
 
-`src/app/users/error.tsx` を作成してください。
+`src/app/users/error.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: ユーザー一覧ページのエラー画面を作成します。
 
 ```typescript
 'use client';
@@ -505,7 +521,9 @@ export default function UsersError({
 
 ### Step 4: イベント一覧のerror.tsxを作成
 
-`src/app/events/error.tsx` を作成してください。
+`src/app/events/error.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: イベント一覧ページのエラー画面を作成します。
 
 ```typescript
 'use client';
@@ -526,7 +544,9 @@ export default function EventsError({
 
 ### Step 5: not-found.tsxを作成
 
-`src/app/not-found.tsx` を作成してください。
+`src/app/not-found.tsx` を作成して、以下のコードを**すべて**入力してください。
+
+> 💡 **説明**: 404ページ（ページが見つからないとき）を作成します。
 
 ```typescript
 import Link from 'next/link';
