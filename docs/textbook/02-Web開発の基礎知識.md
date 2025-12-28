@@ -3265,21 +3265,6 @@ width: 200px
 > - `box-sizing: border-box` を使う（直感的）
 > - ブラウザの開発者ツールでボックスモデルを確認する
 > - Chrome DevTools の Elements タブ → Computed タブで視覚的に確認できます
-  padding-right: 15px;          /* 右だけ */
-  padding-bottom: 10px;         /* 下だけ */
-  padding-left: 15px;           /* 左だけ */
-  padding: 10px 20px;           /* 上下 左右 */
-  padding: 10px 15px 20px 15px; /* 上 右 下 左 */
-  
-  /* 枠線 */
-  border: 2px solid black;      /* 太さ スタイル 色 */
-  border-radius: 10px;          /* 角を丸く */
-  
-  /* 外側の余白 */
-  margin: 20px;                 /* paddingと同じ指定方法 */
-  margin: 0 auto;               /* 左右中央揃え */
-}
-```
 
 ### レイアウト
 
