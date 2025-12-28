@@ -23,7 +23,7 @@ export default function Footer({ isSiteAdmin = false, isLoggedIn = false }: Foot
             {/* ソーシャルアイコン */}
             <div className="flex gap-4">
               <a 
-                href="https://github.com" 
+                href="https://github.com/shuhei0720/keion-circle-site" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-white/60 hover:text-white transition-colors"
@@ -52,7 +52,7 @@ export default function Footer({ isSiteAdmin = false, isLoggedIn = false }: Foot
 
           {/* メニュー */}
           <div>
-            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">メニー</h4>
+            <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">メニュー</h4>
             <ul className="space-y-3">
               <li>
                 <Link href="/" className="text-sm text-white/60 hover:text-white transition-colors">
@@ -74,11 +74,6 @@ export default function Footer({ isSiteAdmin = false, isLoggedIn = false }: Foot
                   スケジュール
                 </Link>
               </li>
-              <li>
-                <Link href="/users" className="text-sm text-white/60 hover:text-white transition-colors">
-                  メンバー
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -86,16 +81,6 @@ export default function Footer({ isSiteAdmin = false, isLoggedIn = false }: Foot
           <div>
             <h4 className="text-sm font-semibold text-white uppercase tracking-wider mb-4">サポート</h4>
             <ul className="space-y-3">
-              <li>
-                <Link href="/about" className="text-sm text-white/60 hover:text-white transition-colors">
-                  サークルについて
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-sm text-white/60 hover:text-white transition-colors">
-                  お問い合わせ
-                </Link>
-              </li>
               <li>
                 <Link href="/privacy" className="text-sm text-white/60 hover:text-white transition-colors">
                   プライバシーポリシー
