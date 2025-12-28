@@ -520,9 +520,20 @@ Environment: ✓ Production, ✓ Preview, ✓ Development
 
 **2-4.** 「承認済みのリダイレクト URI」に追加：
 
+**重要:** 完全なコールバックパスが必要です。トップページのURLだけではエラーになります。
+
+**✅ 正しい設定例:**
 ```
 https://your-project-name.vercel.app/api/auth/callback/google
 ```
+
+**❌ 誤った設定例（これだとエラーになります）:**
+```
+https://your-project-name.vercel.app/
+```
+
+**なぜ完全なパスが必要？**
+NextAuth.jsは`/api/auth/callback/google`というエンドポイントでGoogleからのコールバックを受け取ります。そのため、このパスまで含めた完全なURLをGoogle Consoleに登録する必要があります。
 
 **⚠️ 注意:** `your-project-name` の部分は、Vercel が自動生成したドメイン名に置き換えてください。
 
@@ -530,6 +541,11 @@ Vercel のプロジェクト設定の「Domains」で確認できます：
 
 ```
 your-project-name.vercel.app
+```
+
+**開発環境用のリダイレクトURIも追加推奨:**
+```
+http://localhost:3000/api/auth/callback/google
 ```
 
 **2-5.** 「保存」をクリック
