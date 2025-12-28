@@ -1,4 +1,4 @@
-# 第26章：API Routesの詳細解説
+# 第31章：API Routesの詳細解説
 
 > **この章では、実装したAPI Routesのコードを詳細に解説します**
 
@@ -89,7 +89,7 @@ export async function METHOD(request: NextRequest) {
 
 ---
 
-## 26.1 投稿APIの詳細
+## 31.1 投稿APIの詳細
 
 ### src/app/api/posts/route.ts
 
@@ -882,7 +882,7 @@ export async function POST(
 
 ---
 
-## 26.2 イベントAPIの詳細
+## 31.2 イベントAPIの詳細
 
 イベントAPIも投稿APIと同じ構造です。
 
@@ -1051,7 +1051,7 @@ export async function POST(request: NextRequest) {
 
 ---
 
-## 26.3 活動スケジュールAPIの詳細
+## 31.3 活動スケジュールAPIの詳細
 
 活動スケジュールのAPI実装です。
 
@@ -1220,7 +1220,7 @@ export async function DELETE(
 
 ---
 
-## 26.4 ユーザーAPIの詳細
+## 31.4 ユーザーAPIの詳細
 
 ### src/app/api/users/route.ts
 
