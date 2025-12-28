@@ -32,14 +32,13 @@ mkdir -p .github/workflows
 
 > 💡 **説明**: このファイルは、コードを push したときに自動でテストを実行する設定です
 
-```yaml
-
 ### GitHub Actions の特徴
 
 GitHub Actions は GitHub に統合された CI/CD サービスです。
 
+**GitHub Actions の仕組み:**
+
 ```
-GitHub Actions の仕組み:
 ┌────────────────────────────────┐
 │ GitHubリポジトリ               │
 │                                │
