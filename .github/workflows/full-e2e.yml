@@ -36,6 +36,8 @@ jobs:
       AUTH_URL: http://localhost:3000
       AUTH_TRUST_HOST: true
       RESEND_API_KEY: re_test_dummy_key_for_ci
+      NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
       FULL_E2E_TEST: true # 全ブラウザでテスト実行
     steps:
       - uses: actions/checkout@v4
