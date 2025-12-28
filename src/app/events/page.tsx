@@ -581,6 +581,8 @@ ${event.content}
     return isAdmin && eventDate <= now
   }
 
+  const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'site_admin'
+
   const getYoutubeVideoId = (url: string) => {
     const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)
     return match ? match[1] : null
@@ -600,7 +602,7 @@ ${event.content}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">イベント</h1>
           <div className="flex gap-2">
-            {session?.user?.role === 'admin' && !showCreateForm && (
+            {isAdmin && !showCreateForm && (
               <button
                 onClick={() => {
                   setShowCreateForm(true)
@@ -624,7 +626,7 @@ ${event.content}
         </div>
 
         {/* 作成・編集フォーム */}
-        {showCreateForm && session?.user?.role === 'admin' && (
+        {showCreateForm && isAdmin && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 mb-6 border border-white/10">
             <h2 className="text-xl font-bold mb-4 text-white">
               {editingId ? 'イベント編集' : '新規イベント'}
@@ -887,7 +889,7 @@ ${event.content}
                           <Copy className="w-5 h-5" />
                         )}
                       </button>
-                      {session?.user?.role === 'admin' && (
+                      {isAdmin && (
                         <>
                           <button
                             onClick={() => handleEdit(event)}
@@ -1055,7 +1057,7 @@ ${event.content}
                                     {post.user.name || post.user.email} • {new Date(post.createdAt).toLocaleDateString('ja-JP')}
                                   </p>
                                 </div>
-                                {session?.user?.role === 'admin' && (
+                                {isAdmin && (
                                   <button
                                     onClick={() => router.push(`/posts/${post.id}/edit`)}
                                     className="p-2 text-blue-400 hover:bg-blue-500/20 rounded-lg transition-all"

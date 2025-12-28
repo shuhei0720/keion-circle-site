@@ -417,6 +417,8 @@ ${schedule.content}
     return isAdmin && scheduleDate <= now
   }
 
+  const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'site_admin'
+
   if (status === 'loading' || loading) {
     return (
       <DashboardLayout>
@@ -431,7 +433,7 @@ ${schedule.content}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-white">活動スケジュール</h1>
           <div className="flex gap-2">
-            {session?.user?.role === 'admin' && !showCreateForm && (
+            {isAdmin && !showCreateForm && (
               <button
                 onClick={() => {
                   setShowCreateForm(true)
@@ -448,7 +450,7 @@ ${schedule.content}
         </div>
 
         {/* 作成・編集フォーム */}
-        {showCreateForm && session?.user?.role === 'admin' && (
+        {showCreateForm && isAdmin && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 mb-6 border border-white/10">
             <h2 className="text-xl font-bold mb-4 text-white">
               {editingId ? 'スケジュール編集' : '新規スケジュール'}
@@ -571,7 +573,7 @@ ${schedule.content}
                         <Copy className="w-5 h-5" />
                       )}
                     </button>
-                    {session?.user?.role === 'admin' && (
+                    {isAdmin && (
                       <>
                         <button
                           onClick={() => handleEdit(schedule)}
