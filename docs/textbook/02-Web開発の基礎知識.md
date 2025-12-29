@@ -4413,13 +4413,68 @@ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
 ### レスポンシブデザイン
 
-画面サイズに応じてスタイルを変更します：
+**レスポンシブデザイン**とは、**画面サイズに応じてレイアウトやスタイルを自動的に調整する技術**です。
+
+#### なぜレスポンシブデザインが必要？
+
+現代のWebサイトは様々なデバイスで閲覧されます：
+
+```
+📱 スマートフォン（320px～480px）
+📱 タブレット（768px～1024px）
+💻 ノートPC（1024px～1440px）
+🖥️ デスクトップ（1440px～）
+```
+
+**同じHTMLで全デバイスに対応する必要があります。**
+
+```mermaid
+graph LR
+    A[1つのHTML] --> B[スマホ表示]
+    A --> C[タブレット表示]
+    A --> D[PC表示]
+    
+    B --> B1[縦並び<br/>タッチ操作]
+    C --> C1[2カラム<br/>中サイズボタン]
+    D --> D1[3カラム<br/>マウス操作]
+```
+
+---
+
+#### メディアクエリ（Media Query）
+
+**メディアクエリ**は、画面サイズに応じてCSSを切り替える仕組みです。
+
+**基本構文：**
+
+```css
+/* 条件に一致したときだけ適用されるスタイル */
+@media (条件) {
+  /* スタイル */
+}
+```
+
+**主な条件：**
+
+| 条件 | 意味 |
+|------|------|
+| `min-width: 768px` | 画面幅が768px以上 |
+| `max-width: 767px` | 画面幅が767px以下 |
+| `(min-width: 768px) and (max-width: 1023px)` | 768px～1023pxの範囲 |
+
+---
+
+#### モバイルファースト vs デスクトップファースト
+
+**モバイルファースト（推奨）：**
+スマホ向けを基本にして、大きい画面用を追加する方法。
 
 ```css
 /* スマートフォン（デフォルト） */
 .container {
   width: 100%;
   padding: 10px;
+  font-size: 14px;
 }
 
 /* タブレット以上 */
@@ -4427,6 +4482,7 @@ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   .container {
     width: 750px;
     padding: 20px;
+    font-size: 16px;
   }
 }
 
@@ -4435,8 +4491,480 @@ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   .container {
     width: 1000px;
     padding: 30px;
+    font-size: 18px;
   }
 }
+```
+
+**デスクトップファースト：**
+PC向けを基本にして、小さい画面用を追加する方法。
+
+```css
+/* デスクトップ（デフォルト） */
+.container {
+  width: 1000px;
+  padding: 30px;
+}
+
+/* タブレット以下 */
+@media (max-width: 1023px) {
+  .container {
+    width: 750px;
+    padding: 20px;
+  }
+}
+
+/* スマートフォン以下 */
+@media (max-width: 767px) {
+  .container {
+    width: 100%;
+    padding: 10px;
+  }
+}
+```
+
+**モバイルファーストが推奨される理由：**
+1. スマホユーザーが最も多い
+2. 小さい画面から設計すると、情報の優先度が明確になる
+3. パフォーマンスが良い（必要最小限のCSSから始まる）
+
+---
+
+#### 一般的なブレークポイント
+
+**ブレークポイント**は、レイアウトが変わる境界の画面幅です。
+
+```css
+/* スマートフォン（デフォルト） */
+/* 〜767px */
+
+/* タブレット */
+@media (min-width: 768px) {
+  /* 768px〜1023px */
+}
+
+/* デスクトップ（小） */
+@media (min-width: 1024px) {
+  /* 1024px〜1279px */
+}
+
+/* デスクトップ（大） */
+@media (min-width: 1280px) {
+  /* 1280px〜 */
+}
+```
+
+**Tailwind CSS のブレークポイント：**
+
+| サイズ | min-width | 説明 |
+|--------|-----------|------|
+| `sm` | 640px | スマホ横向き |
+| `md` | 768px | タブレット縦 |
+| `lg` | 1024px | タブレット横・小型PC |
+| `xl` | 1280px | デスクトップ |
+| `2xl` | 1536px | 大型デスクトップ |
+
+---
+
+#### 実践例：ナビゲーションメニュー
+
+**スマホ：ハンバーガーメニュー**
+**PC：横並びメニュー**
+
+```html
+<nav class="navbar">
+  <div class="logo">サイト名</div>
+  <button class="menu-toggle">☰</button>
+  <ul class="menu">
+    <li><a href="#">ホーム</a></li>
+    <li><a href="#">サービス</a></li>
+    <li><a href="#">お問い合わせ</a></li>
+  </ul>
+</nav>
+```
+
+```css
+/* スマホ（デフォルト） */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background: #333;
+  color: white;
+}
+
+.menu {
+  display: none; /* 初期状態で非表示 */
+  flex-direction: column;
+  width: 100%;
+  position: absolute;
+  top: 60px;
+  left: 0;
+  background: #333;
+}
+
+.menu.open {
+  display: flex; /* ボタンクリックで表示 */
+}
+
+.menu li {
+  padding: 15px;
+  border-bottom: 1px solid #555;
+}
+
+.menu-toggle {
+  display: block; /* ハンバーガーボタン表示 */
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* タブレット以上 */
+@media (min-width: 768px) {
+  .menu {
+    display: flex; /* 常に表示 */
+    flex-direction: row; /* 横並び */
+    position: static;
+    width: auto;
+  }
+  
+  .menu li {
+    padding: 0 15px;
+    border: none;
+  }
+  
+  .menu-toggle {
+    display: none; /* ハンバーガーボタン非表示 */
+  }
+}
+```
+
+**表示イメージ：**
+
+```
+【スマホ】
+┌─────────────────┐
+│ サイト名    ☰  │
+└─────────────────┘
+
+↓ ボタンクリック
+
+┌─────────────────┐
+│ サイト名    ☰  │
+├─────────────────┤
+│ ホーム         │
+│ サービス       │
+│ お問い合わせ    │
+└─────────────────┘
+
+【PC】
+┌──────────────────────────────┐
+│ サイト名  ホーム サービス お問い合わせ │
+└──────────────────────────────┘
+```
+
+---
+
+#### 実践例：グリッドレイアウト
+
+カードを画面サイズに応じて並べる数を変える。
+
+```html
+<div class="card-grid">
+  <div class="card">カード1</div>
+  <div class="card">カード2</div>
+  <div class="card">カード3</div>
+  <div class="card">カード4</div>
+</div>
+```
+
+```css
+/* スマホ：1カラム */
+.card-grid {
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* タブレット：2カラム */
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* デスクトップ：4カラム */
+@media (min-width: 1024px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+```
+
+**表示イメージ：**
+
+```
+【スマホ】
+┌────┐
+│ 1  │
+├────┤
+│ 2  │
+├────┤
+│ 3  │
+├────┤
+│ 4  │
+└────┘
+
+【タブレット】
+┌────┬────┐
+│ 1  │ 2  │
+├────┼────┤
+│ 3  │ 4  │
+└────┴────┘
+
+【PC】
+┌──┬──┬──┬──┐
+│1 │2 │3 │4 │
+└──┴──┴──┴──┘
+```
+
+---
+
+#### レスポンシブデザインのベストプラクティス
+
+**1. viewport メタタグを設定**
+
+HTMLの `<head>` に必ず追加：
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+```
+
+これがないと、スマホでもPC表示されてしまいます。
+
+**2. 相対単位を使う**
+
+```css
+/* ❌ 固定値 */
+.container {
+  width: 1200px; /* 画面より大きいとはみ出る */
+}
+
+/* ✅ 相対値 */
+.container {
+  width: 100%; /* 画面幅に合わせる */
+  max-width: 1200px; /* 最大幅を制限 */
+}
+```
+
+**3. フォントサイズも調整**
+
+```css
+/* スマホ */
+body {
+  font-size: 14px;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+/* タブレット以上 */
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+  
+  h1 {
+    font-size: 32px;
+  }
+}
+
+/* デスクトップ以上 */
+@media (min-width: 1024px) {
+  body {
+    font-size: 18px;
+  }
+  
+  h1 {
+    font-size: 40px;
+  }
+}
+```
+
+**4. 画像をレスポンシブに**
+
+```css
+img {
+  max-width: 100%; /* 親要素からはみ出さない */
+  height: auto; /* 縦横比を維持 */
+}
+```
+
+**5. タッチデバイスを考慮**
+
+```css
+/* スマホ：タッチしやすいサイズ */
+.button {
+  min-height: 44px; /* Apple推奨：44px以上 */
+  padding: 12px 24px;
+}
+
+/* PC：マウス操作 */
+@media (min-width: 1024px) {
+  .button {
+    min-height: 36px;
+    padding: 8px 16px;
+  }
+}
+```
+
+---
+
+#### デバッグツール
+
+**ブラウザの開発者ツール**を使って、各画面サイズでの表示を確認できます。
+
+**Chrome DevToolsの使い方：**
+
+1. **F12** または **右クリック → 検証** で開く
+2. **デバイスツールバー** をクリック（📱アイコン）
+3. 画面サイズを選択：
+   - iPhone 12 Pro
+   - iPad Air
+   - カスタム（自由にサイズ指定）
+
+```
+┌─────────────────────────────────┐
+│ Elements   Console   Sources   │
+├─────────────────────────────────┤
+│ 📱 デバイス選択                  │
+│ ┌─────────────────────────┐    │
+│ │ スマホ表示プレビュー      │    │
+│ │                         │    │
+│ └─────────────────────────┘    │
+└─────────────────────────────────┘
+```
+
+---
+
+#### 実践課題
+
+以下のレイアウトを実装してみましょう：
+
+**要件：**
+- スマホ：1カラム（縦並び）
+- タブレット：2カラム
+- PC：3カラム
+
+```html
+<div class="blog-grid">
+  <article class="blog-card">
+    <img src="image1.jpg" alt="ブログ1">
+    <h2>記事タイトル1</h2>
+    <p>記事の説明文...</p>
+  </article>
+  <article class="blog-card">
+    <img src="image2.jpg" alt="ブログ2">
+    <h2>記事タイトル2</h2>
+    <p>記事の説明文...</p>
+  </article>
+  <article class="blog-card">
+    <img src="image3.jpg" alt="ブログ3">
+    <h2>記事タイトル3</h2>
+    <p>記事の説明文...</p>
+  </article>
+</div>
+```
+
+**解答例：**
+
+```css
+.blog-grid {
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+}
+
+.blog-card {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.blog-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.blog-card h2 {
+  padding: 16px 16px 8px;
+  font-size: 18px;
+}
+
+.blog-card p {
+  padding: 0 16px 16px;
+  color: #666;
+  font-size: 14px;
+}
+
+/* タブレット：2カラム */
+@media (min-width: 768px) {
+  .blog-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* PC：3カラム */
+@media (min-width: 1024px) {
+  .blog-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .blog-card h2 {
+    font-size: 20px;
+  }
+}
+```
+
+---
+
+#### まとめ
+
+**レスポンシブデザインの重要ポイント：**
+
+✅ **モバイルファースト**で設計する
+✅ **メディアクエリ**で画面サイズごとにスタイルを調整
+✅ **相対単位**（%, vw, rem）を使う
+✅ **viewportメタタグ**を必ず設定
+✅ **タッチ操作**を考慮したサイズにする
+✅ **ブラウザの開発者ツール**でテストする
+
+```mermaid
+graph TB
+    A[レスポンシブデザイン] --> B[モバイルファースト]
+    A --> C[メディアクエリ]
+    A --> D[相対単位]
+    A --> E[画像最適化]
+    
+    B --> B1[スマホを基本に設計]
+    C --> C1[画面サイズで切り替え]
+    D --> D1[%, rem, vw使用]
+    E --> E1[max-width: 100%]
+    
+    style A fill:#e3f2fd
 ```
 
 ---
