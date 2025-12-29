@@ -110,7 +110,11 @@ export default function EventsPage() {
       const res = await fetch('/api/events')
       if (res.ok) {
         const data = await res.json()
-        setEvents(data)
+        // 日付順（新しい順）にソート
+        const sortedData = data.sort((a: Event, b: Event) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+        setEvents(sortedData)
       }
     } catch (error) {
       console.error('イベント取得エラー:', error)
@@ -405,10 +409,16 @@ export default function EventsPage() {
   }
 
   const handleEdit = (event: Event) => {
+    // datetime-local形式に変換（YYYY-MM-DDThh:mm）
+    const date = new Date(event.date)
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16)
+    
     setFormData({
       title: event.title,
       content: event.content,
-      date: new Date(event.date).toISOString().split('T')[0],
+      date: localDate,
       locationName: event.locationName || '',
       locationUrl: event.locationUrl || '',
       songs: event.songs ? JSON.parse(event.songs) : []
@@ -469,19 +479,31 @@ export default function EventsPage() {
     }, 0)
   }
 
+  // 楽器名と絵文字のマッピング
+  const instrumentNames: { [key: string]: string } = {
+    vocal: 'ボーカル',
+    electric_guitar: 'エレキギター',
+    acoustic_guitar: 'アコースティックギター',
+    guitar: 'ギター',
+    bass: 'ベース',
+    drums: 'ドラム',
+    keyboard: 'キーボード',
+    other: 'その他'
+  }
+
+  const instrumentEmojis: { [key: string]: string } = {
+    vocal: '🎤',
+    electric_guitar: '🎸',
+    acoustic_guitar: '🎸',
+    guitar: '🎸',
+    bass: '🎸',
+    drums: '🥁',
+    keyboard: '🎹',
+    other: '🎵'
+  }
+
   const handleCreateReport = (event: Event) => {
     const songs = event.songs ? JSON.parse(event.songs) : []
-    
-    const instrumentNames: { [key: string]: string } = {
-      vocal: 'ボーカル',
-      electric_guitar: 'エレキギター',
-      acoustic_guitar: 'アコースティックギター',
-      guitar: 'ギター', // 旧データ対応
-      bass: 'ベース',
-      drums: 'ドラム',
-      keyboard: 'キーボード',
-      other: 'その他'
-    }
     
     const songsText = songs.map((song: Song, index: number) => {
       const parts = song.parts && song.parts.length > 0
@@ -644,14 +666,14 @@ ${event.content}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
+                <div className="w-full">
                   <label className="block text-sm font-medium mb-2 text-white/80">日時</label>
                   <input
                     type="datetime-local"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500"
-                    style={{ colorScheme: 'dark' }}
+                    className="w-full px-2 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500 text-sm"
+                    style={{ colorScheme: 'dark', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                   />
                 </div>
                 <div className="min-w-0">
@@ -800,13 +822,13 @@ ${event.content}
                                       className="w-full sm:w-auto px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white"
                                       style={{ colorScheme: 'dark' }}
                                     >
-                                      <option value="vocal" className="bg-slate-800 text-white">ボーカル</option>
-                                      <option value="electric_guitar" className="bg-slate-800 text-white">エレキギター</option>
-                                      <option value="acoustic_guitar" className="bg-slate-800 text-white">アコースティックギター</option>
-                                      <option value="bass" className="bg-slate-800 text-white">ベース</option>
-                                      <option value="drums" className="bg-slate-800 text-white">ドラム</option>
-                                      <option value="keyboard" className="bg-slate-800 text-white">キーボード</option>
-                                      <option value="other" className="bg-slate-800 text-white">その他</option>
+                                      <option value="vocal" className="bg-slate-800 text-white">🎤 ボーカル</option>
+                                      <option value="electric_guitar" className="bg-slate-800 text-white">🎸 エレキギター</option>
+                                      <option value="acoustic_guitar" className="bg-slate-800 text-white">🎸 アコギ</option>
+                                      <option value="bass" className="bg-slate-800 text-white">🎸 ベース</option>
+                                      <option value="drums" className="bg-slate-800 text-white">🥁 ドラム</option>
+                                      <option value="keyboard" className="bg-slate-800 text-white">🎹 キーボード</option>
+                                      <option value="other" className="bg-slate-800 text-white">🎵 その他</option>
                                     </select>
                                     <input
                                       type="text"
@@ -882,7 +904,7 @@ ${event.content}
                       <div className="space-y-1 text-sm text-white/70">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
-                          <span>{new Date(event.date).toLocaleDateString('ja-JP')}</span>
+                          <span>{new Date(event.date).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         {(event.locationName || event.locationUrl) && (
                           <div className="flex items-center gap-2">
@@ -1014,7 +1036,8 @@ ${event.content}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                   {song.parts.map((part, partIndex: number) => (
                                     <div key={partIndex} className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
-                                      <span className="text-xs font-medium text-purple-300 min-w-[80px]">
+                                      <span className="text-lg">{instrumentEmojis[part.instrument] || '🎵'}</span>
+                                      <span className="text-xs font-medium text-purple-300 min-w-[70px]">
                                         {instrumentNames[part.instrument] || part.instrument}
                                       </span>
                                       <span className="text-sm font-semibold text-white">{part.player}</span>

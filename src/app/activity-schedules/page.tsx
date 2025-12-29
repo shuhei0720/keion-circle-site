@@ -80,7 +80,11 @@ export default function ActivitySchedulesPage() {
       const res = await fetch('/api/activity-schedules')
       if (res.ok) {
         const data = await res.json()
-        setSchedules(data)
+        // 日付順（新しい順）にソート
+        const sortedData = data.sort((a: ActivitySchedule, b: ActivitySchedule) => 
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        )
+        setSchedules(sortedData)
       }
     } catch (error) {
       console.error('スケジュール取得エラー:', error)
@@ -308,10 +312,16 @@ export default function ActivitySchedulesPage() {
   }
 
   const handleEdit = (schedule: ActivitySchedule) => {
+    // datetime-local形式に変換（YYYY-MM-DDThh:mm）
+    const date = new Date(schedule.date)
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16)
+    
     setFormData({
       title: schedule.title,
       content: schedule.content,
-      date: new Date(schedule.date).toISOString().split('T')[0],
+      date: localDate,
       location: schedule.location || '',
       locationUrl: schedule.locationUrl || ''
     })
@@ -466,13 +476,14 @@ ${schedule.content}
                   placeholder="例: 定期練習"
                 />
               </div>
-              <div className="min-w-0 overflow-hidden">
+              <div className="w-full">
                 <label className="block text-sm font-medium mb-2 text-white/80">日時</label>
                 <input
                   type="datetime-local"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  className="w-full box-border px-2 sm:px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white text-base focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-2 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500 text-sm"
+                  style={{ colorScheme: 'dark', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
                 />
               </div>
               <div className="min-w-0">
@@ -550,7 +561,7 @@ ${schedule.content}
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-sm text-white/60">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(schedule.date).toLocaleDateString('ja-JP')}</span>
+                        <span>{new Date(schedule.date).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                       </div>
                       {schedule.location && (
                         <div className="flex items-center gap-2 text-sm text-white/60">
