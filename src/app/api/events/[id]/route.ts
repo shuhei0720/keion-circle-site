@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
@@ -73,6 +74,9 @@ export async function PUT(
       }
     })
 
+    // イベント一覧ページのキャッシュを無効化
+    revalidatePath('/events')
+
     return NextResponse.json(event)
   } catch (error) {
     console.error('イベント更新エラー:', error)
@@ -103,6 +107,9 @@ export async function DELETE(
     await prisma.event.delete({
       where: { id }
     })
+
+    // イベント一覧ページのキャッシュを無効化
+    revalidatePath('/events')
 
     return NextResponse.json({ success: true })
   } catch (error) {

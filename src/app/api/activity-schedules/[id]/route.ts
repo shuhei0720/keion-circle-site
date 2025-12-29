@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
@@ -63,6 +64,9 @@ export async function PUT(
       }
     })
 
+    // 活動スケジュール一覧ページのキャッシュを無効化
+    revalidatePath('/activity-schedules')
+
     return NextResponse.json(schedule)
   } catch (error) {
     console.error('活動スケジュール更新エラー:', error)
@@ -93,6 +97,9 @@ export async function DELETE(
     await prisma.activitySchedule.delete({
       where: { id }
     })
+
+    // 活動スケジュール一覧ページのキャッシュを無効化
+    revalidatePath('/activity-schedules')
 
     return NextResponse.json({ success: true })
   } catch (error) {

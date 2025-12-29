@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
@@ -155,6 +156,9 @@ export async function POST(request: Request) {
         }
       }
     })
+
+    // イベント一覧ページのキャッシュを即座に無効化
+    revalidatePath('/events')
 
     return NextResponse.json(event, { status: 201 })
   } catch (error) {

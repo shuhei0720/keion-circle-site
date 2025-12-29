@@ -11,6 +11,9 @@ interface UserProfilePageProps {
   }>;
 }
 
+// ISR: 300秒（5分）ごとにページを再生成
+export const revalidate = 300
+
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
   const session = await auth();
   const { id } = await params;

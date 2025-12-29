@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
@@ -146,6 +147,9 @@ export async function POST(request: Request) {
         }
       }
     })
+
+    // 活動スケジュール一覧ページのキャッシュを即座に無効化
+    revalidatePath('/activity-schedules')
 
     return NextResponse.json(schedule, { status: 201 })
   } catch (error) {
