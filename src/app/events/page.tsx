@@ -643,14 +643,15 @@ ${event.content}
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-x-hidden">
-                <div className="min-w-0 overflow-hidden">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
                   <label className="block text-sm font-medium mb-2 text-white/80">日時</label>
                   <input
                     type="datetime-local"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full box-border px-2 sm:px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white text-base focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500"
+                    style={{ colorScheme: 'dark' }}
                   />
                 </div>
                 <div className="min-w-0">
@@ -792,19 +793,20 @@ ${event.content}
                             ) : (
                               <div className="space-y-2">
                                 {song.parts.map((part, partIndex) => (
-                                  <div key={partIndex} className="flex gap-2">
+                                  <div key={partIndex} className="flex flex-col sm:flex-row gap-2">
                                     <select
                                       value={part.instrument}
                                       onChange={(e) => updatePart(songIndex, partIndex, 'instrument', e.target.value)}
-                                      className="px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white"
+                                      className="w-full sm:w-auto px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white"
+                                      style={{ colorScheme: 'dark' }}
                                     >
-                                      <option value="vocal">ボーカル</option>
-                                      <option value="electric_guitar">エレキギター</option>
-                                      <option value="acoustic_guitar">アコースティックギター</option>
-                                      <option value="bass">ベース</option>
-                                      <option value="drums">ドラム</option>
-                                      <option value="keyboard">キーボード</option>
-                                      <option value="other">その他</option>
+                                      <option value="vocal" className="bg-slate-800 text-white">ボーカル</option>
+                                      <option value="electric_guitar" className="bg-slate-800 text-white">エレキギター</option>
+                                      <option value="acoustic_guitar" className="bg-slate-800 text-white">アコースティックギター</option>
+                                      <option value="bass" className="bg-slate-800 text-white">ベース</option>
+                                      <option value="drums" className="bg-slate-800 text-white">ドラム</option>
+                                      <option value="keyboard" className="bg-slate-800 text-white">キーボード</option>
+                                      <option value="other" className="bg-slate-800 text-white">その他</option>
                                     </select>
                                     <input
                                       type="text"
@@ -816,7 +818,7 @@ ${event.content}
                                     <button
                                       type="button"
                                       onClick={() => removePart(songIndex, partIndex)}
-                                      className="px-3 py-2 text-red-400 hover:bg-red-500/20 rounded-lg text-sm transition-all"
+                                      className="w-full sm:w-auto px-3 py-2 text-red-400 hover:bg-red-500/20 rounded-lg text-sm transition-all shrink-0"
                                     >
                                       削除
                                     </button>
@@ -1004,13 +1006,18 @@ ${event.content}
 
                             {/* パート担当 */}
                             {song.parts && song.parts.length > 0 && (
-                              <div>
-                                <h4 className="text-sm font-medium mb-2 text-white/80">パート担当</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                              <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-xl p-4 border border-purple-400/20">
+                                <h4 className="text-sm font-semibold mb-3 text-purple-300 flex items-center gap-2">
+                                  <Music className="w-4 h-4" />
+                                  パート担当
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                   {song.parts.map((part, partIndex: number) => (
-                                    <div key={partIndex} className="flex items-center gap-2">
-                                      <span className="text-white/60">{instrumentNames[part.instrument] || part.instrument}:</span>
-                                      <span className="font-medium text-white">{part.player}</span>
+                                    <div key={partIndex} className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-lg border border-white/10">
+                                      <span className="text-xs font-medium text-purple-300 min-w-[80px]">
+                                        {instrumentNames[part.instrument] || part.instrument}
+                                      </span>
+                                      <span className="text-sm font-semibold text-white">{part.player}</span>
                                     </div>
                                   ))}
                                 </div>
