@@ -129,7 +129,7 @@ export default async function Home() {
                 メンバーサイト
               </p>
               <p className="text-lg text-white/70 max-w-2xl mx-auto">
-                音楽を愛する仲間たちが集う、創造と交流の場
+                大学軽音楽サークルBOLDのメンバー専用サイトです。活動報告や活動スケジュール、イベント管理を行っています。
               </p>
           </div>
         </ScrollAnimation>
