@@ -141,6 +141,16 @@ export default function UsersPage() {
     }
   }
 
+  if (status === 'loading' || loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <LoadingSpinner size="lg" />
+        </div>
+      </DashboardLayout>
+    )
+  }
+
   if (!isSiteAdmin) {
     return null
   }
