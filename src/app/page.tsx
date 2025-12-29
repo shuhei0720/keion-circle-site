@@ -117,22 +117,41 @@ export default async function Home() {
         
         <div className="container mx-auto px-4 py-12 sm:py-16 md:py-20 relative">
           <ScrollAnimation animation="fade-up" delay={0}>
-            <div className="text-center mb-12 space-y-6">
-              <div className="inline-flex items-center justify-center mb-6 relative">
+            <div className="text-center mb-8 space-y-4">
+              <div className="inline-flex items-center justify-center mb-4 relative">
                 <div className="absolute inset-0 bg-linear-to-r from-blue-600 to-purple-600 blur-2xl opacity-50 animate-pulse"></div>
-                <Music className="w-20 h-20 text-white relative z-10" />
+                <Music className="w-16 h-16 text-white relative z-10" />
               </div>
               <h1 className="text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-blue-400 via-purple-400 to-pink-400 animate-gradient">
                 BOLD 軽音
               </h1>
-              <p className="text-2xl md:text-3xl text-white/90 font-light">
+              <p className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-purple-400 via-pink-400 to-blue-400 animate-gradient">
                 メンバーサイト
               </p>
-              <p className="text-lg text-white/70 max-w-2xl mx-auto">
-                大学軽音楽サークルBOLDのメンバー専用サイトです。活動報告や活動スケジュール、イベント管理を行っています。
-              </p>
-          </div>
-        </ScrollAnimation>
+            </div>
+          </ScrollAnimation>
+          
+          <ScrollAnimation animation="fade-up" delay={200}>
+            <div className="max-w-3xl mx-auto mt-12">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-linear-to-r from-blue-600 via-purple-600 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200 animate-pulse"></div>
+                <div className="relative bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 shadow-2xl">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                        <Music className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-lg md:text-xl text-white/90 leading-relaxed">
+                        大学軽音楽サークルBOLDのメンバー専用サイトです。活動報告や活動スケジュール、イベント管理を行っています。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </ScrollAnimation>
         </div>
       </div>
 
