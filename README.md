@@ -39,43 +39,55 @@ BOLD 軽音メンバーサイトは、**軽音サークルの活動を支援す�
 
 ```mermaid
 graph TB
-    subgraph "👥 ユーザー"
+    subgraph users["👥 ユーザー"]
         A[👤 一般メンバー<br/>閲覧・参加・いいね]
         B[🔑 管理者<br/>全機能 + 作成・編集・削除]
     end
     
-    subgraph "💻 フロントエンド"
+    subgraph frontend["💻 フロントエンド"]
         C[🌐 Next.js 16<br/>App Router]
         D[🎨 Tailwind CSS v4]
     end
     
-    subgraph "⚙️ バックエンド"
+    subgraph backend["⚙️ バックエンド"]
         E[🔐 NextAuth.js v5<br/>認証・認可]
         F[⚡ Server Actions]
         G[🗄️ Prisma ORM]
     end
     
-    subgraph "💾 データ層"
+    subgraph data["💾 データ層"]
         H[(PostgreSQL)]
         I[📦 Supabase Storage]
     end
     
-    subgraph "🚀 インフラ"
+    subgraph infra["🚀 インフラ"]
         J[🚀 Vercel]
         K[🔄 GitHub Actions]
     end
     
-    A --> C
-    B --> C
-    C --> D
-    C --> E
-    C --> F
-    E --> G
-    F --> G
-    G --> H
-    C --> I
-    J --> C
-    K --> J
+    A -.->|アクセス| C
+    B -.->|アクセス| C
+    C ---|UI| D
+    C ==>|認証| E
+    C ==>|API| F
+    E -->|ORM| G
+    F -->|ORM| G
+    G ==>|クエリ| H
+    C -.->|画像| I
+    J ===|ホスティング| C
+    K -.->|デプロイ| J
+    
+    classDef userStyle fill:#e1f5ff,stroke:#4a90e2,stroke-width:2px
+    classDef frontStyle fill:#fff4e6,stroke:#ff9800,stroke-width:2px
+    classDef backStyle fill:#f3e5f5,stroke:#9c27b0,stroke-width:2px
+    classDef dataStyle fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    classDef infraStyle fill:#fff3e0,stroke:#ff6f00,stroke-width:2px
+    
+    class A,B userStyle
+    class C,D frontStyle
+    class E,F,G backStyle
+    class H,I dataStyle
+    class J,K infraStyle
 ```
 
 ### 🌟 主要な特徴
@@ -176,29 +188,34 @@ sequenceDiagram
 
 ```mermaid
 graph TB
-    A[🔑 ログイン] --> B{セッション確認}
-    B -->|未ログイン| C[🚫 ログインページ]
-    B -->|ログイン済み| D{役割確認}
+    A[🔑 ログイン] ==> B{セッション確認}
+    B ==>|未ログイン| C[🚫 ログインページ]
+    B ==>|ログイン済み| D{役割確認}
     
-    D -->|site_admin| E[👑 サイト管理者]
-    D -->|admin| F[🔑 管理者]
-    D -->|member| G[👤 一般ユーザー]
+    D ==>|site_admin| E[👑 サイト管理者]
+    D ==>|admin| F[🔑 管理者]
+    D ==>|member| G[👤 一般ユーザー]
     
-    E --> H[✅ すべての権限]
-    E --> I[✅ ユーザー管理<br/>役割変更・削除]
-    E --> J[✅ 投稿・イベント管理]
+    E ---|権限| H[✅ すべての権限]
+    E ---|権限| I[✅ ユーザー管理<br/>役割変更・削除]
+    E ---|権限| J[✅ 投稿・イベント管理]
     
-    F --> K[✅ 投稿・イベント・<br/>スケジュール管理]
-    F --> L[🚫 ユーザー管理不可]
+    F ---|権限| K[✅ 投稿・イベント・<br/>スケジュール管理]
+    F ---|制限| L[🚫 ユーザー管理不可]
     
-    G --> M[✅ 閲覧・参加・いいね]
-    G --> N[✅ コメント投稿]
-    G --> O[🚫 作成・編集・削除不可]
+    G ---|権限| M[✅ 閲覧・参加・いいね]
+    G ---|権限| N[✅ コメント投稿]
+    G ---|制限| O[🚫 作成・編集・削除不可]
     
-    style E fill:#f9f,stroke:#333
-    style F fill:#9cf,stroke:#333
-    style G fill:#bbf,stroke:#333
-    style C fill:#fbb,stroke:#333
+    classDef siteAdmin fill:#fce4ec,stroke:#c2185b,stroke-width:3px
+    classDef admin fill:#e3f2fd,stroke:#1976d2,stroke-width:3px
+    classDef member fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    classDef denied fill:#ffebee,stroke:#d32f2f,stroke-width:2px
+    
+    class E,H,I,J siteAdmin
+    class F,K admin
+    class G,M,N member
+    class C,L,O denied
 ```
 
 ---
@@ -209,68 +226,136 @@ graph TB
 
 ```mermaid
 erDiagram
-    User ||--o{ Post : "作成"
-    User ||--o{ Event : "作成"
-    User ||--o{ ActivitySchedule : "作成"
-    User ||--o{ Comment : "投稿"
-    User ||--o{ PostLike : "いいね"
-    User ||--o{ PostParticipant : "参加"
-    User ||--o{ EventParticipant : "参加"
-    User ||--o{ ActivityParticipant : "参加"
-    User ||--o{ Account : "連携"
-    User ||--o{ Session : "持つ"
+    %% ユーザーとの関連
+    User ||--o{ Post : creates
+    User ||--o{ Event : creates
+    User ||--o{ ActivitySchedule : creates
+    User ||--o{ Comment : posts
+    User ||--o{ PostLike : likes
+    User ||--o{ PostParticipant : participates
+    User ||--o{ EventParticipant : participates
+    User ||--o{ ActivityParticipant : participates
+    User ||--o{ Account : has
+    User ||--o{ Session : has
     
-    Post ||--o{ Comment : "持つ"
-    Post ||--o{ PostLike : "持つ"
-    Post ||--o{ PostParticipant : "持つ"
+    %% 投稿との関連
+    Post ||--o{ Comment : has
+    Post ||--o{ PostLike : has
+    Post ||--o{ PostParticipant : has
     
-    Event ||--o{ Comment : "持つ"
-    Event ||--o{ EventParticipant : "持つ"
-    Event ||--o{ Post : "変換"
+    %% イベントとの関連
+    Event ||--o{ Comment : has
+    Event ||--o{ EventParticipant : has
+    Event ||--o| Post : converts_to
     
-    ActivitySchedule ||--o{ Comment : "持つ"
-    ActivitySchedule ||--o{ ActivityParticipant : "持つ"
-    ActivitySchedule ||--o{ Post : "変換"
+    %% 活動スケジュールとの関連
+    ActivitySchedule ||--o{ Comment : has
+    ActivitySchedule ||--o{ ActivityParticipant : has
+    ActivitySchedule ||--o| Post : converts_to
     
     User {
-        string id PK
-        string name
-        string email UK
-        string password
-        string role
-        string avatarUrl
-        string bio
-        string instruments
+        string id PK "UUID"
+        string name "表示名"
+        string email UK "メールアドレス"
+        string password "ハッシュ化"
+        string role "site_admin/admin/member"
+        string avatarUrl "Supabase"
+        string bio "自己紹介"
+        string instruments "担当楽器"
+        datetime createdAt
+        datetime updatedAt
     }
     
     Post {
-        string id PK
-        string title
-        text content
-        string[] youtubeUrls
-        string[] images
-        string userId FK
+        string id PK "UUID"
+        string title "投稿タイトル"
+        text content "本文"
+        string[] youtubeUrls "動画URL"
+        string[] images "画像URL"
+        string userId FK "作成者"
+        datetime createdAt
+        datetime updatedAt
     }
     
     Event {
-        string id PK
-        string title
-        text content
-        datetime date
-        string locationName
-        string locationUrl
-        json songs
-        string userId FK
+        string id PK "UUID"
+        string title "イベント名"
+        text content "説明"
+        datetime date "開催日時"
+        string locationName "場所"
+        string locationUrl "地図URL"
+        json songs "課題曲"
+        string userId FK "作成者"
+        datetime createdAt
+        datetime updatedAt
     }
     
     ActivitySchedule {
-        string id PK
-        string title
-        text content
-        datetime date
-        string locationName
-        string locationUrl
-        string userId FK
+        string id PK "UUID"
+        string title "スケジュール名"
+        text content "説明"
+        datetime date "実施日時"
+        string locationName "場所"
+        string locationUrl "地図URL"
+        string userId FK "作成者"
+        datetime createdAt
+        datetime updatedAt
+    }
+    
+    Comment {
+        string id PK "UUID"
+        text content "コメント本文"
+        string userId FK "投稿者"
+        string postId FK "投稿ID"
+        string eventId FK "イベントID"
+        string scheduleId FK "スケジュールID"
+        datetime createdAt
+        datetime updatedAt
+    }
+    
+    PostLike {
+        string id PK "UUID"
+        string userId FK "ユーザーID"
+        string postId FK "投稿ID"
+        datetime createdAt
+    }
+    
+    PostParticipant {
+        string id PK "UUID"
+        string userId FK "ユーザーID"
+        string postId FK "投稿ID"
+        string status "参加状況"
+        datetime createdAt
+    }
+    
+    EventParticipant {
+        string id PK "UUID"
+        string userId FK "ユーザーID"
+        string eventId FK "イベントID"
+        string status "参加状況"
+        datetime createdAt
+    }
+    
+    ActivityParticipant {
+        string id PK "UUID"
+        string userId FK "ユーザーID"
+        string scheduleId FK "スケジュールID"
+        string status "参加状況"
+        datetime createdAt
+    }
+    
+    Account {
+        string id PK "UUID"
+        string userId FK "ユーザーID"
+        string provider "Google等"
+        string providerAccountId "外部ID"
+    }
+    
+    Session {
+        string id PK "UUID"
+        string userId FK "ユーザーID"
+        string sessionToken UK "トークン"
+        datetime expires "有効期限"
     }
 ```
 
