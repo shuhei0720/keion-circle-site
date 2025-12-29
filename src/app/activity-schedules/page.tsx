@@ -313,15 +313,13 @@ export default function ActivitySchedulesPage() {
 
   const handleEdit = (schedule: ActivitySchedule) => {
     // datetime-local形式に変換（YYYY-MM-DDThh:mm）
-    const date = new Date(schedule.date)
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 16)
+    // データベースから取得した日時をそのままローカル時刻として扱う
+    const dateStr = schedule.date.replace('Z', '').slice(0, 16)
     
     setFormData({
       title: schedule.title,
       content: schedule.content,
-      date: localDate,
+      date: dateStr,
       location: schedule.location || '',
       locationUrl: schedule.locationUrl || ''
     })
@@ -561,7 +559,7 @@ ${schedule.content}
                     <div className="space-y-1">
                       <div className="flex items-center gap-2 text-sm text-white/60">
                         <Calendar className="w-4 h-4" />
-                        <span>{new Date(schedule.date).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                        <span>{schedule.date.replace('T', ' ').replace('Z', '').slice(0, 16)}</span>
                       </div>
                       {schedule.location && (
                         <div className="flex items-center gap-2 text-sm text-white/60">

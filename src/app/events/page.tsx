@@ -410,15 +410,13 @@ export default function EventsPage() {
 
   const handleEdit = (event: Event) => {
     // datetime-local形式に変換（YYYY-MM-DDThh:mm）
-    const date = new Date(event.date)
-    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 16)
+    // データベースから取得した日時をそのままローカル時刻として扱う
+    const dateStr = event.date.replace('Z', '').slice(0, 16)
     
     setFormData({
       title: event.title,
       content: event.content,
-      date: localDate,
+      date: dateStr,
       locationName: event.locationName || '',
       locationUrl: event.locationUrl || '',
       songs: event.songs ? JSON.parse(event.songs) : []
@@ -904,7 +902,7 @@ ${event.content}
                       <div className="space-y-1 text-sm text-white/70">
                         <div className="flex items-center gap-2">
                           <Calendar className="w-4 h-4" />
-                          <span>{new Date(event.date).toLocaleDateString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                          <span>{event.date.replace('T', ' ').replace('Z', '').slice(0, 16)}</span>
                         </div>
                         {(event.locationName || event.locationUrl) && (
                           <div className="flex items-center gap-2">

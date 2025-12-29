@@ -31,9 +31,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ avatarUrl: null })
     }
 
-    // ファイルの検証
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: '画像ファイルのみアップロード可能です' }, { status: 400 })
+    // ファイルの検証（MIMEタイプと拡張子の両方でチェック）
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif']
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase()
+    const isImageType = file.type.startsWith('image/') || file.type === ''
+    const isImageExtension = allowedExtensions.includes(fileExtension)
+    
+    if (!isImageType && !isImageExtension) {
+      console.log('File validation failed:', { type: file.type, name: file.name, extension: fileExtension })
+      return NextResponse.json({ error: '画像ファイルのみアップロード可能です（.jpg, .png, .gif, .webp等）' }, { status: 400 })
     }
 
     if (file.size > 5 * 1024 * 1024) {
