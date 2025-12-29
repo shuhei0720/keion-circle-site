@@ -69,7 +69,7 @@ export default function PostsPage() {
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
 
-  const isAdmin = session?.user?.role === 'admin'
+  const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'site_admin'
 
   useEffect(() => {
     fetchPosts()
