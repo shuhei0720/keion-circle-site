@@ -49,8 +49,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null
         }
 
-        // メールアドレス検証チェック
-        if (!user.emailVerified) {
+        // メールアドレス検証チェック（本番環境のみ）
+        if (process.env.NODE_ENV === 'production' && !user.emailVerified) {
           console.error('[NextAuth Credentials] Email not verified')
           return null
         }
@@ -152,6 +152,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       console.log('[NextAuth JWT] User email:', user?.email)
       console.log('[NextAuth JWT] Token before:', JSON.stringify(token, null, 2))
       
+      // 初回ログイン時（userが存在する）
       if (user?.email) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email },
@@ -160,16 +161,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         console.log('[NextAuth JWT] DB User:', dbUser)
         
         if (dbUser) {
-          const newToken = {
-            sub: dbUser.id,
-            role: dbUser.role,
-          }
-          console.log('[NextAuth JWT] New token created:', JSON.stringify(newToken, null, 2))
-          return newToken
+          token.sub = dbUser.id
+          token.role = dbUser.role
+          console.log('[NextAuth JWT] Token updated with user data:', JSON.stringify(token, null, 2))
         }
       }
       
-      console.log('[NextAuth JWT] Returning existing token')
+      console.log('[NextAuth JWT] Returning token:', JSON.stringify(token, null, 2))
       return token
     },
     async session({ session, token }) {

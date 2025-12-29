@@ -64,7 +64,14 @@ export async function PATCH(
     }
 
     const { id } = await params
-    const body = await request.json()
+    
+    let body
+    try {
+      body = await request.json()
+    } catch (error) {
+      return NextResponse.json({ error: 'リクエストボディが不正です' }, { status: 400 })
+    }
+    
     const { role } = body
 
     if (!role || !['site_admin', 'admin', 'member'].includes(role)) {
