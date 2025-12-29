@@ -481,6 +481,13 @@ ${schedule.content}
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  onBlur={(e) => {
+                    const location = e.target.value.trim()
+                    if (location && !formData.locationUrl) {
+                      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
+                      setFormData(prev => ({ ...prev, locationUrl: mapsUrl }))
+                    }
+                  }}
                   className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   placeholder="例: スタジオ A"
                 />

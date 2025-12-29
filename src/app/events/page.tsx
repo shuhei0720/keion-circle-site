@@ -659,6 +659,13 @@ ${event.content}
                     type="text"
                     value={formData.locationName}
                     onChange={(e) => setFormData({ ...formData, locationName: e.target.value })}
+                    onBlur={(e) => {
+                      const location = e.target.value.trim()
+                      if (location && !formData.locationUrl) {
+                        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
+                        setFormData(prev => ({ ...prev, locationUrl: mapsUrl }))
+                      }
+                    }}
                     className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                     placeholder="例: 第一体育館"
                   />
@@ -723,6 +730,22 @@ ${event.content}
                               type="text"
                               value={song.title}
                               onChange={(e) => updateSong(songIndex, 'title', e.target.value)}
+                              onBlur={async (e) => {
+                                const title = e.target.value.trim()
+                                if (title && !song.youtubeUrl) {
+                                  try {
+                                    const response = await fetch(`/api/youtube/search?q=${encodeURIComponent(title)}`)
+                                    if (response.ok) {
+                                      const data = await response.json()
+                                      if (data.url) {
+                                        updateSong(songIndex, 'youtubeUrl', data.url)
+                                      }
+                                    }
+                                  } catch (error) {
+                                    console.error('YouTube検索エラー:', error)
+                                  }
+                                }
+                              }}
                               className="w-full px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white placeholder-white/40"
                               placeholder="例: 青と夏"
                             />
