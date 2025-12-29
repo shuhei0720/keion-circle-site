@@ -1814,25 +1814,6 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 
 ---
 
-## 📚 参考資料
-
-### 公式ドキュメント
-
-- [Next.js 16 Documentation](https://nextjs.org/docs)
-- [NextAuth.js v5 Documentation](https://authjs.dev/)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [Tailwind CSS v4 Documentation](https://tailwindcss.com/docs)
-- [Playwright Documentation](https://playwright.dev/docs/intro)
-
-### その他
-
-- [React Documentation](https://react.dev/)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Vercel Documentation](https://vercel.com/docs)
-
----
-
 ## 🤝 コントリビューション
 
 プルリクエストを歓迎します！バグ報告や機能リクエストは [GitHub Issues](https://github.com/shuhei0720/keion-circle-site/issues) にお願いします。
