@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
+import { isAdmin } from '@/lib/permissions'
 
 // 活動報告作成
 export async function POST(
@@ -13,7 +14,8 @@ export async function POST(
       return NextResponse.json({ error: '認証が必要です' }, { status: 401 })
     }
 
-    if (session.user.role !== 'admin') {
+    const admin = await isAdmin()
+    if (!admin) {
       return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
     }
 

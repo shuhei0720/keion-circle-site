@@ -31,7 +31,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
     } else if (status === 'authenticated') {
-      if (session.user.role !== 'admin') {
+      if (session.user.role !== 'admin' && session.user.role !== 'site_admin') {
         router.push('/posts')
         return
       }

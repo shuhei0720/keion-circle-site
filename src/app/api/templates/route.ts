@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
+import { isAdmin } from '@/lib/permissions'
 
 const TEMPLATE_ID = 'report_template'
 
@@ -37,7 +38,8 @@ export async function PUT(request: NextRequest) {
   try {
     const session = await auth()
 
-    if (!session || session.user.role !== 'admin') {
+    const admin = await isAdmin()
+    if (!admin) {
       return NextResponse.json({ error: '権限がありません' }, { status: 403 })
     }
 

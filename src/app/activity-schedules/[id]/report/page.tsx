@@ -31,7 +31,7 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
     if (status === 'unauthenticated') {
       router.push('/auth/signin')
     } else if (status === 'authenticated') {
-      if (session.user.role !== 'admin') {
+      if (session.user.role !== 'admin' && session.user.role !== 'site_admin') {
         router.push('/activity-schedules')
         return
       }
