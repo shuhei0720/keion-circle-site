@@ -481,23 +481,11 @@ ${schedule.content}
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  onBlur={async (e) => {
+                  onBlur={(e) => {
                     const location = e.target.value.trim()
                     if (location && !formData.locationUrl) {
-                      try {
-                        const response = await fetch(`/api/geocode?location=${encodeURIComponent(location)}`)
-                        if (response.ok) {
-                          const data = await response.json()
-                          if (data.url) {
-                            setFormData(prev => ({ ...prev, locationUrl: data.url }))
-                          }
-                        }
-                      } catch (error) {
-                        console.error('Geocoding エラー:', error)
-                        // フォールバック: 検索URLを生成
-                        const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
-                        setFormData(prev => ({ ...prev, locationUrl: mapsUrl }))
-                      }
+                      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
+                      setFormData(prev => ({ ...prev, locationUrl: mapsUrl }))
                     }
                   }}
                   className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
