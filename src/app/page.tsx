@@ -27,6 +27,9 @@ interface Post {
   }[]
 }
 
+// ISR: 60秒ごとにページを再生成
+export const revalidate = 60
+
 export default async function Home() {
   const session = await auth()
   

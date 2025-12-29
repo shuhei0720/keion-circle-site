@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
@@ -90,6 +91,9 @@ export async function POST(request: NextRequest) {
         userId: session.user.id
       }
     })
+
+    // ホームページのキャッシュを即座に無効化
+    revalidatePath('/')
 
     return NextResponse.json(post)
   } catch (error) {
