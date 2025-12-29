@@ -38,44 +38,41 @@ BOLD 軽音メンバーサイトは、**軽音サークルの活動を支援す�
 ### 🎭 システム全体像
 
 ```mermaid
-graph TB
+graph LR
     subgraph users["👥 ユーザー"]
         A[👤 一般メンバー<br/>閲覧・参加・いいね]
         B[🔑 管理者<br/>全機能 + 作成・編集・削除]
     end
     
     subgraph frontend["💻 フロントエンド"]
+        direction TB
         C[🌐 Next.js 16<br/>App Router]
         D[🎨 Tailwind CSS v4]
+        C --- D
     end
     
     subgraph backend["⚙️ バックエンド"]
+        direction TB
         E[🔐 NextAuth.js v5<br/>認証・認可]
         F[⚡ Server Actions]
         G[🗄️ Prisma ORM]
+        E --> G
+        F --> G
     end
     
     subgraph data["💾 データ層"]
+        direction TB
         H[(PostgreSQL)]
         I[📦 Supabase Storage]
     end
     
-    subgraph infra["🚀 インフラ"]
-        J[🚀 Vercel]
-        K[🔄 GitHub Actions]
-    end
+    users ==>|アクセス| frontend
+    frontend ==>|認証・API| backend
+    backend ==>|クエリ| data
+    frontend -.->|画像| I
     
-    A -.->|アクセス| C
-    B -.->|アクセス| C
-    C ---|UI| D
-    C ==>|認証| E
-    C ==>|API| F
-    E -->|ORM| G
-    F -->|ORM| G
-    G ==>|クエリ| H
-    C -.->|画像| I
-    J ===|ホスティング| C
-    K -.->|デプロイ| J
+    J[🚀 Vercel] -.->|ホスティング| frontend
+    K[🔄 GitHub Actions] -.->|CI/CD| J
     
     classDef userStyle fill:#e1f5ff,stroke:#4a90e2,stroke-width:2px
     classDef frontStyle fill:#fff4e6,stroke:#ff9800,stroke-width:2px
@@ -226,32 +223,31 @@ graph TB
 
 ```mermaid
 erDiagram
-    %% ユーザーとの関連
-    User ||--o{ Post : creates
-    User ||--o{ Event : creates
-    User ||--o{ ActivitySchedule : creates
-    User ||--o{ Comment : posts
-    User ||--o{ PostLike : likes
-    User ||--o{ PostParticipant : participates
-    User ||--o{ EventParticipant : participates
-    User ||--o{ ActivityParticipant : participates
-    User ||--o{ Account : has
-    User ||--o{ Session : has
+    %% コアエンティティ
+    User ||--o{ Post : "作成"
+    User ||--o{ Event : "作成"
+    User ||--o{ ActivitySchedule : "作成"
+    User ||--o{ Comment : "投稿"
     
-    %% 投稿との関連
-    Post ||--o{ Comment : has
-    Post ||--o{ PostLike : has
-    Post ||--o{ PostParticipant : has
+    %% 投稿関連
+    Post ||--o{ Comment : "コメント"
+    Post ||--o{ PostLike : "いいね"
+    Post ||--o{ PostParticipant : "参加"
+    User }o--o{ Post : "いいね・参加"
     
-    %% イベントとの関連
-    Event ||--o{ Comment : has
-    Event ||--o{ EventParticipant : has
-    Event ||--o| Post : converts_to
+    %% イベント関連
+    Event ||--o{ Comment : "コメント"
+    Event ||--o{ EventParticipant : "参加"
+    Event }o--o| Post : "報告作成"
     
-    %% 活動スケジュールとの関連
-    ActivitySchedule ||--o{ Comment : has
-    ActivitySchedule ||--o{ ActivityParticipant : has
-    ActivitySchedule ||--o| Post : converts_to
+    %% 活動スケジュール関連
+    ActivitySchedule ||--o{ Comment : "コメント"
+    ActivitySchedule ||--o{ ActivityParticipant : "参加"
+    ActivitySchedule }o--o| Post : "報告作成"
+    
+    %% 認証関連
+    User ||--o{ Account : "OAuth"
+    User ||--o{ Session : "セッション"
     
     User {
         string id PK "UUID"
