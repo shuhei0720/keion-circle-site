@@ -627,11 +627,11 @@ ${event.content}
 
         {/* 作成・編集フォーム */}
         {showCreateForm && isAdmin && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 mb-6 border border-white/10">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-xl p-4 sm:p-6 mb-6 border border-white/10 overflow-x-hidden">
             <h2 className="text-xl font-bold mb-4 text-white">
               {editingId ? 'イベント編集' : '新規イベント'}
             </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 overflow-x-hidden">
               <div>
                 <label className="block text-sm font-medium mb-2 text-white/80">タイトル</label>
                 <input
@@ -643,14 +643,14 @@ ${event.content}
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="min-w-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-x-hidden">
+                <div className="min-w-0 overflow-hidden">
                   <label className="block text-sm font-medium mb-2 text-white/80">日時</label>
                   <input
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full max-w-full min-w-0 px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white text-base focus:ring-2 focus:ring-blue-500"
+                    className="w-full box-border px-2 sm:px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white text-base focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div className="min-w-0">
