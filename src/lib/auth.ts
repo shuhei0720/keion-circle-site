@@ -81,14 +81,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   cookies: {
     sessionToken: {
-      name: process.env.NODE_ENV === 'production' 
-        ? `__Secure-next-auth.session-token`
-        : `next-auth.session-token`,
+      // localhostかどうかで判定（開発環境とCI環境はHTTPなので__Secure-は使えない）
+      name: (process.env.AUTH_URL?.includes('localhost') || process.env.NEXTAUTH_URL?.includes('localhost'))
+        ? `next-auth.session-token`
+        : `__Secure-next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: 'lax',
         path: '/',
-        secure: process.env.NODE_ENV === 'production',
+        secure: !(process.env.AUTH_URL?.includes('localhost') || process.env.NEXTAUTH_URL?.includes('localhost')),
       },
     },
   },
