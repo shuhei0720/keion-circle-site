@@ -1018,7 +1018,7 @@ graph TB
 
 ---
 
-## �‍💻 開発ガイド
+## 💻 開発ガイド
 
 ### クイックスタート
 
@@ -1702,7 +1702,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 
 ---
 
-## � 教科書ガイド
+## 📚 教科書ガイド
 
 ### 📖 実践教科書
 
@@ -1756,7 +1756,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 
 ---
 
-## �📡 API仕様
+## 📡 API仕様
 
 ### 投稿API
 
@@ -1839,12 +1839,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 
 ### コントリビューション手順
 
-1. **このリポジトリをフォーク**
-   ```bash
-   # GitHubでForkボタンをクリック後
-   git clone https://github.com/YOUR_USERNAME/keion-circle-site.git
-   cd keion-circle-site
-   ```
+1. **開発環境のセットアップ**
+   
+   詳細な手順は[開発ガイド](#-開発ガイド)を参照してください。
 
 2. **機能ブランチを作成**
    ```bash
