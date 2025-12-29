@@ -650,7 +650,7 @@ ${event.content}
                     type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full max-w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white text-base focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
                 <div>
