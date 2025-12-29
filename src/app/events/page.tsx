@@ -647,7 +647,7 @@ ${event.content}
                 <div className="min-w-0 overflow-hidden">
                   <label className="block text-sm font-medium mb-2 text-white/80">日時</label>
                   <input
-                    type="date"
+                    type="datetime-local"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                     className="w-full box-border px-2 sm:px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white text-base focus:ring-2 focus:ring-blue-500"
