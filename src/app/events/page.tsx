@@ -669,6 +669,7 @@ ${event.content}
                     className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                     placeholder="例: 第一体育館"
                   />
+                  <p className="text-xs text-white/50 mt-1">💡 場所名を入力すると、自動でGoogle Maps URLが生成されます</p>
                 </div>
               </div>
 
@@ -749,6 +750,7 @@ ${event.content}
                               className="w-full px-3 py-2 border border-white/20 rounded-lg text-sm bg-white/5 text-white placeholder-white/40"
                               placeholder="例: 青と夏"
                             />
+                            <p className="text-xs text-white/50 mt-1">💡 曲名を入力すると、自動でYouTube URLが検索されます</p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>

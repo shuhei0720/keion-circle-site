@@ -491,6 +491,7 @@ ${schedule.content}
                   className="w-full px-4 py-2 border border-white/20 rounded-lg bg-white/5 text-white placeholder-white/40 focus:ring-2 focus:ring-blue-500"
                   placeholder="例: スタジオ A"
                 />
+                <p className="text-xs text-white/50 mt-1">💡 場所名を入力すると、自動でGoogle Maps URLが生成されます</p>
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2 text-white/80">場所URL（Google Mapsなど）</label>
