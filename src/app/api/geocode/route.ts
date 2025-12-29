@@ -15,9 +15,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: '場所名が必要です' }, { status: 400 })
     }
 
+    console.log('🔍 Geocoding検索:', location)
+
     // OpenStreetMap Nominatim APIを使用（無料、APIキー不要）
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=json&limit=1&accept-language=ja`,
       {
         headers: {
           'User-Agent': 'BOLD-Keion-Circle-Site/1.0'
@@ -26,19 +28,23 @@ export async function GET(request: NextRequest) {
     )
 
     if (!response.ok) {
+      console.error('❌ Nominatim API呼び出し失敗:', response.status)
       throw new Error('Geocoding API呼び出しに失敗しました')
     }
 
     const data = await response.json()
+    console.log('📍 Nominatim結果:', data)
 
     if (data && data.length > 0) {
       const place = data[0]
-      const lat = place.lat
-      const lon = place.lon
+      const lat = parseFloat(place.lat)
+      const lon = parseFloat(place.lon)
       const displayName = place.display_name
 
-      // Google Mapsの座標リンクを生成
-      const mapsUrl = `https://www.google.com/maps/place/${lat},${lon}`
+      // Google Mapsの座標リンク（@マーカー形式）
+      const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`
+
+      console.log('✅ 座標URL生成:', mapsUrl)
 
       return NextResponse.json({
         url: mapsUrl,
@@ -49,6 +55,7 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    console.log('⚠️ 検索結果なし、フォールバック')
     // 結果が見つからない場合は検索URLを返す
     const searchUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`
     
@@ -59,7 +66,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Geocoding エラー:', error)
+    console.error('❌ Geocoding エラー:', error)
     
     // エラー時は検索URLを返す
     const location = request.nextUrl.searchParams.get('location')
