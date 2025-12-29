@@ -184,7 +184,7 @@ export default async function Home() {
         <ScrollAnimation animation="fade-up" delay={100}>
           <h2 className="text-4xl font-bold text-white mb-12 text-center">
             <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-400 to-purple-400">
-              機能
+              メニュー
             </span>
           </h2>
         </ScrollAnimation>
