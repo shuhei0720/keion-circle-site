@@ -223,29 +223,36 @@ graph TB
 
 ```mermaid
 erDiagram
-    %% コアエンティティ
+    %% ユーザーとコンテンツ作成
     User ||--o{ Post : "作成"
     User ||--o{ Event : "作成"
     User ||--o{ ActivitySchedule : "作成"
-    User ||--o{ Comment : "投稿"
     
-    %% 投稿関連
-    Post ||--o{ Comment : "コメント"
+    %% 投稿システム
     Post ||--o{ PostLike : "いいね"
     Post ||--o{ PostParticipant : "参加"
-    User }o--o{ Post : "いいね・参加"
+    User ||--o{ PostLike : "いいね"
+    User ||--o{ PostParticipant : "参加"
     
-    %% イベント関連
-    Event ||--o{ Comment : "コメント"
+    %% イベント参加
     Event ||--o{ EventParticipant : "参加"
-    Event }o--o| Post : "報告作成"
+    User ||--o{ EventParticipant : "参加"
     
-    %% 活動スケジュール関連
-    ActivitySchedule ||--o{ Comment : "コメント"
+    %% 活動スケジュール参加
     ActivitySchedule ||--o{ ActivityParticipant : "参加"
-    ActivitySchedule }o--o| Post : "報告作成"
+    User ||--o{ ActivityParticipant : "参加"
     
-    %% 認証関連
+    %% コメントシステム（すべてのコンテンツに共通）
+    User ||--o{ Comment : "投稿"
+    Post ||--o{ Comment : "受信"
+    Event ||--o{ Comment : "受信"
+    ActivitySchedule ||--o{ Comment : "受信"
+    
+    %% 投稿への変換
+    Event ||--o| Post : "報告作成"
+    ActivitySchedule ||--o| Post : "報告作成"
+    
+    %% 認証システム
     User ||--o{ Account : "OAuth"
     User ||--o{ Session : "セッション"
     
