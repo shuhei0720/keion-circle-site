@@ -100,14 +100,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // ログイン後はHome画面(/)に遷移
-      if (url === baseUrl || url === `${baseUrl}/`) {
-        return baseUrl
+      console.log('[NextAuth Redirect] URL:', url)
+      console.log('[NextAuth Redirect] Base URL:', baseUrl)
+      
+      // callbackUrlが指定されている場合
+      if (url.startsWith('/')) {
+        const fullUrl = `${baseUrl}${url}`
+        console.log('[NextAuth Redirect] Redirecting to:', fullUrl)
+        return fullUrl
       }
-      // サインイン後もHomeに
+      
+      // 絶対URLの場合、同じオリジンならそのまま使用
       if (url.startsWith(baseUrl)) {
+        console.log('[NextAuth Redirect] Redirecting to:', url)
         return url
       }
+      
+      // それ以外はホームページへ
+      console.log('[NextAuth Redirect] Redirecting to base URL:', baseUrl)
       return baseUrl
     },
     async signIn({ user, account, profile }) {

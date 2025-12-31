@@ -72,15 +72,13 @@ export default function SignIn() {
     const result = await signIn('credentials', {
       email,
       password,
-      redirect: false,
+      redirect: true,
       callbackUrl: '/'
     })
     
-    // errorフィールドがない、またはnullの場合のみ成功とみなす
-    if (result && !result.error) {
-      router.push('/')
-    } else {
-      // エラーメッセージを表示
+    // redirect: trueの場合、成功時は自動的にリダイレクトされる
+    // エラーの場合のみここに到達
+    if (result?.error) {
       setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
     }
   }
