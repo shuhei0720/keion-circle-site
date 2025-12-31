@@ -25,10 +25,11 @@ async function main() {
       where: { email },
       data: {
         password: hashedPassword,
-        role: 'admin'
+        role: 'site_admin',
+        emailVerified: new Date() // メール確認済みとして設定
       }
     })
-    console.log(`✅ ユーザー ${email} を管理者に更新しました`)
+    console.log(`✅ ユーザー ${email} をsite_admin(サイト管理者)に更新しました`)
   } else {
     // 新規管理者を作成
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -37,10 +38,11 @@ async function main() {
         email,
         password: hashedPassword,
         name,
-        role: 'admin'
+        role: 'site_admin',
+        emailVerified: new Date() // メール確認済みとして設定
       }
     })
-    console.log(`✅ 管理者ユーザー ${email} を作成しました`)
+    console.log(`✅ site_admin(サイト管理者)ユーザー ${email} を作成しました`)
   }
 }
 
