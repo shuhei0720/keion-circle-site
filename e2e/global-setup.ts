@@ -95,6 +95,27 @@ async function globalSetup(config: FullConfig) {
       console.log('[Global Setup] Created admin role user: admin-role@example.com')
     }
     
+    // テスト用の未検証ユーザーを作成
+    const unverifiedUser = await prisma.user.findUnique({
+      where: { email: 'unverified@example.com' }
+    })
+    
+    if (!unverifiedUser) {
+      console.log('[Global Setup] Creating unverified@example.com...')
+      const hashedPassword = await bcrypt.hash('password123', 10)
+      
+      await prisma.user.create({
+        data: {
+          email: 'unverified@example.com',
+          name: 'Unverified User',
+          password: hashedPassword,
+          role: 'member',
+          emailVerified: null, // メール未検証
+        }
+      })
+      console.log('[Global Setup] Created unverified user: unverified@example.com')
+    }
+    
     console.log('[Global Setup] Complete!')
   } catch (error) {
     console.error('[Global Setup] Error:', error)
