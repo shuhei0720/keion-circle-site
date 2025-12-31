@@ -18,9 +18,9 @@ export default function Footer({ isSiteAdmin = false, isLoggedIn = false }: Foot
               <span className="text-xl font-bold text-white">BOLD軽音</span>
             </Link>
             <p className="text-sm text-white/60 leading-relaxed mb-6">
-              大学軽音楽サークルBOLDのメンバー専用サイトです。活動報告や活動スケジュール、イベント管理を行っています。
+              BOLD 大阪軽音部のメンバーサイトです。活動報告や活動スケジュール、イベント管理を行っています。
             </p>
-            {/* ソーシャルアイコン */}
+            {/* ソーシャルアイコン */
             <div className="flex gap-4">
               <a 
                 href="https://github.com/shuhei0720/keion-circle-site" 

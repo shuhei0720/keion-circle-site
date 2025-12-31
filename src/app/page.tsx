@@ -148,7 +148,7 @@ export default async function Home() {
                   </div>
                   <div className="flex-1">
                     <p className="text-lg md:text-xl text-white/90 leading-relaxed">
-                      大学軽音楽サークルBOLDのメンバー専用サイトです。活動報告や活動スケジュール、イベント管理を行っています。
+                      BOLD 大阪軽音部のメンバーサイトです。活動報告や活動スケジュール、イベント管理を行っています。
                     </p>
                   </div>
                 </div>
