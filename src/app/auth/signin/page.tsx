@@ -69,16 +69,16 @@ export default function SignIn() {
     setError('')
     setMessage('')
     
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: true,
-      callbackUrl: '/'
-    })
-    
-    // redirect: trueの場合、成功時は自動的にリダイレクトされる
-    // エラーの場合のみここに到達
-    if (result?.error) {
+    try {
+      await signIn('credentials', {
+        email,
+        password,
+        redirect: true,
+        callbackUrl: '/'
+      })
+      // redirect: trueの場合、成功時は自動的にリダイレクトされるためここには到達しない
+    } catch (error) {
+      // エラーの場合のみここに到達
       setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
     }
   }
