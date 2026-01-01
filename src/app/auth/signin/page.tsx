@@ -69,19 +69,28 @@ export default function SignIn() {
     setError('')
     setMessage('')
     
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-      callbackUrl: '/'
-    })
-    
-    if (result?.error) {
-      setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
-    } else if (result?.ok) {
-      // 成功時はwindow.location.hrefで強制的にページ遷移
-      // これによりブラウザの履歴に適切に記録され、E2Eテストでも検出可能
-      window.location.href = '/'
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl: '/'
+      })
+      
+      if (result?.error) {
+        setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
+        return
+      }
+      
+      if (result?.ok) {
+        // 成功時：NextAuthのセッション更新を待つため、少し遅延させてからリダイレクト
+        // window.location.replace()を使用して履歴を置き換え
+        await new Promise(resolve => setTimeout(resolve, 100))
+        window.location.replace('/')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      setError('ログイン中にエラーが発生しました。')
     }
   }
 
