@@ -4942,6 +4942,532 @@ async function race() {
 }
 ```
 
+### エラーハンドリング（try-catch）
+
+非同期処理では**エラー**が発生する可能性があります。`try-catch`でエラーを適切に処理しましょう。
+
+#### try-catchの基本
+
+```javascript
+try {
+  // エラーが起きる可能性のあるコード
+  const result = riskyOperation();
+  console.log('成功:', result);
+} catch (error) {
+  // エラーが発生したときの処理
+  console.error('エラー発生:', error.message);
+} finally {
+  // 必ず実行される処理（省略可能）
+  console.log('処理完了');
+}
+```
+
+**図解：try-catchの流れ**
+
+```mermaid
+flowchart TD
+    A[try ブロック開始] --> B{エラー発生?}
+    B -->|なし| C[正常に実行]
+    B -->|あり| D[catch ブロックへ]
+    C --> E[finally ブロック]
+    D --> E
+    E --> F[処理終了]
+    
+    style A fill:#e1f5ff
+    style C fill:#d4edda
+    style D fill:#f8d7da
+    style E fill:#fff3cd
+```
+
+**このコードの詳しい説明：**
+
+1. **基本的なtry-catch**
+   ```javascript
+   function divide(a, b) {
+     try {
+       if (b === 0) {
+         throw new Error('0で割ることはできません');
+       }
+       return a / b;
+     } catch (error) {
+       console.error('エラー:', error.message);
+       return null;
+     }
+   }
+   
+   console.log(divide(10, 2));  // 5
+   console.log(divide(10, 0));  // エラー: 0で割ることはできません → null
+   ```
+
+2. **JSON.parseのエラー処理**
+   ```javascript
+   function parseJSON(jsonString) {
+     try {
+       const data = JSON.parse(jsonString);
+       return { success: true, data };
+     } catch (error) {
+       return { success: false, error: error.message };
+     }
+   }
+   
+   // 正常なJSON
+   const result1 = parseJSON('{"name": "田中"}');
+   console.log(result1);
+   // { success: true, data: { name: '田中' } }
+   
+   // 不正なJSON
+   const result2 = parseJSON('{invalid json}');
+   console.log(result2);
+   // { success: false, error: 'Unexpected token i in JSON at position 1' }
+   ```
+
+3. **async/awaitでのtry-catch**
+   ```javascript
+   async function fetchUser(id) {
+     try {
+       const response = await fetch(`/api/users/${id}`);
+       
+       // HTTPステータスチェック
+       if (!response.ok) {
+         throw new Error(`HTTPエラー: ${response.status}`);
+       }
+       
+       const user = await response.json();
+       return user;
+     } catch (error) {
+       console.error('ユーザー取得失敗:', error.message);
+       return null;
+     }
+   }
+   
+   // 使用例
+   const user = await fetchUser(123);
+   if (user) {
+     console.log('ユーザー:', user.name);
+   } else {
+     console.log('ユーザーが見つかりません');
+   }
+   ```
+
+4. **複数のエラータイプを判定**
+   ```javascript
+   async function fetchData(url) {
+     try {
+       const response = await fetch(url);
+       const data = await response.json();
+       return data;
+     } catch (error) {
+       // エラーの種類によって処理を分ける
+       if (error instanceof TypeError) {
+         console.error('ネットワークエラー:', error.message);
+       } else if (error instanceof SyntaxError) {
+         console.error('JSONパースエラー:', error.message);
+       } else {
+         console.error('予期しないエラー:', error.message);
+       }
+       
+       // エラーを再スロー（呼び出し元でも処理できるように）
+       throw error;
+     }
+   }
+   ```
+
+5. **finallyブロックの活用**
+   ```javascript
+   async function fetchWithLoading(url) {
+     // ローディング表示を開始
+     showLoading();
+     
+     try {
+       const response = await fetch(url);
+       const data = await response.json();
+       return data;
+     } catch (error) {
+       console.error('データ取得エラー:', error);
+       return null;
+     } finally {
+       // 成功・失敗どちらでもローディングを非表示
+       hideLoading();
+     }
+   }
+   
+   function showLoading() {
+     console.log('読み込み中...');
+   }
+   
+   function hideLoading() {
+     console.log('読み込み完了');
+   }
+   ```
+
+**初心者への補足：**
+> 💡 **try-catchのベストプラクティス：**
+> 
+> | 状況 | 推奨方法 | 理由 |
+> |------|---------|------|
+> | **async/await** | try-catch必須 | エラーで処理が止まる |
+> | **JSON.parse** | try-catch推奨 | 不正なJSONでエラー |
+> | **fetch API** | try-catch必須 | ネットワークエラー対策 |
+> | **数値計算** | 条件分岐で対応 | 過度なtry-catchは避ける |
+> 
+> **実用例：安全なAPI呼び出し**
+> ```javascript
+> async function safeApiCall(url) {
+>   try {
+>     const response = await fetch(url);
+>     if (!response.ok) {
+>       throw new Error(`API Error: ${response.status}`);
+>     }
+>     return await response.json();
+>   } catch (error) {
+>     console.error('API呼び出し失敗:', error.message);
+>     return { error: true, message: error.message };
+>   }
+> }
+> ```
+
+---
+
+### JSON処理（JSON.parse / JSON.stringify）
+
+**JSON**（JavaScript Object Notation）は、データをやり取りするための形式です。APIとの通信で**必須**の知識です。
+
+#### JSONとは？
+
+```mermaid
+graph LR
+    A[JavaScriptオブジェクト] -->|stringify| B[JSON文字列]
+    B -->|parse| A
+    
+    C["{ name: '田中' }"] -->|stringify| D['{"name":"田中"}']
+    D -->|parse| C
+    
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style C fill:#e1f5ff
+    style D fill:#fff4e1
+```
+
+**JSON文字列の特徴：**
+```javascript
+// JavaScriptオブジェクト
+const user = {
+  name: '田中',    // キーにクォート不要
+  age: 25
+};
+
+// JSON文字列
+const jsonString = '{"name":"田中","age":25}';
+//                   ↑キーも文字列
+//                      ↑ダブルクォートのみ
+```
+
+#### JSON.stringify（オブジェクト → 文字列）
+
+```javascript
+// 基本的な使い方
+const user = {
+  name: '田中',
+  age: 25,
+  email: 'tanaka@example.com'
+};
+
+const jsonString = JSON.stringify(user);
+console.log(jsonString);
+// {"name":"田中","age":25,"email":"tanaka@example.com"}
+
+console.log(typeof jsonString);  // "string"
+```
+
+**このコードの詳しい説明：**
+
+1. **基本的なstringify**
+   ```javascript
+   const data = {
+     name: '田中',
+     age: 25,
+     active: true,
+     tags: ['JavaScript', 'React'],
+     address: {
+       city: '東京',
+       zipCode: '100-0001'
+     }
+   };
+   
+   const json = JSON.stringify(data);
+   console.log(json);
+   // {"name":"田中","age":25,"active":true,"tags":["JavaScript","React"],"address":{"city":"東京","zipCode":"100-0001"}}
+   ```
+
+2. **見やすくフォーマット（インデント）**
+   ```javascript
+   // 第3引数でインデント指定
+   const json = JSON.stringify(data, null, 2);
+   console.log(json);
+   /*
+   {
+     "name": "田中",
+     "age": 25,
+     "active": true,
+     "tags": [
+       "JavaScript",
+       "React"
+     ],
+     "address": {
+       "city": "東京",
+       "zipCode": "100-0001"
+     }
+   }
+   */
+   ```
+
+3. **特定のプロパティのみ取り出す**
+   ```javascript
+   const user = {
+     id: 1,
+     name: '田中',
+     password: 'secret123',  // これは除外したい
+     email: 'tanaka@example.com'
+   };
+   
+   // 第2引数で含めるプロパティを指定
+   const json = JSON.stringify(user, ['id', 'name', 'email']);
+   console.log(json);
+   // {"id":1,"name":"田中","email":"tanaka@example.com"}
+   ```
+
+4. **undefinedや関数は無視される**
+   ```javascript
+   const data = {
+     name: '田中',
+     age: undefined,        // 無視される
+     greet: function() {},  // 無視される
+     active: true
+   };
+   
+   const json = JSON.stringify(data);
+   console.log(json);
+   // {"name":"田中","active":true}
+   ```
+
+5. **配列のstringify**
+   ```javascript
+   const users = [
+     { name: '田中', age: 25 },
+     { name: '佐藤', age: 30 },
+     { name: '鈴木', age: 28 }
+   ];
+   
+   const json = JSON.stringify(users, null, 2);
+   console.log(json);
+   /*
+   [
+     {
+       "name": "田中",
+       "age": 25
+     },
+     {
+       "name": "佐藤",
+       "age": 30
+     },
+     {
+       "name": "鈴木",
+       "age": 28
+     }
+   ]
+   */
+   ```
+
+#### JSON.parse（文字列 → オブジェクト）
+
+```javascript
+// JSON文字列をオブジェクトに変換
+const jsonString = '{"name":"田中","age":25}';
+const user = JSON.parse(jsonString);
+
+console.log(user);        // { name: '田中', age: 25 }
+console.log(user.name);   // '田中'
+console.log(typeof user); // "object"
+```
+
+**このコードの詳しい説明：**
+
+1. **基本的なparse**
+   ```javascript
+   const jsonString = '{"name":"田中","age":25,"active":true}';
+   const user = JSON.parse(jsonString);
+   
+   console.log(user.name);   // '田中'
+   console.log(user.age);    // 25
+   console.log(user.active); // true
+   ```
+
+2. **配列のparse**
+   ```javascript
+   const jsonArray = '[{"name":"田中"},{"name":"佐藤"}]';
+   const users = JSON.parse(jsonArray);
+   
+   console.log(users.length);     // 2
+   console.log(users[0].name);    // '田中'
+   ```
+
+3. **エラーハンドリング（重要！）**
+   ```javascript
+   function safeJSONParse(jsonString) {
+     try {
+       return JSON.parse(jsonString);
+     } catch (error) {
+       console.error('JSONパースエラー:', error.message);
+       return null;
+     }
+   }
+   
+   // 正常なJSON
+   const result1 = safeJSONParse('{"name":"田中"}');
+   console.log(result1);  // { name: '田中' }
+   
+   // 不正なJSON
+   const result2 = safeJSONParse('{invalid}');
+   console.log(result2);  // null（エラーが出ず、安全に処理）
+   ```
+
+4. **localStorageとの組み合わせ**
+   ```javascript
+   // データを保存
+   const user = { name: '田中', age: 25 };
+   localStorage.setItem('user', JSON.stringify(user));
+   
+   // データを取得
+   const storedUser = JSON.parse(localStorage.getItem('user'));
+   console.log(storedUser.name);  // '田中'
+   
+   // 安全な取得関数
+   function getStoredUser() {
+     const data = localStorage.getItem('user');
+     if (!data) return null;
+     
+     try {
+       return JSON.parse(data);
+     } catch (error) {
+       console.error('保存データが壊れています');
+       return null;
+     }
+   }
+   ```
+
+5. **API呼び出しでの使用**
+   ```javascript
+   // POSTリクエストでJSONを送信
+   async function createUser(userData) {
+     try {
+       const response = await fetch('/api/users', {
+         method: 'POST',
+         headers: {
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(userData)  // オブジェクト→JSON文字列
+       });
+       
+       const result = await response.json();  // JSON文字列→オブジェクト
+       return result;
+     } catch (error) {
+       console.error('ユーザー作成エラー:', error);
+       return null;
+     }
+   }
+   
+   // 使用例
+   const newUser = await createUser({
+     name: '田中',
+     email: 'tanaka@example.com'
+   });
+   ```
+
+**初心者への補足：**
+> 💡 **JSON処理のベストプラクティス：**
+> 
+> | 用途 | メソッド | 注意点 |
+> |------|---------|--------|
+> | **API送信** | `JSON.stringify()` | Headersに`Content-Type: application/json` |
+> | **API受信** | `response.json()` | fetchが自動でparseしてくれる |
+> | **localStorage** | stringify/parse | try-catchでエラー処理 |
+> | **デバッグ** | `JSON.stringify(obj, null, 2)` | 見やすくインデント |
+> 
+> **よくあるエラーと対策：**
+> ```javascript
+> // ❌ シングルクォートは使えない
+> JSON.parse("{'name':'田中'}");  // エラー！
+> 
+> // ✅ ダブルクォートを使う
+> JSON.parse('{"name":"田中"}');  // OK
+> 
+> // ❌ カンマの位置に注意
+> JSON.parse('{"name":"田中",}');  // 末尾カンマはエラー
+> 
+> // ✅ 末尾カンマなし
+> JSON.parse('{"name":"田中"}');   // OK
+> ```
+
+**実用例：設定データの保存と読み込み**
+
+```javascript
+// アプリの設定を管理するクラス
+class Settings {
+  constructor() {
+    this.defaults = {
+      theme: 'light',
+      language: 'ja',
+      notifications: true
+    };
+  }
+  
+  // 設定を読み込む
+  load() {
+    const stored = localStorage.getItem('settings');
+    if (!stored) return this.defaults;
+    
+    try {
+      return { ...this.defaults, ...JSON.parse(stored) };
+    } catch (error) {
+      console.error('設定の読み込みに失敗:', error);
+      return this.defaults;
+    }
+  }
+  
+  // 設定を保存
+  save(settings) {
+    try {
+      localStorage.setItem('settings', JSON.stringify(settings));
+      return true;
+    } catch (error) {
+      console.error('設定の保存に失敗:', error);
+      return false;
+    }
+  }
+  
+  // 設定をリセット
+  reset() {
+    localStorage.removeItem('settings');
+  }
+}
+
+// 使用例
+const settings = new Settings();
+
+// 読み込み
+const currentSettings = settings.load();
+console.log(currentSettings);
+// { theme: 'light', language: 'ja', notifications: true }
+
+// 変更して保存
+currentSettings.theme = 'dark';
+settings.save(currentSettings);
+
+// 再度読み込み
+const updated = settings.load();
+console.log(updated.theme);  // 'dark'
+```
+
 ---
 
 ## 3.10 モジュール

@@ -4184,7 +4184,521 @@ export async function OPTIONS(request: Request) {
 
 ---
 
-## 5.10 メタデータとSEO
+## 5.10 Server Actions（フォーム処理の新しい方法）
+
+**Server Actions**は、Next.js 13.4以降で導入された機能で、**フォーム送信やデータ更新を簡単に実装**できます。
+
+### Server Actionsとは？
+
+従来のAPI実装との比較：
+
+```mermaid
+graph LR
+    subgraph "従来のAPI"
+    A1[Form] -->|fetch POST| B1[API Route]
+    B1 --> C1[Database]
+    C1 --> B1
+    B1 -->|JSON| A1
+    end
+    
+    subgraph "Server Actions"
+    A2[Form] -->|action| B2[Server Action]
+    B2 --> C2[Database]
+    end
+    
+    style A1 fill:#e1f5ff
+    style A2 fill:#e1f5ff
+    style B1 fill:#fff4e1
+    style B2 fill:#d4edda
+    style C1 fill:#f8d7da
+    style C2 fill:#f8d7da
+```
+
+**メリット：**
+- APIルートを作る必要がない
+- フォームの状態管理が自動
+- JavaScriptなしでも動作（Progressive Enhancement）
+- 型安全（TypeScript）
+
+---
+
+### 基本的な使い方
+
+#### 1. Server Actionの作成
+
+```typescript
+// src/app/posts/actions.ts
+'use server';  // ← 必須：Server Actionsであることを宣言
+
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+
+export async function createPost(formData: FormData) {
+  // FormDataから値を取得
+  const title = formData.get('title') as string;
+  const content = formData.get('content') as string;
+  
+  // バリデーション
+  if (!title || title.length < 3) {
+    return { error: 'タイトルは3文字以上必要です' };
+  }
+  
+  // データベースに保存
+  await prisma.post.create({
+    data: { title, content }
+  });
+  
+  // キャッシュを更新
+  revalidatePath('/posts');
+  
+  // リダイレクト
+  redirect('/posts');
+}
+```
+
+**このコードの詳しい説明：**
+
+1. **`'use server'`ディレクティブ**
+   - ファイルの先頭に記述
+   - このファイルの関数がサーバー側で実行されることを宣言
+   - クライアント側には送信されない
+
+2. **FormData型の引数**
+   - フォームから送信されたデータを受け取る
+   - `formData.get('name')`で値を取得
+
+3. **revalidatePath()**
+   - 指定したパスのキャッシュを無効化
+   - 最新データを表示するために必要
+
+4. **redirect()**
+   - 処理完了後に別ページへリダイレクト
+   - フォーム送信後の画面遷移に使用
+
+#### 2. フォームでの使用
+
+```typescript
+// src/app/posts/new/page.tsx
+import { createPost } from '../actions';
+
+export default function NewPostPage() {
+  return (
+    <form action={createPost}>
+      <div>
+        <label>タイトル</label>
+        <input 
+          type="text" 
+          name="title"  // ← FormDataのキーになる
+          required 
+        />
+      </div>
+      
+      <div>
+        <label>本文</label>
+        <textarea 
+          name="content"  // ← FormDataのキーになる
+          required 
+        />
+      </div>
+      
+      <button type="submit">投稿する</button>
+    </form>
+  );
+}
+```
+
+**動作の流れ：**
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant F as Form
+    participant S as Server Action
+    participant DB as Database
+    
+    U->>F: フォーム入力
+    U->>F: 送信ボタン押下
+    F->>S: createPost(formData)
+    S->>S: バリデーション
+    S->>DB: データ保存
+    DB-->>S: 完了
+    S->>S: revalidatePath()
+    S-->>F: redirect('/posts')
+    F-->>U: /posts画面表示
+    
+    Note over F,S: JavaScriptなしでも動作
+```
+
+---
+
+### エラーハンドリング
+
+#### 1. クライアント側でエラー表示
+
+```typescript
+// src/app/posts/new/page.tsx
+'use client';
+
+import { useActionState } from 'react';
+import { createPost } from '../actions';
+
+export default function NewPostPage() {
+  const [state, formAction] = useActionState(createPost, null);
+  
+  return (
+    <form action={formAction}>
+      {state?.error && (
+        <div style={{ color: 'red' }}>
+          エラー: {state.error}
+        </div>
+      )}
+      
+      <div>
+        <label>タイトル</label>
+        <input type="text" name="title" required />
+      </div>
+      
+      <div>
+        <label>本文</label>
+        <textarea name="content" required />
+      </div>
+      
+      <button type="submit">投稿する</button>
+    </form>
+  );
+}
+```
+
+**このコードの詳しい説明：**
+
+1. **useActionState フック**
+   - React 19の新しいフック
+   - Server Actionの戻り値を管理
+   - `[state, formAction] = useActionState(action, initialState)`
+
+2. **エラー表示**
+   - `state?.error`でエラーメッセージを取得
+   - 条件付きレンダリングでエラー表示
+
+#### 2. 詳細なバリデーション
+
+```typescript
+// src/app/posts/actions.ts
+'use server';
+
+import { z } from 'zod';
+
+// Zodでバリデーションスキーマを定義
+const postSchema = z.object({
+  title: z.string()
+    .min(3, 'タイトルは3文字以上必要です')
+    .max(100, 'タイトルは100文字以内にしてください'),
+  content: z.string()
+    .min(10, '本文は10文字以上必要です')
+    .max(5000, '本文は5000文字以内にしてください'),
+});
+
+export async function createPost(prevState: any, formData: FormData) {
+  // FormDataをオブジェクトに変換
+  const rawData = {
+    title: formData.get('title'),
+    content: formData.get('content'),
+  };
+  
+  // バリデーション
+  const result = postSchema.safeParse(rawData);
+  
+  if (!result.success) {
+    // エラーをフィールドごとに返す
+    return {
+      errors: result.error.flatten().fieldErrors,
+      message: '入力内容を確認してください',
+    };
+  }
+  
+  // データベースに保存
+  try {
+    await prisma.post.create({
+      data: result.data
+    });
+    
+    revalidatePath('/posts');
+    redirect('/posts');
+  } catch (error) {
+    return {
+      message: 'データベースエラーが発生しました',
+    };
+  }
+}
+```
+
+#### 3. フィールドごとのエラー表示
+
+```typescript
+// src/app/posts/new/page.tsx
+'use client';
+
+import { useActionState } from 'react';
+import { createPost } from '../actions';
+
+export default function NewPostPage() {
+  const [state, formAction] = useActionState(createPost, null);
+  
+  return (
+    <form action={formAction}>
+      {state?.message && (
+        <div style={{ color: 'red', marginBottom: '1rem' }}>
+          {state.message}
+        </div>
+      )}
+      
+      <div>
+        <label>タイトル</label>
+        <input type="text" name="title" required />
+        {state?.errors?.title && (
+          <p style={{ color: 'red', fontSize: '0.875rem' }}>
+            {state.errors.title[0]}
+          </p>
+        )}
+      </div>
+      
+      <div>
+        <label>本文</label>
+        <textarea name="content" required />
+        {state?.errors?.content && (
+          <p style={{ color: 'red', fontSize: '0.875rem' }}>
+            {state.errors.content[0]}
+          </p>
+        )}
+      </div>
+      
+      <button type="submit">投稿する</button>
+    </form>
+  );
+}
+```
+
+---
+
+### 楽観的UI更新（useOptimistic）
+
+ユーザー体験を向上させるため、**サーバー処理の完了を待たずにUIを更新**します。
+
+```typescript
+// src/app/posts/[id]/like-button.tsx
+'use client';
+
+import { useOptimistic } from 'react';
+import { likePost } from '../actions';
+
+export default function LikeButton({ 
+  postId,
+  initialLikes 
+}: { 
+  postId: string;
+  initialLikes: number;
+}) {
+  const [optimisticLikes, addOptimisticLike] = useOptimistic(
+    initialLikes,
+    (state, amount: number) => state + amount
+  );
+  
+  return (
+    <form action={async () => {
+      // 即座にUI更新（楽観的更新）
+      addOptimisticLike(1);
+      
+      // サーバー処理（非同期）
+      await likePost(postId);
+    }}>
+      <button type="submit">
+        ❤️ いいね ({optimisticLikes})
+      </button>
+    </form>
+  );
+}
+```
+
+**動作の流れ：**
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant UI as UI
+    participant S as Server Action
+    participant DB as Database
+    
+    U->>UI: いいねボタン押下
+    UI->>UI: addOptimisticLike(1)
+    Note over UI: 即座に表示更新（25→26）
+    UI->>S: likePost(postId)
+    S->>DB: データ保存
+    DB-->>S: 完了
+    S-->>UI: 成功
+    Note over UI: 確定（26のまま）
+    
+    Note over U,UI: ネットワーク遅延を感じさせない
+```
+
+**このコードの詳しい説明：**
+
+1. **useOptimistic フック**
+   - `useOptimistic(currentState, updateFn)`
+   - 現在の状態と更新関数を受け取る
+   - 楽観的更新を管理
+
+2. **addOptimisticLike(1)**
+   - UI上で即座に+1
+   - ユーザーは待たずに結果を確認
+
+3. **エラー時の自動ロールバック**
+   - サーバー処理が失敗すると自動的に元の値に戻る
+   - 手動でロールバック処理を書く必要なし
+
+---
+
+### 認証との組み合わせ
+
+```typescript
+// src/app/posts/actions.ts
+'use server';
+
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+
+export async function createPost(formData: FormData) {
+  // 認証チェック
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return { error: 'ログインが必要です' };
+  }
+  
+  // 管理者チェック
+  if (session.user.role !== 'admin') {
+    return { error: '投稿権限がありません' };
+  }
+  
+  const title = formData.get('title') as string;
+  const content = formData.get('content') as string;
+  
+  // 投稿作成
+  await prisma.post.create({
+    data: {
+      title,
+      content,
+      authorId: session.user.id,  // 作成者IDを設定
+    }
+  });
+  
+  revalidatePath('/posts');
+  redirect('/posts');
+}
+```
+
+---
+
+### 実用例：コメント投稿
+
+```typescript
+// src/app/posts/[id]/actions.ts
+'use server';
+
+import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
+import { revalidatePath } from 'next/cache';
+
+export async function addComment(postId: string, formData: FormData) {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    return { error: 'ログインが必要です' };
+  }
+  
+  const content = formData.get('content') as string;
+  
+  if (!content || content.trim().length === 0) {
+    return { error: 'コメントを入力してください' };
+  }
+  
+  await prisma.comment.create({
+    data: {
+      content,
+      postId,
+      userId: session.user.id,
+    }
+  });
+  
+  revalidatePath(`/posts/${postId}`);
+  
+  return { success: true };
+}
+```
+
+```typescript
+// src/app/posts/[id]/comment-form.tsx
+'use client';
+
+import { useActionState } from 'react';
+import { addComment } from './actions';
+
+export default function CommentForm({ postId }: { postId: string }) {
+  const [state, formAction] = useActionState(
+    addComment.bind(null, postId),
+    null
+  );
+  
+  return (
+    <form action={formAction}>
+      {state?.error && (
+        <div style={{ color: 'red' }}>{state.error}</div>
+      )}
+      
+      {state?.success && (
+        <div style={{ color: 'green' }}>コメントを投稿しました</div>
+      )}
+      
+      <textarea 
+        name="content"
+        placeholder="コメントを入力..."
+        required
+      />
+      
+      <button type="submit">コメントする</button>
+    </form>
+  );
+}
+```
+
+**初心者への補足：**
+> 💡 **Server Actionsのベストプラクティス：**
+> 
+> | 項目 | 推奨方法 | 理由 |
+> |------|---------|------|
+> | **ファイル配置** | 同じディレクトリに`actions.ts` | ページと関連付けやすい |
+> | **バリデーション** | Zodなどのライブラリ使用 | 型安全で保守しやすい |
+> | **エラー処理** | try-catch必須 | データベースエラーに対応 |
+> | **認証チェック** | 各Actionの先頭で実施 | セキュリティ確保 |
+> | **キャッシュ更新** | revalidatePathで適切に | 最新データを表示 |
+> 
+> **従来のAPI Routeとの使い分け：**
+> ```
+> Server Actions を使う場面：
+> - フォーム送信（投稿作成、コメント、いいね）
+> - データ更新・削除
+> - ページ内での完結する処理
+> 
+> API Route を使う場面：
+> - 外部からのAPIアクセス（モバイルアプリなど）
+> - Webhookの受信
+> - 複雑なクエリパラメータ処理
+> - ファイルアップロード
+> ```
+
+---
+
+## 5.11 メタデータとSEO
 
 メタデータは**検索エンジン最適化（SEO）**に重要です。Next.jsでは簡単に設定できます。
 

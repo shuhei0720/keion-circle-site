@@ -5828,7 +5828,519 @@ localStorage.setItem() で保存
 
 ---
 
-## 4.9 コンポーネント設計のベストプラクティス
+## 4.9 カスタムフック（Custom Hooks）
+
+**カスタムフック**は、ロジックを再利用可能な関数として切り出す仕組みです。
+
+### カスタムフックとは？
+
+```mermaid
+graph LR
+    A[コンポーネントA] --> D[useLocalStorage]
+    B[コンポーネントB] --> D
+    C[コンポーネントC] --> D
+    
+    D --> E[useState]
+    D --> F[useEffect]
+    
+    style A fill:#e1f5ff
+    style B fill:#e1f5ff
+    style C fill:#e1f5ff
+    style D fill:#d4edda
+    style E fill:#fff4e1
+    style F fill:#fff4e1
+```
+
+**メリット：**
+- ロジックを複数のコンポーネントで共有
+- コンポーネントをシンプルに保つ
+- テストしやすい
+- 読みやすいコード
+
+**命名規則：**
+- 必ず`use`で始める（例：`useLocalStorage`、`useDebounce`）
+- React がカスタムフックとして認識するため
+
+---
+
+### useLocalStorage（データの永続化）
+
+localStorageにデータを保存するカスタムフックを作ります。
+
+```typescript
+// src/hooks/useLocalStorage.ts
+import { useState, useEffect } from 'react';
+
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T
+): [T, (value: T) => void] {
+  // localStorageから初期値を取得
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error('localStorage取得エラー:', error);
+      return initialValue;
+    }
+  });
+  
+  // 値が変更されたらlocalStorageに保存
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
+    } catch (error) {
+      console.error('localStorage保存エラー:', error);
+    }
+  }, [key, storedValue]);
+  
+  return [storedValue, setStoredValue];
+}
+```
+
+**使用例：**
+
+```typescript
+// src/components/Settings.tsx
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+
+export default function Settings() {
+  // useStateの代わりにuseLocalStorageを使用
+  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  const [language, setLanguage] = useLocalStorage('language', 'ja');
+  
+  return (
+    <div>
+      <h2>設定</h2>
+      
+      <div>
+        <label>テーマ</label>
+        <select 
+          value={theme} 
+          onChange={(e) => setTheme(e.target.value)}
+        >
+          <option value="light">ライト</option>
+          <option value="dark">ダーク</option>
+        </select>
+      </div>
+      
+      <div>
+        <label>言語</label>
+        <select 
+          value={language} 
+          onChange={(e) => setLanguage(e.target.value)}
+        >
+          <option value="ja">日本語</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+    </div>
+  );
+}
+```
+
+**動作の流れ：**
+
+```mermaid
+sequenceDiagram
+    participant C as Component
+    participant H as useLocalStorage
+    participant LS as localStorage
+    
+    Note over C,LS: 初回マウント時
+    C->>H: useLocalStorage('theme', 'light')
+    H->>LS: getItem('theme')
+    LS-->>H: null（初回は未保存）
+    H-->>C: 'light'（初期値を返す）
+    
+    Note over C,LS: ユーザーが変更
+    C->>H: setTheme('dark')
+    H->>H: setStoredValue('dark')
+    H->>LS: setItem('theme', 'dark')
+    
+    Note over C,LS: 次回マウント時
+    C->>H: useLocalStorage('theme', 'light')
+    H->>LS: getItem('theme')
+    LS-->>H: 'dark'（保存されたデータ）
+    H-->>C: 'dark'
+```
+
+**このコードの詳しい説明：**
+
+1. **ジェネリクス `<T>`**
+   - 任意の型のデータを扱える
+   - 型安全性を保つ
+
+2. **useState の初期化関数**
+   ```typescript
+   const [value, setValue] = useState(() => {
+     // 初回レンダリング時のみ実行される
+     return 初期値を計算;
+   });
+   ```
+
+3. **try-catch でエラーハンドリング**
+   - localStorageが利用できない環境に対応
+   - JSON.parseの失敗に対応
+
+4. **useEffect で自動保存**
+   - 値が変更されるたびに保存
+   - 依存配列に`[key, storedValue]`
+
+---
+
+### useDebounce（入力の遅延処理）
+
+ユーザーの入力が落ち着いてから処理を実行するフックです。
+
+```typescript
+// src/hooks/useDebounce.ts
+import { useState, useEffect } from 'react';
+
+export function useDebounce<T>(value: T, delay: number = 500): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  
+  useEffect(() => {
+    // タイマーを設定
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    // クリーンアップ関数
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+```
+
+**使用例：検索機能**
+
+```typescript
+// src/components/SearchUsers.tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useDebounce } from '@/hooks/useDebounce';
+
+export default function SearchUsers() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [results, setResults] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // 入力から500ms後に確定した値を取得
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  
+  // debouncedSearchTermが変わったときだけAPI呼び出し
+  useEffect(() => {
+    if (!debouncedSearchTerm) {
+      setResults([]);
+      return;
+    }
+    
+    // 検索を実行
+    const searchUsers = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(
+          `/api/users/search?q=${encodeURIComponent(debouncedSearchTerm)}`
+        );
+        const data = await response.json();
+        setResults(data);
+      } catch (error) {
+        console.error('検索エラー:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    searchUsers();
+  }, [debouncedSearchTerm]);
+  
+  return (
+    <div>
+      <input
+        type="text"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        placeholder="ユーザーを検索..."
+      />
+      
+      {isLoading && <p>検索中...</p>}
+      
+      <ul>
+        {results.map(user => (
+          <li key={user.id}>{user.name}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+**動作の流れ：**
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant I as Input
+    participant D as useDebounce
+    participant E as useEffect
+    participant A as API
+    
+    U->>I: "田" 入力
+    I->>D: searchTerm = "田"
+    Note over D: タイマー開始（500ms）
+    
+    U->>I: "田中" 入力
+    I->>D: searchTerm = "田中"
+    Note over D: 前のタイマーをキャンセル
+    Note over D: 新しいタイマー開始（500ms）
+    
+    U->>I: "田中太" 入力
+    I->>D: searchTerm = "田中太"
+    Note over D: 前のタイマーをキャンセル
+    Note over D: 新しいタイマー開始（500ms）
+    
+    Note over D: 500ms経過
+    D->>E: debouncedSearchTerm = "田中太"
+    E->>A: API呼び出し
+    A-->>E: 検索結果
+    E-->>I: 結果を表示
+    
+    Note over U,A: 入力のたびにAPI呼び出しせず、<br/>落ち着いてから1回だけ実行
+```
+
+**メリット：**
+- API呼び出しの回数を削減
+- パフォーマンス向上
+- ユーザー体験の向上
+
+---
+
+### useToggle（ON/OFF切り替え）
+
+true/falseを簡単に切り替えるフックです。
+
+```typescript
+// src/hooks/useToggle.ts
+import { useState } from 'react';
+
+export function useToggle(
+  initialValue: boolean = false
+): [boolean, () => void, (value: boolean) => void] {
+  const [value, setValue] = useState(initialValue);
+  
+  const toggle = () => setValue(prev => !prev);
+  
+  return [value, toggle, setValue];
+}
+```
+
+**使用例：**
+
+```typescript
+// src/components/Modal.tsx
+import { useToggle } from '@/hooks/useToggle';
+
+export default function ModalExample() {
+  const [isOpen, toggle, setIsOpen] = useToggle(false);
+  
+  return (
+    <div>
+      <button onClick={toggle}>モーダルを開く</button>
+      
+      {isOpen && (
+        <div className="modal">
+          <h2>モーダルの内容</h2>
+          <button onClick={toggle}>閉じる</button>
+          <button onClick={() => setIsOpen(false)}>
+            明示的に閉じる
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### useFetch（API呼び出し）
+
+API呼び出しのロジックを共通化するフックです。
+
+```typescript
+// src/hooks/useFetch.ts
+import { useState, useEffect } from 'react';
+
+interface UseFetchResult<T> {
+  data: T | null;
+  isLoading: boolean;
+  error: Error | null;
+}
+
+export function useFetch<T>(url: string): UseFetchResult<T> {
+  const [data, setData] = useState<T | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        
+        const json = await response.json();
+        setData(json);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('不明なエラー'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [url]);
+  
+  return { data, isLoading, error };
+}
+```
+
+**使用例：**
+
+```typescript
+// src/components/UserProfile.tsx
+import { useFetch } from '@/hooks/useFetch';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export default function UserProfile({ userId }: { userId: string }) {
+  const { data: user, isLoading, error } = useFetch<User>(
+    `/api/users/${userId}`
+  );
+  
+  if (isLoading) return <p>読み込み中...</p>;
+  if (error) return <p>エラー: {error.message}</p>;
+  if (!user) return <p>ユーザーが見つかりません</p>;
+  
+  return (
+    <div>
+      <h2>{user.name}</h2>
+      <p>Email: {user.email}</p>
+    </div>
+  );
+}
+```
+
+---
+
+### useOnClickOutside（外側クリック検知）
+
+要素の外側をクリックしたときに処理を実行するフックです。
+
+```typescript
+// src/hooks/useOnClickOutside.ts
+import { useEffect, RefObject } from 'react';
+
+export function useOnClickOutside(
+  ref: RefObject<HTMLElement>,
+  handler: () => void
+) {
+  useEffect(() => {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      // refの要素内をクリックした場合は何もしない
+      if (!ref.current || ref.current.contains(event.target as Node)) {
+        return;
+      }
+      
+      // 外側をクリックした場合にhandlerを実行
+      handler();
+    };
+    
+    document.addEventListener('mousedown', listener);
+    document.addEventListener('touchstart', listener);
+    
+    return () => {
+      document.removeEventListener('mousedown', listener);
+      document.removeEventListener('touchstart', listener);
+    };
+  }, [ref, handler]);
+}
+```
+
+**使用例：ドロップダウンメニュー**
+
+```typescript
+// src/components/Dropdown.tsx
+import { useRef } from 'react';
+import { useToggle } from '@/hooks/useToggle';
+import { useOnClickOutside } from '@/hooks/useOnClickOutside';
+
+export default function Dropdown() {
+  const [isOpen, toggle, setIsOpen] = useToggle(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  
+  // 外側クリックで閉じる
+  useOnClickOutside(dropdownRef, () => setIsOpen(false));
+  
+  return (
+    <div ref={dropdownRef}>
+      <button onClick={toggle}>メニュー ▼</button>
+      
+      {isOpen && (
+        <ul className="dropdown-menu">
+          <li>プロフィール</li>
+          <li>設定</li>
+          <li>ログアウト</li>
+        </ul>
+      )}
+    </div>
+  );
+}
+```
+
+**初心者への補足：**
+> 💡 **カスタムフックのベストプラクティス：**
+> 
+> | 項目 | 推奨方法 | 理由 |
+> |------|---------|------|
+> | **命名** | `use`で始める | Reactの規則 |
+> | **ファイル配置** | `src/hooks/` ディレクトリ | 管理しやすい |
+> | **再利用性** | 汎用的に設計 | 複数箇所で使える |
+> | **型定義** | TypeScriptで型付け | 型安全性を保つ |
+> | **依存配列** | 必要な値のみ指定 | 無限ループを防ぐ |
+> 
+> **カスタムフックを作るタイミング：**
+> ```
+> ✅ 作るべき場面：
+> - 同じロジックを3回以上使う
+> - useEffectが複雑になってきた
+> - コンポーネントが100行を超えてきた
+> - テストしやすくしたい
+> 
+> ❌ 作らない方が良い場面：
+> - 1箇所でしか使わない
+> - ロジックが単純（useState1つだけなど）
+> - 過度な抽象化になる
+> ```
+
+---
+
+## 4.10 コンポーネント設計のベストプラクティス
 
 ### 単一責任の原則
 
@@ -6657,6 +7169,702 @@ function MyComponent({ userId }) {
 > - 最初から完璧なコードを書く必要はありません
 > - リファクタリングしながら改善していきましょう
 > - 動くコードを書いてから、改善するのが基本です
+
+---
+
+## 4.11 実践：高度なフォーム処理
+
+フォームは Web アプリケーションで**最も重要**な要素の一つです。ここでは実践的なフォーム処理を学びます。
+
+### 複数入力フォームの管理
+
+複数の入力項目を効率的に管理する方法です。
+
+```typescript
+// src/components/UserRegistrationForm.tsx
+'use client';
+
+import { useState } from 'react';
+
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  age: string;
+  gender: string;
+  terms: boolean;
+}
+
+interface FormErrors {
+  name?: string;
+  email?: string;
+  password?: string;
+  confirmPassword?: string;
+  age?: string;
+  terms?: string;
+}
+
+export default function UserRegistrationForm() {
+  // 1つのStateで全フォームデータを管理
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    age: '',
+    gender: 'male',
+    terms: false,
+  });
+  
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // 入力変更を一つの関数で処理
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.target;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' 
+        ? (e.target as HTMLInputElement).checked 
+        : value
+    }));
+    
+    // 入力時にエラーをクリア
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+  };
+  
+  // バリデーション
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {};
+    
+    // 名前チェック
+    if (!formData.name.trim()) {
+      newErrors.name = '名前を入力してください';
+    } else if (formData.name.length < 2) {
+      newErrors.name = '名前は2文字以上で入力してください';
+    }
+    
+    // メールアドレスチェック
+    if (!formData.email) {
+      newErrors.email = 'メールアドレスを入力してください';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = '有効なメールアドレスを入力してください';
+    }
+    
+    // パスワードチェック
+    if (!formData.password) {
+      newErrors.password = 'パスワードを入力してください';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'パスワードは8文字以上で入力してください';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = 'パスワードは大文字・小文字・数字を含めてください';
+    }
+    
+    // パスワード確認チェック
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'パスワードが一致しません';
+    }
+    
+    // 年齢チェック
+    const age = parseInt(formData.age);
+    if (!formData.age) {
+      newErrors.age = '年齢を入力してください';
+    } else if (isNaN(age) || age < 0 || age > 150) {
+      newErrors.age = '有効な年齢を入力してください';
+    }
+    
+    // 利用規約チェック
+    if (!formData.terms) {
+      newErrors.terms = '利用規約に同意してください';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  // 送信処理
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validate()) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          age: parseInt(formData.age),
+          gender: formData.gender,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('登録に失敗しました');
+      }
+      
+      alert('登録が完了しました！');
+      
+      // フォームをリセット
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: '',
+        age: '',
+        gender: 'male',
+        terms: false,
+      });
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '登録エラー');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <h2>ユーザー登録</h2>
+      
+      {/* 名前 */}
+      <div>
+        <label className="block">
+          名前 <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+          className={`border p-2 w-full ${errors.name ? 'border-red-500' : ''}`}
+        />
+        {errors.name && (
+          <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+        )}
+      </div>
+      
+      {/* メールアドレス */}
+      <div>
+        <label className="block">
+          メールアドレス <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          className={`border p-2 w-full ${errors.email ? 'border-red-500' : ''}`}
+        />
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+        )}
+      </div>
+      
+      {/* パスワード */}
+      <div>
+        <label className="block">
+          パスワード <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="password"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          className={`border p-2 w-full ${errors.password ? 'border-red-500' : ''}`}
+        />
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+        )}
+      </div>
+      
+      {/* パスワード確認 */}
+      <div>
+        <label className="block">
+          パスワード（確認） <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="password"
+          name="confirmPassword"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          className={`border p-2 w-full ${errors.confirmPassword ? 'border-red-500' : ''}`}
+        />
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+        )}
+      </div>
+      
+      {/* 年齢 */}
+      <div>
+        <label className="block">
+          年齢 <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="number"
+          name="age"
+          value={formData.age}
+          onChange={handleChange}
+          className={`border p-2 w-full ${errors.age ? 'border-red-500' : ''}`}
+        />
+        {errors.age && (
+          <p className="text-red-500 text-sm mt-1">{errors.age}</p>
+        )}
+      </div>
+      
+      {/* 性別 */}
+      <div>
+        <label className="block">性別</label>
+        <select
+          name="gender"
+          value={formData.gender}
+          onChange={handleChange}
+          className="border p-2 w-full"
+        >
+          <option value="male">男性</option>
+          <option value="female">女性</option>
+          <option value="other">その他</option>
+        </select>
+      </div>
+      
+      {/* 利用規約 */}
+      <div>
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            name="terms"
+            checked={formData.terms}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          利用規約に同意する <span className="text-red-500 ml-1">*</span>
+        </label>
+        {errors.terms && (
+          <p className="text-red-500 text-sm mt-1">{errors.terms}</p>
+        )}
+      </div>
+      
+      {/* 送信ボタン */}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+      >
+        {isSubmitting ? '送信中...' : '登録する'}
+      </button>
+    </form>
+  );
+}
+```
+
+**このコードの詳しい説明：**
+
+1. **1つのStateで管理**
+   ```typescript
+   const [formData, setFormData] = useState<FormData>({
+     name: '',
+     email: '',
+     // ... すべてのフィールド
+   });
+   ```
+   - 各フィールドごとにuseStateを作らない
+   - オブジェクトで一元管理
+
+2. **動的な入力処理**
+   ```typescript
+   const handleChange = (e) => {
+     const { name, value, type } = e.target;
+     setFormData(prev => ({
+       ...prev,
+       [name]: type === 'checkbox' ? e.target.checked : value
+     }));
+   };
+   ```
+   - `name`属性を使って動的に更新
+   - すべての入力に1つの関数で対応
+
+3. **詳細なバリデーション**
+   - 各フィールドごとに検証ルール
+   - 正規表現でメール形式チェック
+   - パスワードの強度チェック
+
+---
+
+### 複数ステップフォーム
+
+長いフォームを複数のステップに分割します。
+
+```typescript
+// src/components/MultiStepForm.tsx
+'use client';
+
+import { useState } from 'react';
+
+type Step = 1 | 2 | 3;
+
+interface FormData {
+  // ステップ1
+  name: string;
+  email: string;
+  // ステップ2
+  address: string;
+  city: string;
+  zipCode: string;
+  // ステップ3
+  cardNumber: string;
+  expiryDate: string;
+  cvv: string;
+}
+
+export default function MultiStepForm() {
+  const [currentStep, setCurrentStep] = useState<Step>(1);
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    address: '',
+    city: '',
+    zipCode: '',
+    cardNumber: '',
+    expiryDate: '',
+    cvv: '',
+  });
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+  
+  // ステップ1のバリデーション
+  const validateStep1 = (): boolean => {
+    return formData.name.trim() !== '' && 
+           /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email);
+  };
+  
+  // ステップ2のバリデーション
+  const validateStep2 = (): boolean => {
+    return formData.address.trim() !== '' &&
+           formData.city.trim() !== '' &&
+           /^\d{3}-\d{4}$/.test(formData.zipCode);
+  };
+  
+  // ステップ3のバリデーション
+  const validateStep3 = (): boolean => {
+    return /^\d{16}$/.test(formData.cardNumber.replace(/\s/g, '')) &&
+           /^\d{2}\/\d{2}$/.test(formData.expiryDate) &&
+           /^\d{3,4}$/.test(formData.cvv);
+  };
+  
+  // 次へ
+  const handleNext = () => {
+    if (currentStep === 1 && validateStep1()) {
+      setCurrentStep(2);
+    } else if (currentStep === 2 && validateStep2()) {
+      setCurrentStep(3);
+    }
+  };
+  
+  // 戻る
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep((currentStep - 1) as Step);
+    }
+  };
+  
+  // 送信
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateStep3()) {
+      alert('入力内容を確認してください');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      
+      if (response.ok) {
+        alert('注文が完了しました！');
+      }
+    } catch (error) {
+      alert('エラーが発生しました');
+    }
+  };
+  
+  // プログレスバー
+  const progress = (currentStep / 3) * 100;
+  
+  return (
+    <div className="max-w-md mx-auto">
+      {/* プログレスバー */}
+      <div className="mb-8">
+        <div className="flex justify-between mb-2">
+          <span className={currentStep >= 1 ? 'font-bold' : ''}>基本情報</span>
+          <span className={currentStep >= 2 ? 'font-bold' : ''}>住所</span>
+          <span className={currentStep >= 3 ? 'font-bold' : ''}>支払い</span>
+        </div>
+        <div className="w-full bg-gray-200 h-2 rounded">
+          <div 
+            className="bg-blue-500 h-2 rounded transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+      
+      <form onSubmit={handleSubmit}>
+        {/* ステップ1: 基本情報 */}
+        {currentStep === 1 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold">基本情報</h2>
+            
+            <div>
+              <label className="block mb-1">名前</label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="border p-2 w-full"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block mb-1">メールアドレス</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="border p-2 w-full"
+                required
+              />
+            </div>
+            
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={!validateStep1()}
+              className="bg-blue-500 text-white px-4 py-2 rounded w-full disabled:bg-gray-400"
+            >
+              次へ
+            </button>
+          </div>
+        )}
+        
+        {/* ステップ2: 住所 */}
+        {currentStep === 2 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold">住所情報</h2>
+            
+            <div>
+              <label className="block mb-1">住所</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                className="border p-2 w-full"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block mb-1">市区町村</label>
+              <input
+                type="text"
+                name="city"
+                value={formData.city}
+                onChange={handleChange}
+                className="border p-2 w-full"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block mb-1">郵便番号</label>
+              <input
+                type="text"
+                name="zipCode"
+                value={formData.zipCode}
+                onChange={handleChange}
+                placeholder="123-4567"
+                className="border p-2 w-full"
+                required
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="border px-4 py-2 rounded flex-1"
+              >
+                戻る
+              </button>
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={!validateStep2()}
+                className="bg-blue-500 text-white px-4 py-2 rounded flex-1 disabled:bg-gray-400"
+              >
+                次へ
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* ステップ3: 支払い */}
+        {currentStep === 3 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-bold">支払い情報</h2>
+            
+            <div>
+              <label className="block mb-1">カード番号</label>
+              <input
+                type="text"
+                name="cardNumber"
+                value={formData.cardNumber}
+                onChange={handleChange}
+                placeholder="1234 5678 9012 3456"
+                className="border p-2 w-full"
+                required
+              />
+            </div>
+            
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block mb-1">有効期限</label>
+                <input
+                  type="text"
+                  name="expiryDate"
+                  value={formData.expiryDate}
+                  onChange={handleChange}
+                  placeholder="MM/YY"
+                  className="border p-2 w-full"
+                  required
+                />
+              </div>
+              
+              <div className="flex-1">
+                <label className="block mb-1">CVV</label>
+                <input
+                  type="text"
+                  name="cvv"
+                  value={formData.cvv}
+                  onChange={handleChange}
+                  placeholder="123"
+                  className="border p-2 w-full"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleBack}
+                className="border px-4 py-2 rounded flex-1"
+              >
+                戻る
+              </button>
+              <button
+                type="submit"
+                disabled={!validateStep3()}
+                className="bg-green-500 text-white px-4 py-2 rounded flex-1 disabled:bg-gray-400"
+              >
+                注文を確定
+              </button>
+            </div>
+          </div>
+        )}
+      </form>
+    </div>
+  );
+}
+```
+
+**動作の流れ：**
+
+```mermaid
+stateDiagram-v2
+    [*] --> Step1: 開始
+    Step1 --> Step2: 次へ（バリデーション成功）
+    Step2 --> Step1: 戻る
+    Step2 --> Step3: 次へ（バリデーション成功）
+    Step3 --> Step2: 戻る
+    Step3 --> [*]: 送信（バリデーション成功）
+    
+    note right of Step1
+        基本情報
+        - 名前
+        - メールアドレス
+    end note
+    
+    note right of Step2
+        住所情報
+        - 住所
+        - 市区町村
+        - 郵便番号
+    end note
+    
+    note right of Step3
+        支払い情報
+        - カード番号
+        - 有効期限
+        - CVV
+    end note
+```
+
+**初心者への補足：**
+> 💡 **フォーム処理のベストプラクティス：**
+> 
+> | 項目 | 推奨方法 | 理由 |
+> |------|---------|------|
+> | **State管理** | 1つのオブジェクトで管理 | 管理しやすい |
+> | **バリデーション** | リアルタイム + 送信時 | UX向上 |
+> | **エラー表示** | フィールドごとに表示 | ユーザーが修正しやすい |
+> | **送信中の状態** | ボタンを無効化 | 二重送信防止 |
+> | **長いフォーム** | 複数ステップに分割 | 入力の負担軽減 |
+> 
+> **よくあるパターン：**
+> ```typescript
+> // ✅ 入力時にエラーをクリア
+> const handleChange = (e) => {
+>   setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+>   if (errors[e.target.name]) {
+>     setErrors(prev => ({ ...prev, [e.target.name]: undefined }));
+>   }
+> };
+> 
+> // ✅ 送信中は再送信を防ぐ
+> const handleSubmit = async (e) => {
+>   e.preventDefault();
+>   if (isSubmitting) return;
+>   setIsSubmitting(true);
+>   try {
+>     await submitForm();
+>   } finally {
+>     setIsSubmitting(false);
+>   }
+> };
+> ```
 
 ---
 
