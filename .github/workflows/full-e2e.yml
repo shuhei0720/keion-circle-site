@@ -1,6 +1,7 @@
-name: Full E2E Tests (All Browsers)
+name: Full E2E Tests (Critical Flows Only)
 
-# 週次で全ブラウザE2Eテストを実行
+# 週次でクリティカルなユーザーフローを全ブラウザでテスト
+# user-management と email-verification は除外（通常のE2Eで十分）
 on:
   schedule:
     # 毎週日曜日 午前2時（UTC）に実行
@@ -12,7 +13,7 @@ env:
 
 jobs:
   full-e2e-tests:
-    name: Full E2E Tests (5 Browsers)
+    name: Critical Flows (5 Browsers)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -38,7 +39,7 @@ jobs:
       RESEND_API_KEY: re_test_dummy_key_for_ci
       NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: test-anon-key
-      FULL_E2E_TEST: true # 全ブラウザでテスト実行
+      FULL_E2E_TEST: true # 全ブラウザでテスト実行（user-management/email-verification除外）
     steps:
       - uses: actions/checkout@v4
       
@@ -79,6 +80,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: playwright-report-full
+          name: playwright-report-critical
           path: playwright-report/
           retention-days: 30

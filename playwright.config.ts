@@ -9,6 +9,10 @@ export default defineConfig({
   reporter: 'html',
   timeout: 30000, // 各テストのタイムアウト: 30秒
   globalSetup: './e2e/global-setup.ts',
+  // Full E2E時はクリティカルなテストのみ実行（user-management, email-verificationを除外）
+  testIgnore: process.env.FULL_E2E_TEST
+    ? ['**/user-management.spec.ts', '**/email-verification.spec.ts']
+    : [],
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
