@@ -623,7 +623,7 @@ export default async function PostDetail({ params }) {
 
 ---
 
-## 5.4 動的ルート
+## 5.3 動的ルート
 
 動的ルートを使うと、1つのページで複数のURLに対応できます。
 
@@ -1363,7 +1363,7 @@ src/app/
 
 ---
 
-## 5.3 ページの作成
+## 5.4 ページの作成
 
 ### ステップ1：最初のページ
 
@@ -1617,76 +1617,6 @@ src/app/
 > - デフォルトエクスポート？
 > - 開発サーバーは起動中？
 > - URLは正しい？
-
----
-
-## 5.4 動的ルート
-
-### 基本の動的ルート
-
-ファイル名を `[パラメータ名]` にすると、動的ルートになります。
-
-**src/app/posts/[id]/page.tsx**：
-
-```tsx
-export default function PostDetail({ params }: { params: { id: string } }) {
-  return (
-    <div>
-      <h1>投稿詳細</h1>
-      <p>投稿ID: {params.id}</p>
-    </div>
-  );
-}
-```
-
-**アクセス例：**
-- `http://localhost:3000/posts/1` → `params.id` は `"1"`
-- `http://localhost:3000/posts/123` → `params.id` は `"123"`
-- `http://localhost:3000/posts/abc` → `params.id` は `"abc"`
-
-### 複数の動的セグメント
-
-**src/app/posts/[id]/comments/[commentId]/page.tsx**：
-
-```tsx
-export default function CommentDetail({
-  params
-}: {
-  params: { id: string; commentId: string }
-}) {
-  return (
-    <div>
-      <h1>コメント詳細</h1>
-      <p>投稿ID: {params.id}</p>
-      <p>コメントID: {params.commentId}</p>
-    </div>
-  );
-}
-```
-
-**アクセス例：**
-- `http://localhost:3000/posts/1/comments/5`
-  - `params.id` は `"1"`
-  - `params.commentId` は `"5"`
-
-### キャッチオールセグメント
-
-**src/app/docs/[...slug]/page.tsx**：
-
-```tsx
-export default function Docs({ params }: { params: { slug: string[] } }) {
-  return (
-    <div>
-      <h1>ドキュメント</h1>
-      <p>パス: {params.slug.join('/')}</p>
-    </div>
-  );
-}
-```
-
-**アクセス例：**
-- `http://localhost:3000/docs/guide` → `slug` は `["guide"]`
-- `http://localhost:3000/docs/guide/getting-started` → `slug` は `["guide", "getting-started"]`
 
 ---
 
@@ -5352,7 +5282,7 @@ export default function ImageGrid({ images }: { images: Image[] }) {
 
 ---
 
-## 5.12 環境変数
+## 5.13 環境変数
 
 ### なぜ環境変数？
 
@@ -5677,7 +5607,7 @@ console.log(env.DATABASE_URL);  // 型安全
 
 ---
 
-## 5.13 実践例：ブログアプリ
+## 5.14 実践例：ブログアプリ
 
 ここまでの知識を使って、簡単なブログアプリを作ってみましょう。
 
@@ -5936,7 +5866,7 @@ export async function POST(request: Request) {
 
 ---
 
-## 5.14 ミドルウェア（Middleware）
+## 5.15 ミドルウェア（Middleware）
 
 **ミドルウェア**は、リクエストが完了する**前**に実行されるコードです。認証チェック、リダイレクト、ログ記録などに使います。
 
