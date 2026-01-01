@@ -678,6 +678,13 @@ src/app/posts/
 
 **手順2：page.tsx でparamsを受け取る**
 
+> **📝 注意（Next.js 15以降）**
+> 
+> Next.js 15以降では、`params`が非同期（Promise）になる場合があります。
+> このため、以下のように`await`を使用することが推奨されます。
+
+**Next.js 14以前（同期的なparams）：**
+
 ```tsx
 // src/app/posts/[id]/page.tsx
 export default function PostDetail({
@@ -689,6 +696,26 @@ export default function PostDetail({
     <div>
       <h1>投稿詳細</h1>
       <p>投稿ID: {params.id}</p>
+    </div>
+  );
+}
+```
+
+**Next.js 15以降（推奨）：**
+
+```tsx
+// src/app/posts/[id]/page.tsx
+export default async function PostDetail({
+  params
+}: {
+  params: Promise<{ id: string }>  // Promiseになる
+}) {
+  const { id } = await params;  // awaitが必要
+  
+  return (
+    <div>
+      <h1>投稿詳細</h1>
+      <p>投稿ID: {id}</p>
     </div>
   );
 }
@@ -710,16 +737,18 @@ URL: /posts/あいう
 → params.id = "あいう"
 ```
 
-**実際の使用例：**
+**実際の使用例（Next.js 15以降）：**
 
 ```tsx
 export default async function PostDetail({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params;  // awaitで取得
+  
   // IDを使ってデータ取得
-  const response = await fetch(`http://localhost:3000/api/posts/${params.id}`);
+  const response = await fetch(`http://localhost:3000/api/posts/${id}`);
   const post = await response.json();
   
   return (
@@ -3283,34 +3312,42 @@ fetch3 (200ms) ┘
 
 ### キャッシュの制御
 
-Next.js は fetch の結果を**デフォルトでキャッシュ**します。
+Next.js のfetchには**キャッシュ機能**があります。
 
-**1. デフォルト（無限キャッシュ）：**
+> **📝 重要な変更（Next.js 15以降）**
+> 
+> Next.js 15からfetchのデフォルト動作が変更されました：
+> - **Next.js 14以前**: デフォルトで無限キャッシュ (`cache: 'force-cache'`)
+> - **Next.js 15以降**: デフォルトでキャッシュなし (`cache: 'no-store'`)
+> 
+> この変更により、**常に最新データを取得**する動作がデフォルトになりました。
+
+**1. デフォルト（Next.js 15以降: キャッシュなし）：**
 
 ```tsx
-// ビルド時に1回だけ fetch、その後はキャッシュを使う
+// Next.js 15以降: 毎回サーバーから最新データを取得
 const response = await fetch('http://localhost:3000/api/posts');
+const posts = await response.json();
+
+// 動作:
+// 毎回サーバーから最新データを取得（cache: 'no-store' がデフォルト）
+```
+
+**2. キャッシュする（無限キャッシュ）：**
+
+```tsx
+const response = await fetch('http://localhost:3000/api/posts', {
+  cache: 'force-cache'  // 明示的にキャッシュ
+});
 const posts = await response.json();
 
 // 動作:
 // 1回目: サーバーから取得 → キャッシュに保存
 // 2回目以降: キャッシュから返す（サーバーにリクエストしない）
-```
-
-**2. キャッシュしない（常に最新）：**
-
-```tsx
-const response = await fetch('http://localhost:3000/api/posts', {
-  cache: 'no-store'  // キャッシュしない
-});
-const posts = await response.json();
-
-// 動作:
-// 毎回サーバーから最新データを取得
 
 // 使う場面:
-// - リアルタイムデータ（株価、チャット等）
-// - ユーザー固有のデータ
+// - 静的コンテンツ（ほとんど更新されない）
+// - ビルド時のデータ
 ```
 
 **3. 時間指定で再検証（ISR）：**
@@ -3336,8 +3373,9 @@ const posts = await response.json();
 
 | オプション | 動作 | 使う場面 |
 |-----------|------|----------|
-| デフォルト | 無限キャッシュ | 静的コンテンツ |
-| `cache: 'no-store'` | 毎回fetch | リアルタイムデータ |
+| デフォルト (Next.js 15以降) | 毎回fetch | リアルタイムデータ |
+| `cache: 'force-cache'` | 無限キャッシュ | 静的コンテンツ |
+| `cache: 'no-store'` | 毎回fetch (明示的) | リアルタイムデータ |
 | `next: { revalidate: N }` | N秒ごとに更新 | 定期的に変わるデータ |
 
 ---
