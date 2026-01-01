@@ -11,18 +11,25 @@ export async function loginAction(formData: FormData) {
     return { error: 'メールアドレスとパスワードを入力してください' }
   }
 
-  const result = await signIn('credentials', {
-    email,
-    password,
-    redirect: false,
-  })
+  try {
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    })
 
-  if (result?.error) {
+    if (result?.error) {
+      return { 
+        error: 'メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。' 
+      }
+    }
+
+    // 認証成功時はサーバーサイドでリダイレクト
+    redirect('/')
+  } catch (error) {
+    // signIn()がthrowする場合もあるのでキャッチ
     return { 
       error: 'メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。' 
     }
   }
-
-  // 認証成功時はサーバーサイドでリダイレクト
-  redirect('/')
 }
