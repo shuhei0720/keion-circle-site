@@ -69,28 +69,21 @@ export default function SignIn() {
     setError('')
     setMessage('')
     
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: '/'
-      })
-      
-      if (result?.error) {
-        setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
-        return
-      }
-      
-      if (result?.ok) {
-        // 成功時：router.pushを使用してナビゲーション
-        router.refresh() // セッション状態を更新
-        router.push('/')
-        return
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      setError('ログイン中にエラーが発生しました。')
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: '/'
+    })
+    
+    if (result?.error) {
+      setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
+      return
+    }
+    
+    if (result?.ok) {
+      // 成功時：フルページリロードでリダイレクト（E2Eテスト互換性のため）
+      window.location.href = '/'
     }
   }
 
