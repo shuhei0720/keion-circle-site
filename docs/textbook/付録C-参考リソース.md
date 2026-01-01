@@ -71,17 +71,22 @@
   - スキーマの書き方
   - リレーション
 
-### NextAuth.js
+### NextAuth.js / Auth.js
 
-**公式サイト**: https://next-auth.js.org/
+**公式サイト**: https://authjs.dev/ (旧：https://next-auth.js.org/)
 
-- **ドキュメント**: https://next-auth.js.org/getting-started/introduction
+> **注意**: NextAuth.js v5以降は「Auth.js」として再ブランディングされています。
+
+- **ドキュメント**: https://authjs.dev/getting-started/introduction
   - 認証の設定
   - プロバイダー
   - セッション管理
 
-- **Providers**: https://next-auth.js.org/configuration/providers/oauth
+- **Providers**: https://authjs.dev/getting-started/providers
   - Google, GitHub など
+
+- **Migration Guide**: https://authjs.dev/getting-started/migrating-to-v5
+  - v4からv5への移行手順
 
 ### Tailwind CSS
 

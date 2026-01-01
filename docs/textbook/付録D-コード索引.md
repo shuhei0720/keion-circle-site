@@ -59,33 +59,42 @@ keion-circle-site/
 ```json
 {
   "name": "keion-circle-site",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma db push && prisma generate && next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "test": "jest --watch",
+    "test:unit": "jest --coverage",
+    "test:integration": "jest --testPathPatterns=api",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:ci": "jest --ci --coverage --maxWorkers=2"
   },
   "dependencies": {
-    "next": "^15.1.3",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "@prisma/client": "^6.1.0",
-    "next-auth": "^5.0.0-beta.25",
-    "bcryptjs": "^2.4.3",
-    "@supabase/supabase-js": "^2.47.10",
-    "react-youtube": "^10.1.0",
-    "lucide-react": "^0.460.0"
+    "next": "16.1.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "@prisma/client": "^5.22.0",
+    "next-auth": "^5.0.0-beta.30",
+    "bcryptjs": "^3.0.3",
+    "@supabase/supabase-js": "^2.89.0",
+    "lucide-react": "^0.562.0",
+    "prisma": "^5.22.0"
   },
   "devDependencies": {
     "typescript": "^5",
-    "@types/node": "^20",
+    "@types/node": "^22",
     "@types/react": "^19",
-    "tailwindcss": "^4.0.0",
-    "prisma": "^6.1.0"
+    "@playwright/test": "^1.49.0",
+    "jest": "^29.7.0",
+    "@testing-library/react": "^16.1.0",
+    "tailwindcss": "^4.0.0"
   }
 }
 ```

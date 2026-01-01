@@ -48,8 +48,9 @@ npm run dev -- -p 3001
 ### ビルドとデプロイ
 
 ```bash
-# 本番用ビルド
+# 本番用ビルド（Prisma Clientを生成してからビルド）
 npm run build
+# 実行内容: prisma generate && next build
 
 # 本番サーバーを起動
 npm run start
