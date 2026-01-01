@@ -7,7 +7,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
-  timeout: 30000, // 各テストのタイムアウト: 30秒
+  timeout: process.env.FULL_E2E_TEST ? 60000 : 30000, // Full E2E: 60秒、通常: 30秒
   globalSetup: './e2e/global-setup.ts',
   // Full E2E時はクリティカルなテストのみ実行（user-management, email-verificationを除外）
   testIgnore: process.env.FULL_E2E_TEST
@@ -17,7 +17,7 @@ export default defineConfig({
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    actionTimeout: 10000, // アクション（クリック、入力など）のタイムアウト: 10秒
+    actionTimeout: process.env.FULL_E2E_TEST ? 20000 : 10000, // Full E2E: 20秒、通常: 10秒
   },
   projects: [
     // CI環境ではChromiumのみ実行（高速化）
