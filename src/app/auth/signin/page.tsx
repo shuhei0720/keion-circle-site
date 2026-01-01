@@ -69,17 +69,19 @@ export default function SignIn() {
     setError('')
     setMessage('')
     
-    try {
-      await signIn('credentials', {
-        email,
-        password,
-        redirect: true,
-        callbackUrl: '/'
-      })
-      // redirect: trueの場合、成功時は自動的にリダイレクトされるためここには到達しない
-    } catch (error) {
-      // エラーの場合のみここに到達
+    const result = await signIn('credentials', {
+      email,
+      password,
+      redirect: false,
+      callbackUrl: '/'
+    })
+    
+    if (result?.error) {
       setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
+    } else if (result?.ok) {
+      // 成功時はwindow.location.hrefで強制的にページ遷移
+      // これによりブラウザの履歴に適切に記録され、E2Eテストでも検出可能
+      window.location.href = '/'
     }
   }
 
