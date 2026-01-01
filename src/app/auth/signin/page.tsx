@@ -72,22 +72,17 @@ export default function SignIn() {
     setMessage('')
     setLoading(true)
     
-    try {
-      const formData = new FormData()
-      formData.append('email', email)
-      formData.append('password', password)
-      
-      const result = await loginAction(formData)
-      
-      if (result?.error) {
-        setError(result.error)
-        setLoading(false)
-      }
-      // 成功時はサーバーサイドでリダイレクトされるのでここには到達しない
-    } catch (error) {
-      // redirect()はthrowするので何もしない（リダイレクトが実行される）
-      throw error
+    const formData = new FormData()
+    formData.append('email', email)
+    formData.append('password', password)
+    
+    const result = await loginAction(formData)
+    
+    if (result?.error) {
+      setError(result.error)
+      setLoading(false)
     }
+    // 成功時はサーバーサイドでリダイレクトされるのでここには到達しない
   }
 
   const handleGoogleSignIn = async () => {
