@@ -49,8 +49,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null
         }
 
-        // メールアドレス検証チェック（本番環境のみ）
-        if (process.env.NODE_ENV === 'production' && !user.emailVerified) {
+        // メールアドレス検証チェック
+        if (!user.emailVerified) {
           console.error('[NextAuth Credentials] Email not verified')
           return null
         }
