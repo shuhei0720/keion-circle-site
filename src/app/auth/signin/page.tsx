@@ -81,13 +81,12 @@ export default function SignIn() {
       
       if (result?.error) {
         setError(result.error)
+        setLoading(false)
       }
       // 成功時はサーバーサイドでリダイレクトされるのでここには到達しない
     } catch (error) {
-      // redirect()はthrowするので、これがキャッチされる
+      // redirect()はthrowするので何もしない（リダイレクトが実行される）
       throw error
-    } finally {
-      setLoading(false)
     }
   }
 
