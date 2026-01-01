@@ -880,6 +880,837 @@ export async function POST(
   Server: 最終的なセキュリティチェック
 ```
 
+### 31.1.3 投稿のいいね機能（src/app/api/posts/[id]/like/route.ts）
+
+いいね機能は、ユーザーが投稿に対して「いいね」をつけたり、取り消したりする機能です。
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+
+// Next.jsのランタイムを指定（Node.jsランタイムを使用）
+export const runtime = 'nodejs'
+
+/**
+ * POST: いいねを登録・削除（トグル動作）
+ * 
+ * @param req - リクエストオブジェクト
+ * @param params - URLパラメータ（投稿ID）
+ * @returns いいね登録結果またはエラー
+ */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック - ログインしているユーザーのみいいねできる
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }  // 401 Unauthorized: 認証が必要
+      );
+    }
+
+    // 2. URLパラメータから投稿IDを取得
+    // Next.js 15+では params が Promise になっている
+    const { id: postId } = await params;
+    
+    // 3. セッションからユーザーIDを取得
+    const userId = session.user.id!;  // ! は null でないことを保証
+
+    // 4. 既存のいいねを検索
+    // postId と userId の組み合わせで一意に特定
+    const existingLike = await prisma.postLike.findUnique({
+      where: {
+        postId_userId: {  // 複合ユニークキー
+          postId,
+          userId,
+        },
+      },
+    });
+
+    // 5. 既にいいねしている場合は削除（いいね取り消し）
+    if (existingLike) {
+      await prisma.postLike.delete({
+        where: {
+          id: existingLike.id,
+        },
+      });
+      
+      // liked: false を返してクライアント側で状態を更新
+      return NextResponse.json({
+        message: 'いいねを取り消しました',
+        liked: false
+      });
+    }
+
+    // 6. いいねを新規作成
+    const like = await prisma.postLike.create({
+      data: {
+        postId,   // 投稿ID
+        userId,   // ユーザーID
+      },
+    });
+
+    // liked: true を返してクライアント側で状態を更新
+    return NextResponse.json({
+      like,
+      liked: true
+    });
+    
+  } catch (error) {
+    // 7. エラーハンドリング
+    console.error('いいね登録エラー:', error);
+    return NextResponse.json(
+      { error: 'いいね登録に失敗しました' },
+      { status: 500 }  // 500 Internal Server Error
+    );
+  }
+}
+
+/**
+ * DELETE: いいねを削除
+ * 
+ * POSTメソッドでトグル動作を実装しているため、
+ * このメソッドは通常使用されないが、明示的な削除用に実装
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      );
+    }
+
+    // 2. パラメータ取得
+    const { id: postId } = await params;
+    const userId = session.user.id!;
+
+    // 3. いいねを削除
+    await prisma.postLike.delete({
+      where: {
+        postId_userId: {
+          postId,
+          userId,
+        },
+      },
+    });
+
+    return NextResponse.json({ message: 'いいねを削除しました' });
+    
+  } catch (error) {
+    console.error('いいね削除エラー:', error);
+    return NextResponse.json(
+      { error: 'いいね削除に失敗しました' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     いいね機能の設計パターン                      │
+└──────────────────────────────────────────────────┘
+
+【トグル動作の実装】
+  POSTメソッドで「いいね」と「いいね取り消し」の両方を処理
+  
+  1回目のPOST: いいねを作成 → liked: true を返す
+  2回目のPOST: いいねを削除 → liked: false を返す
+  
+  これにより、クライアント側は1つのボタンで切り替え可能
+
+
+【複合ユニークキー】
+  where: {
+    postId_userId: { postId, userId }
+  }
+  
+  → postId と userId の組み合わせで一意に特定
+  → 同じユーザーが同じ投稿に複数回いいねできないことを保証
+  → データベーススキーマで @@unique([postId, userId]) と定義
+
+
+【楽観的UI更新との連携】
+  return NextResponse.json({ liked: true })
+  
+  → クライアント側でこの値を受け取り、UIを即座に更新
+  → ユーザーは待ち時間なくフィードバックを得られる
+
+
+【エラーハンドリング】
+  - 401 Unauthorized: ログインしていない場合
+  - 500 Internal Server Error: データベースエラーなど
+  
+  クライアント側でエラーを検知して適切に処理
+```
+
+**クライアント側の実装例:**
+
+```typescript
+// クライアント側（Client Component）でのいいね処理
+const handleLike = async (postId: string) => {
+  // 1. 楽観的UI更新（先に画面を更新）
+  setLiked(!liked)
+  setLikeCount(liked ? likeCount - 1 : likeCount + 1)
+  
+  try {
+    // 2. APIリクエスト
+    const res = await fetch(`/api/posts/${postId}/like`, {
+      method: 'POST',
+    })
+    
+    const data = await res.json()
+    
+    // 3. サーバーからの応答で最終的な状態を確定
+    if (res.ok) {
+      setLiked(data.liked)
+      // いいね数を再取得して同期
+      await fetchPost()
+    } else {
+      // 4. エラー時は元に戻す
+      setLiked(liked)
+      setLikeCount(likeCount)
+      alert(data.error || 'いいね処理に失敗しました')
+    }
+  } catch (error) {
+    // 5. ネットワークエラー時も元に戻す
+    setLiked(liked)
+    setLikeCount(likeCount)
+    console.error('いいね処理エラー:', error)
+  }
+}
+```
+
+---
+
+### 31.1.4 投稿のコメント機能（src/app/api/posts/[id]/comments/route.ts）
+
+コメント機能は、ユーザーが投稿に対してコメントを投稿する機能です。
+
+```typescript
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
+
+/**
+ * POST: 投稿にコメントを投稿
+ * 
+ * @param request - リクエストオブジェクト（コメント内容を含む）
+ * @param params - URLパラメータ（投稿ID）
+ * @returns 作成されたコメント情報
+ */
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック - ログインユーザーのみコメント可能
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. リクエストボディからコメント内容を取得
+    const { content } = await request.json()
+    
+    // 3. URLパラメータから投稿IDを取得
+    const { id } = await params
+
+    // 4. バリデーション - コメント内容が空でないことを確認
+    if (!content || content.trim() === '') {
+      return NextResponse.json(
+        { error: 'コメント内容は必須です' },
+        { status: 400 }  // 400 Bad Request: クライアントエラー
+      )
+    }
+
+    // 5. コメントをデータベースに保存
+    const comment = await prisma.comment.create({
+      data: {
+        content: content.trim(),      // 前後の空白を削除
+        userId: session.user.id,      // コメント投稿者のID
+        postId: id                    // 投稿ID
+      },
+      // 6. コメント投稿者の情報も一緒に取得
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            avatarUrl: true  // アバター画像も取得
+          }
+        }
+      }
+    })
+
+    // 7. 201 Created ステータスで成功レスポンスを返す
+    return NextResponse.json(comment, { status: 201 })
+    
+  } catch (error) {
+    // 8. エラーハンドリング
+    console.error('コメント投稿エラー:', error)
+    return NextResponse.json(
+      { error: 'コメントの投稿に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     コメント機能の設計パターン                    │
+└──────────────────────────────────────────────────┘
+
+【バリデーション】
+  1. 空文字チェック: !content || content.trim() === ''
+     → 空白のみのコメントを防ぐ
+  
+  2. trim() で前後の空白を削除
+     → データベースに余計な空白を保存しない
+
+
+【include でユーザー情報を取得】
+  include: {
+    user: {
+      select: { id, name, email, avatarUrl }
+    }
+  }
+  
+  → コメントとコメント投稿者の情報を一度に取得
+  → クライアント側で別途ユーザー情報を取得する必要がない
+  → パフォーマンスの向上（N+1問題の回避）
+
+
+【HTTPステータスコード】
+  - 201 Created: リソースの作成成功
+  - 400 Bad Request: バリデーションエラー
+  - 401 Unauthorized: 認証が必要
+  - 500 Internal Server Error: サーバーエラー
+
+
+【リレーションの自動処理】
+  data: {
+    content,
+    userId,
+    postId
+  }
+  
+  → Prisma が自動的に Comment モデルの
+     user リレーションと post リレーションを設定
+```
+
+**コメント一覧の取得（GET）も実装可能:**
+
+```typescript
+/**
+ * GET: 投稿のコメント一覧を取得
+ * 
+ * この実装は省略されているが、実際のプロジェクトでは
+ * 投稿詳細ページでコメント一覧を表示するために使用される
+ */
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    
+    // コメントを新しい順に取得
+    const comments = await prisma.comment.findMany({
+      where: {
+        postId: id
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'  // 新しい順
+      }
+    })
+    
+    return NextResponse.json(comments)
+  } catch (error) {
+    console.error('コメント取得エラー:', error)
+    return NextResponse.json(
+      { error: 'コメントの取得に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+---
+
+### 31.1.5 投稿への参加登録（src/app/api/posts/[id]/participate/route.ts）
+
+参加登録機能は、ユーザーが活動報告に対して「参加した」または「参加しなかった」を記録する機能です。
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+
+/**
+ * POST: 投稿への参加/不参加を登録
+ * 
+ * @param req - リクエストオブジェクト（参加ステータスを含む）
+ * @param params - URLパラメータ（投稿ID）
+ * @returns 参加登録情報
+ */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      );
+    }
+
+    // 2. リクエストボディから参加ステータスを取得
+    const { status } = await req.json();
+    
+    // 3. バリデーション - ステータスが有効な値かチェック
+    if (!status || !['participating', 'not_participating'].includes(status)) {
+      return NextResponse.json(
+        { error: '無効なステータスです' },
+        { status: 400 }
+      );
+    }
+
+    // 4. パラメータ取得
+    const { id: postId } = await params;
+    const userId = session.user.id!;
+
+    // 5. 既存の参加情報を検索
+    const existingParticipation = await prisma.postParticipant.findUnique({
+      where: {
+        postId_userId: {  // 複合ユニークキー
+          postId,
+          userId,
+        },
+      },
+    });
+
+    // 6. 既存の参加情報がある場合は更新
+    if (existingParticipation) {
+      const participation = await prisma.postParticipant.update({
+        where: {
+          postId_userId: {
+            postId,
+            userId,
+          },
+        },
+        data: {
+          status,  // 'participating' or 'not_participating'
+        },
+      });
+      return NextResponse.json(participation);
+    }
+    
+    // 7. 新規参加情報を作成
+    const participation = await prisma.postParticipant.create({
+      data: {
+        postId,
+        userId,
+        status,
+      },
+    });
+    return NextResponse.json(participation);
+    
+  } catch (error) {
+    console.error('参加登録エラー:', error);
+    return NextResponse.json(
+      { error: '参加登録に失敗しました' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE: 参加をキャンセル（参加情報を削除）
+ * 
+ * @param req - リクエストオブジェクト
+ * @param params - URLパラメータ（投稿ID）
+ * @returns 削除完了メッセージ
+ */
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      );
+    }
+
+    // 2. パラメータ取得
+    const { id: postId } = await params;
+    const userId = session.user.id!;
+
+    // 3. 参加情報を削除
+    await prisma.postParticipant.delete({
+      where: {
+        postId_userId: {
+          postId,
+          userId,
+        },
+      },
+    });
+
+    return NextResponse.json({ message: '参加をキャンセルしました' });
+    
+  } catch (error) {
+    console.error('参加キャンセルエラー:', error);
+    return NextResponse.json(
+      { error: '参加キャンセルに失敗しました' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     参加登録機能の設計パターン                    │
+└──────────────────────────────────────────────────┘
+
+【参加ステータスの種類】
+  - 'participating': 参加した
+  - 'not_participating': 参加しなかった
+  
+  null: 未回答（参加情報がない状態）
+
+
+【Upsert パターン】
+  1. findUnique で既存の参加情報を検索
+  2. 存在する場合: update で更新
+  3. 存在しない場合: create で新規作成
+  
+  これにより、同じエンドポイントで新規登録と更新の両方に対応
+
+
+【複合ユニークキー】
+  postId_userId: { postId, userId }
+  
+  → 1人のユーザーは1つの投稿に対して1つの参加情報のみ持つ
+  → 重複登録を防ぐ
+
+
+【DELETE メソッドの役割】
+  参加情報を完全に削除
+  → 「参加」「不参加」の選択を取り消す
+  → null 状態（未回答）に戻す
+
+
+【使用例】
+  活動報告（練習、イベント、合宿など）に対して、
+  誰が参加したかを記録する
+  
+  → 参加者リストの表示
+  → 参加率の統計
+  → 次回の企画立案の参考データ
+```
+
+**クライアント側の実装例:**
+
+```typescript
+// クライアント側での参加登録処理
+const handleParticipate = async (postId: string, status: string) => {
+  try {
+    const res = await fetch(`/api/posts/${postId}/participate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),  // 'participating' or 'not_participating'
+    })
+    
+    if (res.ok) {
+      const data = await res.json()
+      alert('参加情報を更新しました')
+      // 投稿詳細を再取得して参加者リストを更新
+      await fetchPost()
+    } else {
+      const error = await res.json()
+      alert(error.error || '参加登録に失敗しました')
+    }
+  } catch (error) {
+    console.error('参加登録エラー:', error)
+    alert('参加登録に失敗しました')
+  }
+}
+
+// 参加キャンセル処理
+const handleCancelParticipation = async (postId: string) => {
+  if (!confirm('参加情報を削除しますか？')) return
+  
+  try {
+    const res = await fetch(`/api/posts/${postId}/participate`, {
+      method: 'DELETE',
+    })
+    
+    if (res.ok) {
+      alert('参加をキャンセルしました')
+      await fetchPost()
+    }
+  } catch (error) {
+    console.error('キャンセルエラー:', error)
+  }
+}
+```
+
+---
+
+### 31.1.6 画像アップロード（src/app/api/posts/image/route.ts）
+
+投稿に画像を添付するための画像アップロードAPIです。Base64エンコーディングを使用して画像をデータURIとして返します。
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
+
+// Next.jsのランタイムを指定
+export const runtime = 'nodejs'
+
+/**
+ * POST: 画像をアップロード
+ * 
+ * @param req - リクエストオブジェクト（FormDataで画像ファイルを含む）
+ * @returns Base64エンコードされた画像のデータURI
+ */
+export async function POST(req: NextRequest) {
+  try {
+    // 1. 認証チェック - ログインユーザーのみアップロード可能
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      );
+    }
+
+    // 2. FormData から画像ファイルを取得
+    const formData = await req.formData();
+    const file = formData.get('image') as File;
+
+    // 3. ファイルの存在チェック
+    if (!file) {
+      return NextResponse.json(
+        { error: 'ファイルが見つかりません' },
+        { status: 400 }
+      );
+    }
+
+    // 4. ファイルサイズチェック（2MB以下）
+    // Base64エンコードで保存するため、サイズを小さめに制限
+    if (file.size > 2 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'ファイルサイズは2MB以下にしてください' },
+        { status: 400 }
+      );
+    }
+
+    // 5. ファイルタイプチェック（画像のみ）
+    if (!file.type.startsWith('image/')) {
+      return NextResponse.json(
+        { error: '画像ファイルのみアップロード可能です' },
+        { status: 400 }
+      );
+    }
+
+    // 6. 画像をBase64に変換
+    const bytes = await file.arrayBuffer();        // ArrayBuffer として読み込み
+    const buffer = Buffer.from(bytes);             // Node.js の Buffer に変換
+    const base64 = buffer.toString('base64');      // Base64 文字列に変換
+    
+    // 7. データURIを作成
+    // data:[MIMEタイプ];base64,[Base64データ]
+    const imageUrl = `data:${file.type};base64,${base64}`;
+
+    // 8. データURIを返す
+    return NextResponse.json({ imageUrl });
+    
+  } catch (error) {
+    console.error('画像アップロードエラー:', error);
+    return NextResponse.json(
+      { error: 'アップロードに失敗しました' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     画像アップロードの設計パターン                │
+└──────────────────────────────────────────────────┘
+
+【Base64エンコーディング】
+  画像ファイル → ArrayBuffer → Buffer → Base64文字列
+  
+  利点:
+  - 外部ストレージ不要（データベースに直接保存）
+  - セットアップが簡単
+  
+  欠点:
+  - ファイルサイズが約1.33倍に増加
+  - 大きな画像には不向き
+  
+  → 2MB以下に制限して運用
+
+
+【データURI形式】
+  data:[MIMEタイプ];base64,[Base64データ]
+  
+  例: data:image/jpeg;base64,/9j/4AAQSkZJRg...
+  
+  → HTML の <img src="..."> に直接使用可能
+  → データベースの TEXT フィールドに保存可能
+
+
+【FormData の扱い】
+  FormData は multipart/form-data 形式のデータ
+  
+  クライアント側:
+    const formData = new FormData()
+    formData.append('image', file)
+  
+  サーバー側:
+    const formData = await req.formData()
+    const file = formData.get('image') as File
+
+
+【バリデーション】
+  1. ファイル存在チェック: !file
+  2. サイズチェック: file.size > 2MB
+  3. タイプチェック: !file.type.startsWith('image/')
+  
+  → セキュリティと パフォーマンスのため必須
+
+
+【代替案: Supabase Storage】
+  大規模アプリケーションでは Supabase Storage などの
+  外部ストレージサービスの使用を推奨:
+  
+  - 大きなファイルに対応
+  - CDN による高速配信
+  - 画像の自動最適化
+  
+  このプロジェクトでは、アバター画像には Supabase Storage を使用
+```
+
+**クライアント側の実装例:**
+
+```typescript
+// クライアント側での画像アップロード処理
+const handleImageUpload = async (file: File) => {
+  try {
+    // 1. FormData を作成
+    const formData = new FormData()
+    formData.append('image', file)
+    
+    // 2. API にアップロード
+    const res = await fetch('/api/posts/image', {
+      method: 'POST',
+      body: formData,  // Content-Type は自動的に設定される
+    })
+    
+    if (!res.ok) {
+      const error = await res.json()
+      throw new Error(error.error || 'アップロードに失敗しました')
+    }
+    
+    // 3. データURIを取得
+    const { imageUrl } = await res.json()
+    
+    // 4. 画像URLを状態に保存（投稿作成時に使用）
+    setImages([...images, imageUrl])
+    
+    return imageUrl
+    
+  } catch (error) {
+    console.error('画像アップロードエラー:', error)
+    alert('画像のアップロードに失敗しました')
+  }
+}
+
+// ファイル選択時の処理
+const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+  
+  // ファイルサイズをクライアント側でもチェック
+  if (file.size > 2 * 1024 * 1024) {
+    alert('ファイルサイズは2MB以下にしてください')
+    return
+  }
+  
+  // アップロード実行
+  handleImageUpload(file)
+}
+```
+
+**セキュリティ上の注意点:**
+
+```
+【重要】本番環境での画像アップロードの考慮事項
+
+1. ファイルタイプの検証
+   - MIME タイプだけでなく、実際のファイルヘッダーも検証
+   - 悪意のあるファイル（実行可能ファイルなど）の混入を防ぐ
+
+2. ファイルサイズの制限
+   - サーバーのメモリやストレージを圧迫しないよう制限
+   - DoS攻撃の防止
+
+3. ファイル名のサニタイズ
+   - 特殊文字やパストラバーサル（../など）の除去
+   - このAPIでは Base64 を使用するため不要
+
+4. レート制限
+   - 短時間に大量アップロードを防ぐ
+   - API レベルでのレート制限を実装
+
+5. ウイルススキャン
+   - 本番環境ではアップロードファイルのスキャンを推奨
+```
+
 ---
 
 ## 31.2 イベントAPIの詳細
@@ -1047,6 +1878,458 @@ export async function POST(request: NextRequest) {
       }
     });
   }
+```
+
+---
+
+### 31.2.1 イベントの更新と削除（src/app/api/events/[id]/route.ts）
+
+イベントの詳細な更新と削除を行うAPIです。管理者のみが実行可能です。
+
+```typescript
+import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
+import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
+import { isAdmin } from '@/lib/permissions'
+
+/**
+ * PUT: イベントを更新
+ * 
+ * @param request - リクエストオブジェクト（更新内容を含む）
+ * @param params - URLパラメータ（イベントID）
+ * @returns 更新されたイベント情報
+ */
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. 管理者権限チェック
+    const admin = await isAdmin()
+    if (!admin) {
+      return NextResponse.json(
+        { error: '管理者権限が必要です' },
+        { status: 403 }  // 403 Forbidden: 権限不足
+      )
+    }
+
+    // 3. リクエストボディから更新内容を取得
+    const {
+      title,        // イベントタイトル
+      content,      // 説明
+      date,         // 開催日時
+      locationName, // 場所名
+      locationUrl,  // 地図URL
+      songs         // 課題曲リスト
+    } = await request.json()
+    
+    // 4. URLパラメータからイベントIDを取得
+    const { id } = await params
+
+    // 5. イベントをデータベースで更新
+    const event = await prisma.event.update({
+      where: { id },
+      data: {
+        title,
+        content,
+        // date が指定されている場合は Date オブジェクトに変換
+        date: date ? new Date(date) : null,
+        // 空文字列の場合は null に変換
+        locationName: locationName || null,
+        locationUrl: locationUrl || null,
+        // songs 配列が存在する場合は JSON 文字列に変換
+        songs: songs && songs.length > 0 ? JSON.stringify(songs) : null
+      },
+      // 6. 関連データも含めて取得（リレーション）
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'  // コメントは古い順
+          }
+        }
+      }
+    })
+
+    // 7. イベント一覧ページのキャッシュを無効化
+    // Next.jsのキャッシュシステムで、更新後に最新データを表示
+    revalidatePath('/events')
+
+    return NextResponse.json(event)
+    
+  } catch (error) {
+    console.error('イベント更新エラー:', error)
+    return NextResponse.json(
+      { error: 'イベントの更新に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE: イベントを削除
+ * 
+ * @param request - リクエストオブジェクト
+ * @param params - URLパラメータ（イベントID）
+ * @returns 削除成功メッセージ
+ */
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. 管理者権限チェック
+    const admin = await isAdmin()
+    if (!admin) {
+      return NextResponse.json(
+        { error: '管理者権限が必要です' },
+        { status: 403 }
+      )
+    }
+
+    // 3. URLパラメータからイベントIDを取得
+    const { id } = await params
+
+    // 4. イベントを削除
+    // Prismaのカスケード削除で関連する参加者・コメントも自動削除
+    await prisma.event.delete({
+      where: { id }
+    })
+
+    // 5. イベント一覧ページのキャッシュを無効化
+    revalidatePath('/events')
+
+    return NextResponse.json({ success: true })
+    
+  } catch (error) {
+    console.error('イベント削除エラー:', error)
+    return NextResponse.json(
+      { error: 'イベントの削除に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     イベント更新・削除の設計パターン              │
+└──────────────────────────────────────────────────┘
+
+【管理者権限チェック】
+  const admin = await isAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
+  }
+  
+  → 管理者のみがイベントを編集・削除できる
+  → 403 Forbidden: 認証はされているが権限がない
+
+
+【NULL 値の扱い】
+  locationName: locationName || null
+  songs: songs && songs.length > 0 ? JSON.stringify(songs) : null
+  
+  → 空文字列や空配列を null に変換
+  → データベースで NULL として保存
+  → 「未設定」と「空文字列」を明確に区別
+
+
+【JSONデータの保存】
+  songs: JSON.stringify(songs)
+  
+  → 課題曲の配列を JSON 文字列に変換して保存
+  → Prisma スキーマでは String 型として定義
+  → 取得時は JSON.parse() でオブジェクトに戻す
+
+
+【キャッシュの無効化】
+  revalidatePath('/events')
+  
+  → Next.js の Server Component キャッシュを無効化
+  → イベント一覧ページで最新データを表示
+  → revalidatePath は更新・削除後に必須
+
+
+【カスケード削除】
+  Prisma スキーマで onDelete: Cascade を設定している場合:
+  
+  model Event {
+    participants EventParticipant[] @relation(onDelete: Cascade)
+    comments     Comment[]           @relation(onDelete: Cascade)
+  }
+  
+  → イベント削除時、関連する参加者・コメントも自動削除
+  → 孤立データ（orphaned records）を防ぐ
+```
+
+---
+
+### 31.2.2 イベントへの参加登録（src/app/api/events/[id]/participate/route.ts）
+
+ユーザーがイベントへの参加を登録・解除するAPIです。
+
+```typescript
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
+
+/**
+ * POST: イベントへの参加を登録/解除（トグル動作）
+ * 
+ * @param request - リクエストオブジェクト
+ * @param params - URLパラメータ（イベントID）
+ * @returns 参加登録状態
+ */
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. URLパラメータからイベントIDを取得
+    const { id } = await params
+
+    // 3. 既存の参加情報を確認
+    const existing = await prisma.eventParticipant.findUnique({
+      where: {
+        eventId_userId: {
+          eventId: id,
+          userId: session.user.id
+        }
+      }
+    })
+
+    // 4. 既に参加している場合は参加を解除
+    if (existing) {
+      await prisma.eventParticipant.delete({
+        where: {
+          id: existing.id
+        }
+      })
+      // participating: false を返してクライアントで状態更新
+      return NextResponse.json({ participating: false })
+    }
+    
+    // 5. 参加登録を作成
+    await prisma.eventParticipant.create({
+      data: {
+        eventId: id,
+        userId: session.user.id
+      }
+    })
+    
+    // participating: true を返してクライアントで状態更新
+    return NextResponse.json({ participating: true })
+    
+  } catch (error) {
+    console.error('参加登録エラー:', error)
+    return NextResponse.json(
+      { error: '参加登録に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     イベント参加の設計パターン                    │
+└──────────────────────────────────────────────────┘
+
+【トグル動作】
+  existing の有無で動作を切り替え:
+  
+  - existing がある: 参加解除（DELETE）
+  - existing がない: 参加登録（CREATE）
+  
+  → 1つのエンドポイントで登録・解除の両方を処理
+  → クライアント側は同じAPIを呼ぶだけ
+
+
+【投稿の参加機能との違い】
+  投稿: status フィールドで 'participating' / 'not_participating' を管理
+  イベント: レコードの有無で参加/不参加を表現
+  
+  → イベントではシンプルな参加/不参加のみ
+  → 投稿では「参加しなかった」という明示的な記録が必要
+
+
+【楽観的UI更新】
+  { participating: true/false } を返す
+  
+  → クライアント側で即座にボタンの表示を切り替え
+  → UXの向上
+```
+
+---
+
+### 31.2.3 イベントへのコメント（src/app/api/events/[id]/comments/route.ts）
+
+イベントにコメントを投稿するAPIです。投稿のコメントAPIと同じ構造です。
+
+```typescript
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
+
+/**
+ * POST: イベントにコメントを投稿
+ * 
+ * @param request - リクエストオブジェクト（コメント内容を含む）
+ * @param params - URLパラメータ（イベントID）
+ * @returns 作成されたコメント情報
+ */
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. リクエストボディからコメント内容を取得
+    const { content } = await request.json()
+    
+    // 3. URLパラメータからイベントIDを取得
+    const { id } = await params
+
+    // 4. バリデーション - コメント内容が空でないことを確認
+    if (!content || content.trim() === '') {
+      return NextResponse.json(
+        { error: 'コメント内容は必須です' },
+        { status: 400 }
+      )
+    }
+
+    // 5. コメントをデータベースに保存
+    const comment = await prisma.comment.create({
+      data: {
+        content: content.trim(),
+        userId: session.user.id,
+        eventId: id  // 投稿IDではなくイベントIDを指定
+      },
+      // 6. コメント投稿者の情報も取得
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    // 7. 201 Created で成功レスポンス
+    return NextResponse.json(comment, { status: 201 })
+    
+  } catch (error) {
+    console.error('コメント投稿エラー:', error)
+    return NextResponse.json(
+      { error: 'コメントの投稿に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     コメント機能の共通設計                        │
+└──────────────────────────────────────────────────┘
+
+【ポリモーフィックリレーション】
+  Comment モデルは複数のリソースにコメント可能:
+  
+  model Comment {
+    postId              String?  // 投稿へのコメント
+    eventId             String?  // イベントへのコメント
+    activityScheduleId  String?  // 活動スケジュールへのコメント
+  }
+  
+  → postId, eventId, activityScheduleId のうち
+     いずれか1つだけが設定される
+  → 1つの Comment テーブルで複数のリソースに対応
+
+
+【コメント投稿のベストプラクティス】
+  1. 認証必須: session チェック
+  2. バリデーション: 空文字・trim チェック
+  3. include でユーザー情報取得: N+1問題の回避
+  4. 201 Created ステータス: リソース作成を明示
+
+
+【クライアント側での表示】
+  comment.user.name を使ってコメント投稿者名を表示
+  comment.createdAt を使って投稿日時を表示
+  
+  → include により追加のAPIリクエスト不要
 ```
 
 ---
@@ -1220,6 +2503,360 @@ export async function DELETE(
 
 ---
 
+### 31.3.1 活動スケジュールの更新と削除（src/app/api/activity-schedules/[id]/route.ts）
+
+活動スケジュールの詳細な更新と削除を行うAPIです。イベントAPIとほぼ同じ構造です。
+
+```typescript
+import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
+import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
+import { isAdmin } from '@/lib/permissions'
+
+/**
+ * PUT: 活動スケジュールを更新
+ * 
+ * @param request - リクエストオブジェクト（更新内容を含む）
+ * @param params - URLパラメータ（活動スケジュールID）
+ * @returns 更新された活動スケジュール情報
+ */
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. 管理者権限チェック
+    const admin = await isAdmin()
+    if (!admin) {
+      return NextResponse.json(
+        { error: '管理者権限が必要です' },
+        { status: 403 }
+      )
+    }
+
+    // 3. リクエストボディから更新内容を取得
+    const { title, content, date } = await request.json()
+    
+    // 4. URLパラメータから活動スケジュールIDを取得
+    const { id } = await params
+
+    // 5. 活動スケジュールをデータベースで更新
+    const schedule = await prisma.activitySchedule.update({
+      where: { id },
+      data: {
+        title,
+        content,
+        date: date ? new Date(date) : null
+      },
+      // 6. 関連データも含めて取得
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        participants: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          }
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true
+              }
+            }
+          },
+          orderBy: {
+            createdAt: 'asc'
+          }
+        }
+      }
+    })
+
+    // 7. 活動スケジュール一覧ページのキャッシュを無効化
+    revalidatePath('/activity-schedules')
+
+    return NextResponse.json(schedule)
+    
+  } catch (error) {
+    console.error('活動スケジュール更新エラー:', error)
+    return NextResponse.json(
+      { error: '活動スケジュールの更新に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * DELETE: 活動スケジュールを削除
+ * 
+ * @param request - リクエストオブジェクト
+ * @param params - URLパラメータ（活動スケジュールID）
+ * @returns 削除成功メッセージ
+ */
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. 管理者権限チェック
+    const admin = await isAdmin()
+    if (!admin) {
+      return NextResponse.json(
+        { error: '管理者権限が必要です' },
+        { status: 403 }
+      )
+    }
+
+    // 3. URLパラメータから活動スケジュールIDを取得
+    const { id } = await params
+
+    // 4. 活動スケジュールを削除
+    await prisma.activitySchedule.delete({
+      where: { id }
+    })
+
+    // 5. 活動スケジュール一覧ページのキャッシュを無効化
+    revalidatePath('/activity-schedules')
+
+    return NextResponse.json({ success: true })
+    
+  } catch (error) {
+    console.error('活動スケジュール削除エラー:', error)
+    return NextResponse.json(
+      { error: '活動スケジュールの削除に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+---
+
+### 31.3.2 活動スケジュールへの参加登録（src/app/api/activity-schedules/[id]/participate/route.ts）
+
+ユーザーが活動スケジュールへの参加を登録・解除するAPIです。イベントの参加機能と同じ構造です。
+
+```typescript
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
+
+/**
+ * POST: 活動スケジュールへの参加を登録/解除（トグル動作）
+ * 
+ * @param request - リクエストオブジェクト
+ * @param params - URLパラメータ（活動スケジュールID）
+ * @returns 参加登録状態
+ */
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. URLパラメータから活動スケジュールIDを取得
+    const { id } = await params
+
+    // 3. 既存の参加情報を確認
+    const existing = await prisma.activityParticipant.findUnique({
+      where: {
+        activityScheduleId_userId: {
+          activityScheduleId: id,
+          userId: session.user.id
+        }
+      }
+    })
+
+    // 4. 既に参加している場合は参加を解除
+    if (existing) {
+      await prisma.activityParticipant.delete({
+        where: {
+          id: existing.id
+        }
+      })
+      return NextResponse.json({ participating: false })
+    }
+    
+    // 5. 参加登録を作成
+    await prisma.activityParticipant.create({
+      data: {
+        activityScheduleId: id,
+        userId: session.user.id
+      }
+    })
+    
+    return NextResponse.json({ participating: true })
+    
+  } catch (error) {
+    console.error('参加登録エラー:', error)
+    return NextResponse.json(
+      { error: '参加登録に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+---
+
+### 31.3.3 活動スケジュールへのコメント（src/app/api/activity-schedules/[id]/comments/route.ts）
+
+活動スケジュールにコメントを投稿するAPIです。
+
+```typescript
+import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
+
+/**
+ * POST: 活動スケジュールにコメントを投稿
+ * 
+ * @param request - リクエストオブジェクト（コメント内容を含む）
+ * @param params - URLパラメータ（活動スケジュールID）
+ * @returns 作成されたコメント情報
+ */
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. リクエストボディからコメント内容を取得
+    const { content } = await request.json()
+    
+    // 3. URLパラメータから活動スケジュールIDを取得
+    const { id } = await params
+
+    // 4. バリデーション - コメント内容が空でないことを確認
+    if (!content || content.trim() === '') {
+      return NextResponse.json(
+        { error: 'コメント内容は必須です' },
+        { status: 400 }
+      )
+    }
+
+    // 5. コメントをデータベースに保存
+    const comment = await prisma.comment.create({
+      data: {
+        content: content.trim(),
+        userId: session.user.id,
+        activityScheduleId: id  // 活動スケジュールIDを指定
+      },
+      // 6. コメント投稿者の情報も取得
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    })
+
+    // 7. 201 Created で成功レスポンス
+    return NextResponse.json(comment, { status: 201 })
+    
+  } catch (error) {
+    console.error('コメント投稿エラー:', error)
+    return NextResponse.json(
+      { error: 'コメントの投稿に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     活動スケジュールAPIの設計パターン             │
+└──────────────────────────────────────────────────┘
+
+【イベントAPIとの共通性】
+  活動スケジュールAPIとイベントAPIは非常に類似:
+  
+  - 更新・削除は管理者のみ
+  - 参加登録はトグル動作
+  - コメントは全ユーザーが投稿可能
+  - 同じバリデーションとエラーハンドリング
+
+
+【リレーションフィールドの違い】
+  Comment モデルのフィールド:
+  - postId: 投稿へのコメント
+  - eventId: イベントへのコメント
+  - activityScheduleId: 活動スケジュールへのコメント
+  
+  → いずれか1つだけが設定される（ポリモーフィック）
+
+
+【revalidatePath の使用】
+  revalidatePath('/activity-schedules')
+  
+  → 活動スケジュール一覧ページのキャッシュを無効化
+  → 更新・削除後に最新データを表示
+
+
+【複合ユニークキーの命名規則】
+  - イベント: eventId_userId
+  - 活動スケジュール: activityScheduleId_userId
+  
+  → Prisma スキーマの @@unique 定義に対応
+  → findUnique, delete などで使用
+```
+
+---
+
 ## 31.4 ユーザーAPIの詳細
 
 ### src/app/api/users/route.ts
@@ -1366,6 +3003,538 @@ export async function METHOD(request: NextRequest) {
   } catch (error) {
     // 6. エラーハンドリング
     return NextResponse.json({ error: '...' }, { status: 500 });
+  }
+}
+```
+
+---
+
+### 31.4.1 ユーザーの削除と役割変更（src/app/api/users/[id]/route.ts）
+
+サイト管理者がユーザーを削除したり、役割を変更したりするAPIです。
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { auth } from '@/lib/auth'
+import { isSiteAdmin } from '@/lib/permissions'
+
+/**
+ * DELETE: ユーザーを削除（サイト管理者のみ）
+ * 
+ * @param request - リクエストオブジェクト
+ * @param params - URLパラメータ（ユーザーID）
+ * @returns 削除成功メッセージ
+ */
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // 2. サイト管理者権限チェック
+    const siteAdmin = await isSiteAdmin()
+    if (!siteAdmin) {
+      return NextResponse.json(
+        { error: 'ユーザーの削除はサイト管理者のみ可能です' },
+        { status: 403 }
+      )
+    }
+
+    // 3. URLパラメータからユーザーIDを取得
+    const { id } = await params
+
+    // 4. 自分自身を削除しようとしていないかチェック
+    if (id === session.user.id) {
+      return NextResponse.json(
+        { error: '自分自身を削除することはできません' },
+        { status: 400 }
+      )
+    }
+
+    // 5. ユーザーの存在確認
+    const user = await prisma.user.findUnique({
+      where: { id }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'ユーザーが見つかりません' },
+        { status: 404 }
+      )
+    }
+
+    // 6. ユーザーを削除
+    // Cascade設定により、関連するデータも自動削除される
+    await prisma.user.delete({
+      where: { id }
+    })
+
+    return NextResponse.json({ success: true })
+    
+  } catch (error) {
+    console.error('Failed to delete user:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete user' },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * PATCH: ユーザー役割を更新（サイト管理者のみ）
+ * 
+ * @param request - リクエストオブジェクト（新しい役割を含む）
+ * @param params - URLパラメータ（ユーザーID）
+ * @returns 更新されたユーザー情報
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // 2. サイト管理者権限チェック
+    const siteAdmin = await isSiteAdmin()
+    if (!siteAdmin) {
+      return NextResponse.json(
+        { error: 'ユーザー役割の変更はサイト管理者のみ可能です' },
+        { status: 403 }
+      )
+    }
+
+    // 3. URLパラメータからユーザーIDを取得
+    const { id } = await params
+    
+    // 4. リクエストボディから新しい役割を取得
+    let body
+    try {
+      body = await request.json()
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'リクエストボディが不正です' },
+        { status: 400 }
+      )
+    }
+    
+    const { role } = body
+
+    // 5. 役割のバリデーション
+    if (!role || !['site_admin', 'admin', 'member'].includes(role)) {
+      return NextResponse.json(
+        { error: '無効な役割です' },
+        { status: 400 }
+      )
+    }
+
+    // 6. 自分自身の役割を変更しようとしていないかチェック
+    if (id === session.user.id) {
+      return NextResponse.json(
+        { error: '自分自身の役割を変更することはできません' },
+        { status: 400 }
+      )
+    }
+
+    // 7. ユーザーの役割を更新
+    const user = await prisma.user.update({
+      where: { id },
+      data: { role },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true
+      }
+    })
+
+    return NextResponse.json(user)
+    
+  } catch (error) {
+    console.error('Failed to update user:', error)
+    return NextResponse.json(
+      { error: 'Failed to update user' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     ユーザー管理の設計パターン                    │
+└──────────────────────────────────────────────────┘
+
+【サイト管理者権限】
+  const siteAdmin = await isSiteAdmin()
+  
+  → site_admin 役割のみがユーザー削除・役割変更可能
+  → admin 役割ではユーザー管理は不可
+  → 権限の階層: site_admin > admin > member
+
+
+【自己削除・自己変更の防止】
+  if (id === session.user.id) {
+    return NextResponse.json({ error: '...' }, { status: 400 })
+  }
+  
+  → 自分自身を削除できない
+  → 自分自身の役割を変更できない
+  → アカウントロックを防ぐための安全機構
+
+
+【役割のバリデーション】
+  ['site_admin', 'admin', 'member'].includes(role)
+  
+  → 許可された役割のみ受け付ける
+  → 不正な役割名を拒否
+
+
+【HTTPメソッドの使い分け】
+  DELETE: リソースの削除
+  PATCH: リソースの部分更新（役割のみ変更）
+  
+  → PUTではなくPATCHを使用（部分更新）
+  → RESTful APIの原則に従う
+
+
+【カスケード削除】
+  await prisma.user.delete({ where: { id } })
+  
+  → Prismaスキーマの設定により、関連データも削除:
+    - 投稿
+    - イベント
+    - コメント
+    - いいね
+    - 参加情報
+  
+  → 孤立データを防ぐ
+```
+
+---
+
+### 31.4.2 プロフィール更新（src/app/api/profile/route.ts）
+
+ログイン中のユーザーが自分のプロフィールを更新するAPIです。
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+
+/**
+ * PATCH: プロフィールを更新
+ * 
+ * @param req - リクエストオブジェクト（更新内容を含む）
+ * @returns 更新されたユーザー情報
+ */
+export async function PATCH(req: NextRequest) {
+  try {
+    // 1. 認証チェック
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 2. リクエストボディから更新内容を取得
+    const body = await req.json()
+    const { name, bio, instruments } = body
+
+    // 3. ユーザー情報を更新
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: { 
+        name,
+        // bio と instruments は空文字列の場合 null に変換
+        bio: bio || null,
+        instruments: instruments || null
+      },
+    })
+
+    // 4. 更新されたユーザー情報を返す
+    return NextResponse.json(updatedUser)
+    
+  } catch (error) {
+    console.error('Profile update error:', error)
+    return NextResponse.json(
+      { error: '更新に失敗しました' },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     プロフィール更新の設計パターン                │
+└──────────────────────────────────────────────────┘
+
+【自己更新のみ】
+  where: { id: session.user.id }
+  
+  → ログイン中のユーザー自身のみ更新可能
+  → 他のユーザーのプロフィールは更新できない
+
+
+【空値の扱い】
+  bio: bio || null
+  instruments: instruments || null
+  
+  → 空文字列を null に変換
+  → データベースで「未設定」を明確に表現
+  → 空文字列と null を区別
+
+
+【バリデーションなし】
+  この実装ではバリデーションがない
+  
+  改善案:
+  - name の長さ制限（1～50文字など）
+  - bio の長さ制限（最大500文字など）
+  - instruments の形式チェック
+```
+
+---
+
+### 31.4.3 アバター画像アップロード（src/app/api/profile/avatar/route.ts）
+
+ユーザーのアバター画像をSupabase StorageにアップロードするAPIです。
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
+
+/**
+ * POST: アバター画像をアップロード
+ * 
+ * @param req - リクエストオブジェクト（FormDataで画像ファイルを含む）
+ * @returns アバター画像の公開URL
+ */
+export async function POST(req: NextRequest) {
+  try {
+    // 1. Supabaseクライアントの設定チェック
+    if (!supabase) {
+      console.error('Supabase client is not configured')
+      return NextResponse.json({ 
+        error: 'Supabase Storageが設定されていません。環境変数を確認してください。',
+        details: 'NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are required'
+      }, { status: 500 })
+    }
+
+    // 2. 認証チェック
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: '認証が必要です' },
+        { status: 401 }
+      )
+    }
+
+    // 3. FormData から画像ファイルを取得
+    const formData = await req.formData()
+    const file = formData.get('avatar') as File
+
+    // 4. ファイルが空の場合はアバターを削除
+    if (!file || file.size === 0) {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { avatarUrl: null },
+      })
+      return NextResponse.json({ avatarUrl: null })
+    }
+
+    // 5. ファイル形式のバリデーション
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif']
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase()
+    const isImageType = file.type.startsWith('image/') || file.type === ''
+    const isImageExtension = allowedExtensions.includes(fileExtension)
+    
+    // MIMEタイプと拡張子の両方でチェック
+    if (!isImageType && !isImageExtension) {
+      console.log('File validation failed:', { type: file.type, name: file.name, extension: fileExtension })
+      return NextResponse.json(
+        { error: '画像ファイルのみアップロード可能です（.jpg, .png, .gif, .webp等）' },
+        { status: 400 }
+      )
+    }
+
+    // 6. ファイルサイズのチェック（5MB以下）
+    if (file.size > 5 * 1024 * 1024) {
+      return NextResponse.json(
+        { error: 'ファイルサイズは5MB以下にしてください' },
+        { status: 400 }
+      )
+    }
+
+    // 7. ファイルをバイト配列に変換
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    // 8. ファイル名を生成（ユーザーIDとタイムスタンプ）
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${session.user.id}_${Date.now()}.${fileExt}`
+    const filePath = `avatars/${fileName}`
+
+    // 9. Supabase Storageにアップロード
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('avatars')  // バケット名
+      .upload(filePath, buffer, {
+        contentType: file.type,
+        upsert: true,  // 既存ファイルがあれば上書き
+      })
+
+    // 10. アップロードエラーの処理
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError)
+      return NextResponse.json(
+        { error: 'アップロードに失敗しました: ' + uploadError.message },
+        { status: 500 }
+      )
+    }
+
+    // 11. 公開URLを取得
+    const { data: urlData } = supabase.storage
+      .from('avatars')
+      .getPublicUrl(filePath)
+
+    const avatarUrl = urlData.publicUrl
+
+    // 12. データベースのavatarUrlを更新
+    const updatedUser = await prisma.user.update({
+      where: { id: session.user.id },
+      data: { avatarUrl },
+    })
+
+    // 13. 新しいアバターURLを返す
+    return NextResponse.json({ avatarUrl: updatedUser.avatarUrl })
+    
+  } catch (error) {
+    console.error('Avatar upload error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json({ 
+      error: 'アップロードに失敗しました',
+      details: errorMessage
+    }, { status: 500 })
+  }
+}
+```
+
+**実装のポイント:**
+
+```
+┌──────────────────────────────────────────────────┐
+│     アバター画像アップロードの設計パターン        │
+└──────────────────────────────────────────────────┘
+
+【Supabase Storage の使用】
+  投稿画像: Base64エンコード（小さい画像用）
+  アバター画像: Supabase Storage（大きい画像用）
+  
+  理由:
+  - アバターは5MBまで対応
+  - CDNによる高速配信
+  - 画像の最適化・リサイズ機能
+  - データベースの容量節約
+
+
+【ファイル名の生成】
+  `${session.user.id}_${Date.now()}.${fileExt}`
+  
+  → ユーザーIDとタイムスタンプで一意性を保証
+  → ファイル名の衝突を防ぐ
+  → 古いアバターを自動的に上書き（upsert: true）
+
+
+【厳密なバリデーション】
+  1. MIMEタイプのチェック: file.type.startsWith('image/')
+  2. 拡張子のチェック: allowedExtensions.includes(fileExtension)
+  3. サイズチェック: file.size > 5MB
+  
+  → 両方のチェックで安全性向上
+  → セキュリティの防御層を複数設ける
+
+
+【空ファイルの処理】
+  if (!file || file.size === 0) {
+    // アバターを削除
+    data: { avatarUrl: null }
+  }
+  
+  → ユーザーがアバターを削除したい場合の処理
+  → デフォルトアバターに戻す
+
+
+【エラーハンドリングの詳細化】
+  return NextResponse.json({ 
+    error: 'アップロードに失敗しました',
+    details: errorMessage  // 詳細なエラー情報
+  })
+  
+  → デバッグに役立つ詳細情報を提供
+  → 本番環境では details を非表示にすることを推奨
+
+
+【Supabase バケットの設定】
+  バケット名: 'avatars'
+  公開設定: Public（誰でも読み取り可能）
+  
+  Supabaseダッシュボードで設定:
+  1. Storage → Create bucket
+  2. Bucket name: avatars
+  3. Public bucket: ON
+```
+
+**クライアント側の実装例:**
+
+```typescript
+// アバター画像アップロード処理
+const handleAvatarUpload = async (file: File) => {
+  try {
+    const formData = new FormData()
+    formData.append('avatar', file)
+    
+    const res = await fetch('/api/profile/avatar', {
+      method: 'POST',
+      body: formData,
+    })
+    
+    if (!res.ok) {
+      const error = await res.json()
+      throw new Error(error.error || 'アップロードに失敗しました')
+    }
+    
+    const { avatarUrl } = await res.json()
+    setAvatarUrl(avatarUrl)  // 状態を更新
+    alert('アバターを更新しました')
+    
+  } catch (error) {
+    console.error('Avatar upload error:', error)
+    alert('アバターのアップロードに失敗しました')
   }
 }
 ```
