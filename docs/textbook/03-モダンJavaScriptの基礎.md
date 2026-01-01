@@ -2662,6 +2662,14 @@ Rest（まとめる）
 > ```
 
 ---
+
+### 練習問題：スプレッド構文
+
+```javascript
+const user = { name: '田中', age: 25 };
+
+// プロパティの更新
+const updated = { ...user, age: 26 };
 console.log(updated);  // { name: '田中', age: 26 }
 
 // プロパティの追加
@@ -4021,6 +4029,11 @@ const step3 = step2.map(user => user.name);
 
 ---
 
+### filter
+
+条件に一致する要素のみを抽出：
+
+```javascript
 // オブジェクトの配列
 const users = [
   { id: 1, name: '田中', age: 25 },
