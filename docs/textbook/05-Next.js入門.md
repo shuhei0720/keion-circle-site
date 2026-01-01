@@ -5936,6 +5936,652 @@ export async function POST(request: Request) {
 
 ---
 
+## 5.14 ミドルウェア（Middleware）
+
+**ミドルウェア**は、リクエストが完了する**前**に実行されるコードです。認証チェック、リダイレクト、ログ記録などに使います。
+
+### ミドルウェアとは？
+
+```mermaid
+sequenceDiagram
+    participant U as ユーザー
+    participant M as Middleware
+    participant P as ページ
+    participant API as API
+    
+    U->>M: /dashboard にアクセス
+    
+    alt 認証済み
+        M->>P: リクエストを通す
+        P->>U: ダッシュボード表示
+    else 未認証
+        M->>U: /login へリダイレクト
+    end
+    
+    Note over M,P: ページの前に実行される
+```
+
+**ミドルウェアの用途：**
+- 🔐 **認証チェック**：ログインしていないユーザーをリダイレクト
+- 🌐 **国際化（i18n）**：言語に応じてリダイレクト
+- 📝 **ログ記録**：アクセスログを記録
+- 🛡️ **セキュリティ**：ヘッダーの設定、CSRF対策
+- 🚦 **リダイレクト**：URL の正規化、メンテナンスモード
+
+---
+
+### 基本的な使い方
+
+ミドルウェアは**プロジェクトのルート**に `middleware.ts` ファイルを作成します。
+
+```
+プロジェクトルート/
+├── src/
+│   ├── app/
+│   │   └── ...
+│   └── middleware.ts    ← ここに配置
+├── package.json
+└── ...
+```
+
+**最もシンプルなミドルウェア：**
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  console.log('Middleware実行:', request.nextUrl.pathname);
+  
+  // リクエストを通す
+  return NextResponse.next();
+}
+
+// どのパスで実行するか指定
+export const config = {
+  matcher: [
+    '/dashboard/:path*',  // /dashboard 配下すべて
+    '/api/:path*',        // /api 配下すべて
+  ]
+};
+```
+
+**このコードの詳しい説明：**
+
+1. **middleware関数**
+   - すべてのリクエストがページに到達する前に実行
+   - `NextRequest` オブジェクトを受け取る
+   - `NextResponse` を返す必要がある
+
+2. **config.matcher**
+   - ミドルウェアを実行するパスを指定
+   - ワイルドカード `*` が使える
+   - 配列で複数指定可能
+
+---
+
+### 認証チェック
+
+最も一般的な使用例：ログインしていないユーザーをリダイレクトします。
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  // クッキーから認証トークンを取得
+  const token = request.cookies.get('auth-token')?.value;
+  
+  // ログインページへのアクセスは常に許可
+  if (request.nextUrl.pathname.startsWith('/login')) {
+    return NextResponse.next();
+  }
+  
+  // トークンがない場合はログインページへリダイレクト
+  if (!token) {
+    const loginUrl = new URL('/login', request.url);
+    loginUrl.searchParams.set('from', request.nextUrl.pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+  
+  // 認証済みの場合はそのまま通す
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/settings/:path*',
+  ]
+};
+```
+
+**動作の流れ：**
+
+```mermaid
+flowchart TD
+    A[ユーザーが /dashboard にアクセス] --> B{Middleware実行}
+    B --> C{auth-token<br/>クッキーあり?}
+    C -->|あり| D[NextResponse.next<br/>ページ表示]
+    C -->|なし| E[NextResponse.redirect<br/>/login?from=/dashboard]
+    E --> F[ログイン画面表示]
+    
+    style A fill:#e1f5ff
+    style C fill:#fff4e1
+    style D fill:#d4edda
+    style E fill:#f8d7da
+    style F fill:#fff3cd
+```
+
+**このコードの詳しい説明：**
+
+1. **クッキーの取得**
+   ```typescript
+   const token = request.cookies.get('auth-token')?.value;
+   ```
+   - `request.cookies.get()` でクッキーを取得
+   - `?.value` でOptional Chainingを使用
+
+2. **リダイレクトURLの作成**
+   ```typescript
+   const loginUrl = new URL('/login', request.url);
+   loginUrl.searchParams.set('from', request.nextUrl.pathname);
+   ```
+   - 元のURLを `from` パラメータに設定
+   - ログイン後に元のページに戻れる
+
+3. **NextResponse.redirect()**
+   - 別のURLにリダイレクト
+   - ブラウザは自動的に遷移
+
+---
+
+### NextAuth.js との組み合わせ
+
+実際のプロジェクトでは NextAuth.js と組み合わせて使います。
+
+```typescript
+// src/middleware.ts
+import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
+
+export default withAuth(
+  function middleware(req) {
+    // 認証済みユーザーの追加チェック
+    const token = req.nextauth.token;
+    
+    // 管理者ページは管理者のみアクセス可能
+    if (req.nextUrl.pathname.startsWith('/admin')) {
+      if (token?.role !== 'admin') {
+        return NextResponse.redirect(new URL('/unauthorized', req.url));
+      }
+    }
+    
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => {
+        // tokenがあればアクセス許可
+        return !!token;
+      },
+    },
+  }
+);
+
+export const config = {
+  matcher: [
+    '/dashboard/:path*',
+    '/admin/:path*',
+    '/profile/:path*',
+  ]
+};
+```
+
+**このコードの詳しい説明：**
+
+1. **withAuth() 関数**
+   - NextAuth.jsが提供するヘルパー
+   - 自動的に認証チェックを行う
+
+2. **token.role でロールベースアクセス制御**
+   - 管理者のみアクセス可能なページを保護
+   - 権限がない場合は `/unauthorized` にリダイレクト
+
+3. **authorized コールバック**
+   - `true` を返すとアクセス許可
+   - `false` を返すとログインページへリダイレクト
+
+---
+
+### レスポンスヘッダーの設定
+
+セキュリティヘッダーやCORSヘッダーを設定できます。
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+  
+  // セキュリティヘッダーを追加
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set(
+    'Strict-Transport-Security',
+    'max-age=31536000; includeSubDomains'
+  );
+  
+  // CORSヘッダー（API用）
+  if (request.nextUrl.pathname.startsWith('/api')) {
+    response.headers.set('Access-Control-Allow-Origin', '*');
+    response.headers.set(
+      'Access-Control-Allow-Methods',
+      'GET, POST, PUT, DELETE, OPTIONS'
+    );
+  }
+  
+  return response;
+}
+
+export const config = {
+  matcher: '/:path*',  // すべてのパス
+};
+```
+
+**セキュリティヘッダーの説明：**
+
+| ヘッダー | 効果 |
+|---------|------|
+| **X-Frame-Options** | クリックジャッキング攻撃を防ぐ |
+| **X-Content-Type-Options** | MIMEタイプスニッフィングを防ぐ |
+| **X-XSS-Protection** | XSS攻撃を防ぐ（古いブラウザ用） |
+| **Strict-Transport-Security** | HTTPS接続を強制 |
+| **Access-Control-Allow-Origin** | CORS設定 |
+
+---
+
+### パスの書き換え（Rewrite）
+
+URLを変えずに別のページを表示します。
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const hostname = request.headers.get('host') || '';
+  
+  // サブドメインに応じて異なるページを表示
+  if (hostname.startsWith('blog.')) {
+    // blog.example.com → /blog にrewrite
+    return NextResponse.rewrite(new URL('/blog', request.url));
+  }
+  
+  if (hostname.startsWith('shop.')) {
+    // shop.example.com → /shop にrewrite
+    return NextResponse.rewrite(new URL('/shop', request.url));
+  }
+  
+  // A/Bテスト
+  const bucket = Math.random();
+  if (request.nextUrl.pathname === '/') {
+    if (bucket < 0.5) {
+      // 50%のユーザーに新しいホームページを表示
+      return NextResponse.rewrite(new URL('/home-new', request.url));
+    }
+  }
+  
+  return NextResponse.next();
+}
+```
+
+**rewrite と redirect の違い：**
+
+```mermaid
+graph LR
+    subgraph "redirect（リダイレクト）"
+    A1[ユーザー] -->|/old にアクセス| B1[Middleware]
+    B1 -->|redirect| C1[ブラウザ]
+    C1 -->|/new に再リクエスト| D1[ページ]
+    end
+    
+    subgraph "rewrite（書き換え）"
+    A2[ユーザー] -->|/old にアクセス| B2[Middleware]
+    B2 -->|内部で /new 表示| C2[ページ]
+    C2 -->|URLは /old のまま| A2
+    end
+    
+    style B1 fill:#f8d7da
+    style B2 fill:#d4edda
+```
+
+**使い分け：**
+- **redirect**：URLを変えたい（SEO、ログイン画面など）
+- **rewrite**：URLは変えずに内容だけ変える（A/Bテスト、サブドメイン分岐）
+
+---
+
+### クッキーの操作
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+  
+  // クッキーを取得
+  const theme = request.cookies.get('theme')?.value;
+  
+  // クッキーがない場合はデフォルト値を設定
+  if (!theme) {
+    response.cookies.set('theme', 'light', {
+      path: '/',
+      maxAge: 60 * 60 * 24 * 365,  // 1年
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+  }
+  
+  // 訪問回数をカウント
+  const visitCount = parseInt(request.cookies.get('visit-count')?.value || '0');
+  response.cookies.set('visit-count', String(visitCount + 1), {
+    path: '/',
+    maxAge: 60 * 60 * 24 * 365,
+  });
+  
+  return response;
+}
+
+export const config = {
+  matcher: '/:path*',
+};
+```
+
+**クッキーオプションの説明：**
+
+| オプション | 説明 |
+|-----------|------|
+| **path** | クッキーが有効なパス |
+| **maxAge** | 有効期限（秒） |
+| **httpOnly** | JavaScriptからアクセス不可（XSS対策） |
+| **secure** | HTTPS接続でのみ送信 |
+| **sameSite** | CSRF攻撃対策（'lax', 'strict', 'none'） |
+
+---
+
+### 国際化（i18n）の例
+
+言語に応じてリダイレクトします。
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+const locales = ['en', 'ja', 'zh'];
+const defaultLocale = 'ja';
+
+export function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // パスに言語プレフィックスがあるかチェック
+  const pathnameHasLocale = locales.some(
+    locale => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+  );
+  
+  if (pathnameHasLocale) {
+    return NextResponse.next();
+  }
+  
+  // Accept-Languageヘッダーから言語を取得
+  const acceptLanguage = request.headers.get('accept-language') || '';
+  let locale = defaultLocale;
+  
+  // ユーザーの優先言語を判定
+  for (const l of locales) {
+    if (acceptLanguage.includes(l)) {
+      locale = l;
+      break;
+    }
+  }
+  
+  // 言語プレフィックスを追加してリダイレクト
+  const url = new URL(`/${locale}${pathname}`, request.url);
+  return NextResponse.redirect(url);
+}
+
+export const config = {
+  matcher: [
+    // 静的ファイル、APIルートを除外
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ]
+};
+```
+
+**動作例：**
+```
+ユーザーアクセス: https://example.com/about
+Accept-Language: ja,en;q=0.9
+    ↓
+Middleware判定: 日本語優先
+    ↓
+リダイレクト: https://example.com/ja/about
+```
+
+---
+
+### メンテナンスモード
+
+メンテナンス中は特定のページのみ表示します。
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+const MAINTENANCE_MODE = process.env.MAINTENANCE_MODE === 'true';
+const ALLOWED_IPS = ['123.45.67.89'];  // 管理者のIPアドレス
+
+export function middleware(request: NextRequest) {
+  // メンテナンスページへのアクセスは常に許可
+  if (request.nextUrl.pathname === '/maintenance') {
+    return NextResponse.next();
+  }
+  
+  if (MAINTENANCE_MODE) {
+    // 管理者のIPアドレスは除外
+    const ip = request.headers.get('x-forwarded-for') || 
+               request.headers.get('x-real-ip') || '';
+    
+    if (!ALLOWED_IPS.some(allowedIp => ip.includes(allowedIp))) {
+      return NextResponse.rewrite(new URL('/maintenance', request.url));
+    }
+  }
+  
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: '/:path*',
+};
+```
+
+**環境変数での制御：**
+```env
+# .env.local
+MAINTENANCE_MODE=false  # メンテナンスモードOFF
+
+# メンテナンス時
+MAINTENANCE_MODE=true   # メンテナンスモードON
+```
+
+---
+
+### ログ記録
+
+アクセスログを記録します。
+
+```typescript
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const start = Date.now();
+  
+  // リクエスト情報をログ
+  console.log({
+    method: request.method,
+    url: request.url,
+    userAgent: request.headers.get('user-agent'),
+    referer: request.headers.get('referer'),
+    ip: request.headers.get('x-forwarded-for'),
+    timestamp: new Date().toISOString(),
+  });
+  
+  const response = NextResponse.next();
+  
+  // レスポンス時間をログ
+  const duration = Date.now() - start;
+  console.log(`${request.method} ${request.nextUrl.pathname} - ${duration}ms`);
+  
+  // カスタムヘッダーに処理時間を追加
+  response.headers.set('X-Response-Time', `${duration}ms`);
+  
+  return response;
+}
+
+export const config = {
+  matcher: '/:path*',
+};
+```
+
+---
+
+### 実用例：認証 + ロール制御
+
+実際のプロジェクトで使える完全な例です。
+
+```typescript
+// src/middleware.ts
+import { withAuth } from 'next-auth/middleware';
+import { NextResponse } from 'next/server';
+
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token;
+    const path = req.nextUrl.pathname;
+    
+    // 公開ページは常にアクセス可能
+    const publicPaths = ['/', '/about', '/contact', '/blog'];
+    if (publicPaths.some(p => path === p)) {
+      return NextResponse.next();
+    }
+    
+    // 管理者専用ページ
+    if (path.startsWith('/admin')) {
+      if (token?.role !== 'admin') {
+        return NextResponse.redirect(new URL('/unauthorized', req.url));
+      }
+    }
+    
+    // メンバー専用ページ
+    if (path.startsWith('/members')) {
+      if (!token || token.role === 'guest') {
+        return NextResponse.redirect(new URL('/login', req.url));
+      }
+    }
+    
+    // ログ記録
+    console.log({
+      user: token?.email,
+      role: token?.role,
+      path,
+      timestamp: new Date().toISOString(),
+    });
+    
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token, req }) => {
+        const path = req.nextUrl.pathname;
+        
+        // 公開ページは認証不要
+        const publicPaths = ['/', '/about', '/contact', '/blog'];
+        if (publicPaths.some(p => path === p)) {
+          return true;
+        }
+        
+        // その他は認証必須
+        return !!token;
+      },
+    },
+  }
+);
+
+export const config = {
+  matcher: [
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ]
+};
+```
+
+**初心者への補足：**
+> 💡 **ミドルウェアのベストプラクティス：**
+> 
+> | 項目 | 推奨方法 | 理由 |
+> |------|---------|------|
+> | **配置場所** | `src/middleware.ts` | プロジェクトルート |
+> | **実行範囲** | `config.matcher`で限定 | パフォーマンス向上 |
+> | **処理内容** | 軽量に保つ | すべてのリクエストで実行される |
+> | **エラー処理** | try-catchで囲む | エラーでアプリ全体が止まる |
+> | **ログ** | 本番では最小限に | ログが多いと遅くなる |
+> 
+> **よくある使用例：**
+> ```typescript
+> // ✅ 認証チェック（最も一般的）
+> if (!token) {
+>   return NextResponse.redirect(new URL('/login', request.url));
+> }
+> 
+> // ✅ ロール制御
+> if (path.startsWith('/admin') && role !== 'admin') {
+>   return NextResponse.redirect(new URL('/unauthorized', request.url));
+> }
+> 
+> // ✅ セキュリティヘッダー
+> response.headers.set('X-Frame-Options', 'DENY');
+> 
+> // ❌ 重い処理（データベースアクセスなど）
+> // ミドルウェアでは避ける
+> ```
+> 
+> **matcher のパターン：**
+> ```typescript
+> export const config = {
+>   matcher: [
+>     '/dashboard/:path*',       // /dashboard 配下すべて
+>     '/api/:path*',             // /api 配下すべて
+>     '/((?!api|_next).*)',      // api と _next 以外すべて
+>     '/',                       // トップページのみ
+>   ]
+> };
+> ```
+
+---
+
 ## まとめ
 
 この章では、**Next.js の基礎から実践**まで学びました。
