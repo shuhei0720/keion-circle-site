@@ -83,10 +83,10 @@ export default function SignIn() {
       }
       
       if (result?.ok) {
-        // 成功時：NextAuthのセッション更新を待つため、少し遅延させてからリダイレクト
-        // window.location.replace()を使用して履歴を置き換え
-        await new Promise(resolve => setTimeout(resolve, 100))
-        window.location.replace('/')
+        // 成功時：router.pushを使用してナビゲーション
+        router.refresh() // セッション状態を更新
+        router.push('/')
+        return
       }
     } catch (error) {
       console.error('Login error:', error)
