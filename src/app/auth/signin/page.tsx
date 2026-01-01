@@ -4,6 +4,7 @@ import { signIn } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { loginAction } from './actions'
 
 export default function SignIn() {
   const [email, setEmail] = useState('')
@@ -11,6 +12,7 @@ export default function SignIn() {
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [resendLoading, setResendLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -68,22 +70,24 @@ export default function SignIn() {
     e.preventDefault()
     setError('')
     setMessage('')
+    setLoading(true)
     
-    const result = await signIn('credentials', {
-      email,
-      password,
-      redirect: false,
-      callbackUrl: '/'
-    })
-    
-    if (result?.error) {
-      setError('メールアドレスまたはパスワードが正しくありません。メールアドレスが確認されていない可能性があります。')
-      return
-    }
-    
-    if (result?.ok) {
-      // 成功時：フルページリロードでリダイレクト（E2Eテスト互換性のため）
-      window.location.href = '/'
+    try {
+      const formData = new FormData()
+      formData.append('email', email)
+      formData.append('password', password)
+      
+      const result = await loginAction(formData)
+      
+      if (result?.error) {
+        setError(result.error)
+      }
+      // 成功時はサーバーサイドでリダイレクトされるのでここには到達しない
+    } catch (error) {
+      // redirect()はthrowするので、これがキャッチされる
+      throw error
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -147,9 +151,10 @@ export default function SignIn() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm sm:text-base touch-manipulation"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2.5 sm:py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold text-sm sm:text-base touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            ログイン
+            {loading ? 'ログイン中...' : 'ログイン'}
           </button>
         </form>
 
