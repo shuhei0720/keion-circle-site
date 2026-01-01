@@ -7904,6 +7904,820 @@ input.addEventListener('input', (event) => {
 
 ---
 
+### ブラウザオブジェクトとタイマー
+
+JavaScriptはブラウザ上で動作するため、ブラウザが提供する便利な機能（オブジェクト）を使うことができます。ここでは、特に重要な**タイマー機能**と**window・documentオブジェクト**について学びます。
+
+#### windowオブジェクト（ブラウザの窓全体）
+
+`window`は**ブラウザウィンドウ全体**を表すオブジェクトで、JavaScriptのグローバルオブジェクトです。
+
+```javascript
+// ウィンドウのサイズ取得
+console.log('幅:', window.innerWidth);   // 例: 1920
+console.log('高さ:', window.innerHeight); // 例: 1080
+
+// スクロール位置
+console.log('横スクロール:', window.scrollX);
+console.log('縦スクロール:', window.scrollY);
+
+// URL情報
+console.log('現在のURL:', window.location.href);
+console.log('ホスト:', window.location.host);
+console.log('パス:', window.location.pathname);
+
+// ページをリロード
+// window.location.reload();
+
+// 別のページに移動
+// window.location.href = 'https://example.com';
+
+// 新しいタブで開く
+// window.open('https://example.com', '_blank');
+
+// アラート表示
+window.alert('警告メッセージ');
+
+// 確認ダイアログ
+const result = window.confirm('削除しますか？');
+if (result) {
+  console.log('OKがクリックされた');
+} else {
+  console.log('キャンセルがクリックされた');
+}
+
+// 入力ダイアログ
+const name = window.prompt('お名前を入力してください');
+console.log('入力された名前:', name);
+```
+
+**このコードの詳しい説明：**
+
+1. **ウィンドウサイズの取得と監視**
+   ```javascript
+   // 現在のウィンドウサイズを表示
+   function showWindowSize() {
+     const width = window.innerWidth;
+     const height = window.innerHeight;
+     console.log(`ウィンドウサイズ: ${width} x ${height}`);
+   }
+   
+   showWindowSize();  // 最初に表示
+   
+   // ウィンドウサイズが変わったら再表示
+   window.addEventListener('resize', () => {
+     showWindowSize();
+   });
+   
+   // 実用例: レスポンシブ対応
+   function checkScreenSize() {
+     if (window.innerWidth < 768) {
+       console.log('モバイル表示');
+       // モバイル用の処理
+     } else {
+       console.log('デスクトップ表示');
+       // デスクトップ用の処理
+     }
+   }
+   
+   window.addEventListener('resize', checkScreenSize);
+   checkScreenSize();  // 初期チェック
+   ```
+
+2. **スクロール位置の取得と制御**
+   ```javascript
+   // 現在のスクロール位置
+   console.log('縦:', window.scrollY);
+   console.log('横:', window.scrollX);
+   
+   // ページトップに戻るボタン
+   const topButton = document.querySelector('#toTop');
+   
+   topButton.addEventListener('click', () => {
+     // なめらかにトップへ
+     window.scrollTo({
+       top: 0,
+       behavior: 'smooth'
+     });
+   });
+   
+   // スクロールで特定の位置へ
+   window.scrollTo({
+     top: 500,      // 500px下へ
+     left: 0,
+     behavior: 'smooth'
+   });
+   
+   // スクロール量で表示を変える
+   window.addEventListener('scroll', () => {
+     if (window.scrollY > 100) {
+       topButton.style.display = 'block';  // 100px以上スクロールしたら表示
+     } else {
+       topButton.style.display = 'none';
+     }
+   });
+   ```
+
+3. **location（URL操作）**
+   ```javascript
+   // 現在のURL情報
+   console.log('完全なURL:', window.location.href);
+   // 例: https://example.com/page?id=123#section
+   
+   console.log('プロトコル:', window.location.protocol);   // https:
+   console.log('ホスト:', window.location.host);           // example.com
+   console.log('パス:', window.location.pathname);         // /page
+   console.log('クエリ:', window.location.search);         // ?id=123
+   console.log('ハッシュ:', window.location.hash);         // #section
+   
+   // ページ遷移（履歴に残る）
+   window.location.href = '/other-page';
+   
+   // ページ遷移（履歴に残らない）
+   window.location.replace('/other-page');
+   
+   // ページをリロード
+   window.location.reload();
+   
+   // 実用例: クエリパラメータの取得
+   const params = new URLSearchParams(window.location.search);
+   const id = params.get('id');  // ?id=123 から 123 を取得
+   console.log('ID:', id);
+   ```
+
+4. **ダイアログ（alert, confirm, prompt）**
+   ```javascript
+   // alert: メッセージを表示
+   alert('保存しました！');
+   
+   // confirm: はい/いいえの確認
+   const isDelete = confirm('本当に削除しますか？');
+   if (isDelete) {
+     console.log('削除処理を実行');
+   } else {
+     console.log('キャンセルされた');
+   }
+   
+   // prompt: 入力を受け付ける
+   const username = prompt('ユーザー名を入力してください');
+   if (username) {
+     console.log('入力されたユーザー名:', username);
+   } else {
+     console.log('入力がキャンセルされた');
+   }
+   
+   // デフォルト値付きprompt
+   const age = prompt('年齢を入力してください', '20');
+   
+   // ⚠️ 注意: これらは古い方法なので、現代的なUIを使う方が良い
+   // 実際のアプリでは、カスタムモーダルを使うことが多い
+   ```
+
+**初心者への補足：**
+> 💡 **windowオブジェクトの重要ポイント：**
+> 
+> | メソッド/プロパティ | 用途 | 使用頻度 |
+> |-------------------|------|---------|
+> | `innerWidth/Height` | 画面サイズ | ⭐⭐⭐ |
+> | `scrollX/Y` | スクロール位置 | ⭐⭐⭐ |
+> | `location.href` | URLの取得/変更 | ⭐⭐⭐ |
+> | `alert/confirm` | 簡易ダイアログ | ⭐⭐ |
+> | `open()` | 新しいウィンドウ | ⭐ |
+> 
+> **注意：**`window.`は省略できます
+> ```javascript
+> // これらは同じ
+> window.alert('Hello');
+> alert('Hello');
+> 
+> window.console.log('Hi');
+> console.log('Hi');
+> ```
+
+#### documentオブジェクト（ページの内容）
+
+`document`は**現在のHTMLページ全体**を表すオブジェクトです。
+
+```javascript
+// ページのタイトル
+console.log(document.title);
+document.title = '新しいタイトル';
+
+// URL
+console.log(document.URL);
+
+// body要素
+console.log(document.body);
+
+// すべての画像
+const images = document.images;
+console.log('画像の数:', images.length);
+
+// すべてのリンク
+const links = document.links;
+
+// Cookie
+console.log(document.cookie);
+```
+
+**このコードの詳しい説明：**
+
+1. **ページ情報の取得と変更**
+   ```javascript
+   // タイトルの取得と変更
+   console.log('現在のタイトル:', document.title);
+   document.title = '新しいページタイトル';  // ブラウザタブの表示が変わる
+   
+   // URL情報
+   console.log('URL:', document.URL);
+   console.log('ドメイン:', document.domain);
+   
+   // 最終更新日時
+   console.log('最終更新:', document.lastModified);
+   
+   // 文字エンコーディング
+   console.log('エンコーディング:', document.characterSet);
+   ```
+
+2. **ページ全体へのアクセス**
+   ```javascript
+   // body要素を取得
+   const body = document.body;
+   body.style.backgroundColor = '#f0f0f0';
+   
+   // HTML要素全体
+   const html = document.documentElement;
+   console.log('ページの高さ:', html.scrollHeight);
+   
+   // すべての要素を取得
+   const allElements = document.getElementsByTagName('*');
+   console.log('ページ内の要素数:', allElements.length);
+   ```
+
+3. **特定の要素コレクションの取得**
+   ```javascript
+   // すべての画像
+   const images = document.images;  // HTMLCollection
+   for (const img of images) {
+     console.log('画像のsrc:', img.src);
+   }
+   
+   // すべてのリンク
+   const links = document.links;
+   for (const link of links) {
+     console.log('リンク先:', link.href);
+   }
+   
+   // すべてのフォーム
+   const forms = document.forms;
+   const firstForm = forms[0];  // 最初のフォーム
+   
+   // すべてのスクリプト
+   const scripts = document.scripts;
+   console.log('スクリプトの数:', scripts.length);
+   ```
+
+4. **DOMの読み込み完了を待つ**
+   ```javascript
+   // DOMContentLoaded: HTMLの読み込みが完了したら実行
+   document.addEventListener('DOMContentLoaded', () => {
+     console.log('DOM構築完了！');
+     // ここで安全に要素を操作できる
+     const button = document.querySelector('#btn');
+     button.addEventListener('click', () => {
+       console.log('クリック！');
+     });
+   });
+   
+   // load: 画像など全てのリソースの読み込み完了
+   window.addEventListener('load', () => {
+     console.log('全てのリソースの読み込み完了！');
+   });
+   ```
+
+**初心者への補足：**
+> 💡 **document vs window:**
+> 
+> | オブジェクト | 表すもの | よく使う場面 |
+> |------------|---------|------------|
+> | `window` | ブラウザウィンドウ全体 | サイズ取得、スクロール、タイマー |
+> | `document` | HTMLページの内容 | 要素の取得・操作、DOM操作 |
+> 
+> ```javascript
+> // window: ブラウザの機能
+> window.innerWidth;  // ウィンドウの幅
+> window.alert();     // アラート表示
+> 
+> // document: ページの内容
+> document.querySelector();  // 要素を探す
+> document.title;           // ページタイトル
+> ```
+
+#### タイマー機能（setTimeout / setInterval）
+
+JavaScriptでは、**一定時間後に処理を実行**したり、**一定間隔で処理を繰り返す**ことができます。
+
+##### setTimeout（一定時間後に1回だけ実行）
+
+```javascript
+// 基本の使い方
+setTimeout(() => {
+  console.log('3秒後に実行されます');
+}, 3000);  // ミリ秒単位（3000ms = 3秒）
+
+// タイマーをキャンセル
+const timerId = setTimeout(() => {
+  console.log('これは実行されない');
+}, 5000);
+
+clearTimeout(timerId);  // タイマーを止める
+```
+
+**このコードの詳しい説明：**
+
+1. **基本的なsetTimeout**
+   ```javascript
+   // 1秒後にメッセージ表示
+   setTimeout(() => {
+     console.log('1秒経ちました');
+   }, 1000);
+   
+   // 複数のsetTimeoutを組み合わせる
+   setTimeout(() => {
+     console.log('1秒後');
+   }, 1000);
+   
+   setTimeout(() => {
+     console.log('2秒後');
+   }, 2000);
+   
+   setTimeout(() => {
+     console.log('3秒後');
+   }, 3000);
+   
+   // 実行結果（時間順）:
+   // 1秒後 → 1秒後
+   // 2秒後 → 2秒後
+   // 3秒後 → 3秒後
+   ```
+
+2. **引数を渡す**
+   ```javascript
+   function showMessage(name, age) {
+     console.log(`こんにちは、${name}さん（${age}歳）`);
+   }
+   
+   // 2秒後に関数を実行（引数付き）
+   setTimeout(showMessage, 2000, '太郎', 20);
+   // 2秒後 → こんにちは、太郎さん（20歳）
+   
+   // アロー関数で書く方が分かりやすい
+   setTimeout(() => {
+     showMessage('花子', 18);
+   }, 2000);
+   ```
+
+3. **タイマーのキャンセル**
+   ```javascript
+   // タイマーIDを保存
+   const timer = setTimeout(() => {
+     console.log('5秒後に表示');
+   }, 5000);
+   
+   // 「キャンセル」ボタンでタイマーを止める
+   document.querySelector('#cancel').addEventListener('click', () => {
+     clearTimeout(timer);
+     console.log('タイマーをキャンセルしました');
+   });
+   
+   // 実用例: 自動ログアウト
+   let logoutTimer;
+   
+   function startLogoutTimer() {
+     // 30分後に自動ログアウト
+     logoutTimer = setTimeout(() => {
+       alert('30分間操作がなかったため、ログアウトします');
+       // ログアウト処理
+     }, 30 * 60 * 1000);  // 30分
+   }
+   
+   function resetLogoutTimer() {
+     clearTimeout(logoutTimer);
+     startLogoutTimer();  // タイマーをリセット
+   }
+   
+   // マウス操作があればタイマーをリセット
+   document.addEventListener('mousemove', resetLogoutTimer);
+   document.addEventListener('keypress', resetLogoutTimer);
+   ```
+
+4. **連続したアニメーション**
+   ```html
+   <div id="box" style="width:50px; height:50px; background:red; position:absolute; left:0;"></div>
+   ```
+   ```javascript
+   const box = document.querySelector('#box');
+   let position = 0;
+   
+   // 1秒後に右に移動
+   setTimeout(() => {
+     position = 100;
+     box.style.left = position + 'px';
+     console.log('1秒後: 100pxに移動');
+     
+     // さらに1秒後にもっと右に移動
+     setTimeout(() => {
+       position = 200;
+       box.style.left = position + 'px';
+       console.log('2秒後: 200pxに移動');
+       
+       // さらに1秒後に元の位置に
+       setTimeout(() => {
+         position = 0;
+         box.style.left = position + 'px';
+         console.log('3秒後: 0pxに戻る');
+       }, 1000);
+     }, 1000);
+   }, 1000);
+   
+   // ⚠️ これは「コールバック地獄」と呼ばれる書き方
+   // 実際にはPromiseやasync/awaitを使う方が良い
+   ```
+
+##### setInterval（一定間隔で繰り返し実行）
+
+```javascript
+// 基本の使い方
+setInterval(() => {
+  console.log('1秒ごとに実行されます');
+}, 1000);
+
+// タイマーを停止
+const intervalId = setInterval(() => {
+  console.log('繰り返し実行');
+}, 1000);
+
+clearInterval(intervalId);  // 停止
+```
+
+**このコードの詳しい説明：**
+
+1. **基本的なsetInterval**
+   ```javascript
+   // 1秒ごとに実行
+   setInterval(() => {
+     console.log('1秒経過');
+   }, 1000);
+   
+   // カウントアップ
+   let count = 0;
+   setInterval(() => {
+     count++;
+     console.log('カウント:', count);
+   }, 1000);
+   // 1秒ごとに: 1, 2, 3, 4, 5, ...
+   ```
+
+2. **カウントダウンタイマー**
+   ```html
+   <div id="timer">10</div>
+   <button id="start">スタート</button>
+   <button id="stop">ストップ</button>
+   ```
+   ```javascript
+   const timerDisplay = document.querySelector('#timer');
+   const startBtn = document.querySelector('#start');
+   const stopBtn = document.querySelector('#stop');
+   
+   let timeLeft = 10;
+   let intervalId = null;
+   
+   startBtn.addEventListener('click', () => {
+     // 既に動いていたら何もしない
+     if (intervalId !== null) return;
+     
+     timeLeft = 10;
+     timerDisplay.textContent = timeLeft;
+     
+     intervalId = setInterval(() => {
+       timeLeft--;
+       timerDisplay.textContent = timeLeft;
+       
+       if (timeLeft === 0) {
+         clearInterval(intervalId);
+         intervalId = null;
+         alert('時間切れ！');
+       }
+     }, 1000);
+   });
+   
+   stopBtn.addEventListener('click', () => {
+     if (intervalId !== null) {
+       clearInterval(intervalId);
+       intervalId = null;
+     }
+   });
+   ```
+
+3. **デジタル時計**
+   ```html
+   <div id="clock" style="font-size:48px; font-family:monospace;"></div>
+   ```
+   ```javascript
+   const clock = document.querySelector('#clock');
+   
+   function updateClock() {
+     const now = new Date();
+     const hours = String(now.getHours()).padStart(2, '0');
+     const minutes = String(now.getMinutes()).padStart(2, '0');
+     const seconds = String(now.getSeconds()).padStart(2, '0');
+     
+     clock.textContent = `${hours}:${minutes}:${seconds}`;
+   }
+   
+   // 最初に1回実行
+   updateClock();
+   
+   // 1秒ごとに更新
+   setInterval(updateClock, 1000);
+   ```
+
+4. **アニメーション（移動）**
+   ```html
+   <div id="ball" style="width:50px; height:50px; background:blue; border-radius:50%; position:absolute;"></div>
+   ```
+   ```javascript
+   const ball = document.querySelector('#ball');
+   let x = 0;
+   let y = 0;
+   let dx = 2;  // x方向の速度
+   let dy = 2;  // y方向の速度
+   
+   const intervalId = setInterval(() => {
+     // 位置を更新
+     x += dx;
+     y += dy;
+     
+     // 壁で跳ね返る
+     if (x > window.innerWidth - 50 || x < 0) {
+       dx = -dx;  // 横方向反転
+     }
+     if (y > window.innerHeight - 50 || y < 0) {
+       dy = -dy;  // 縦方向反転
+     }
+     
+     // ボールを移動
+     ball.style.left = x + 'px';
+     ball.style.top = y + 'px';
+   }, 16);  // 約60FPS（1000/60 ≈ 16ms）
+   ```
+
+5. **自動スライドショー**
+   ```html
+   <img id="slideshow" src="image1.jpg" style="width:400px;">
+   <div id="indicator">1 / 3</div>
+   ```
+   ```javascript
+   const slideshow = document.querySelector('#slideshow');
+   const indicator = document.querySelector('#indicator');
+   
+   const images = [
+     'image1.jpg',
+     'image2.jpg',
+     'image3.jpg'
+   ];
+   
+   let currentIndex = 0;
+   
+   function showNextImage() {
+     currentIndex = (currentIndex + 1) % images.length;  // 0, 1, 2, 0, 1, 2, ...
+     slideshow.src = images[currentIndex];
+     indicator.textContent = `${currentIndex + 1} / ${images.length}`;
+   }
+   
+   // 3秒ごとに次の画像
+   const intervalId = setInterval(showNextImage, 3000);
+   
+   // スライドショーを停止
+   document.querySelector('#stop').addEventListener('click', () => {
+     clearInterval(intervalId);
+   });
+   ```
+
+6. **プログレスバー**
+   ```html
+   <div id="progress" style="width:0%; height:30px; background:green; transition:width 0.1s;"></div>
+   <div id="percent">0%</div>
+   ```
+   ```javascript
+   const progress = document.querySelector('#progress');
+   const percent = document.querySelector('#percent');
+   
+   let width = 0;
+   
+   const intervalId = setInterval(() => {
+     width++;
+     progress.style.width = width + '%';
+     percent.textContent = width + '%';
+     
+     if (width >= 100) {
+       clearInterval(intervalId);
+       alert('完了！');
+     }
+   }, 50);  // 0.05秒ごと（合計5秒で100%）
+   ```
+
+**初心者への補足：**
+> 💡 **setTimeout vs setInterval:**
+> 
+> | 関数 | 動作 | 使用例 |
+> |------|------|--------|
+> | `setTimeout()` | **1回だけ**実行 | 「3秒後にメッセージ表示」 |
+> | `setInterval()` | **繰り返し**実行 | 「1秒ごとに時計を更新」 |
+> 
+> **キャンセル方法：**
+> ```javascript
+> // タイマーIDを保存
+> const timerId = setTimeout(() => {}, 1000);
+> const intervalId = setInterval(() => {}, 1000);
+> 
+> // キャンセル
+> clearTimeout(timerId);
+> clearInterval(intervalId);
+> ```
+> 
+> **注意点：**
+> - 時間は**ミリ秒**単位（1000ms = 1秒）
+> - タイマーを止めるときは、**IDを保存**しておく必要がある
+> - `setInterval`は**必ず`clearInterval`で停止**する（メモリリーク防止）
+
+##### 実用例：ストップウォッチ
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ストップウォッチ</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+    }
+    
+    .stopwatch {
+      text-align: center;
+      background: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    #display {
+      font-size: 72px;
+      font-weight: bold;
+      color: #333;
+      margin: 20px 0;
+      font-family: 'Courier New', monospace;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    
+    button {
+      font-size: 18px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    #start {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    #stop {
+      background: #f44336;
+      color: white;
+    }
+    
+    #reset {
+      background: #2196F3;
+      color: white;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="stopwatch">
+    <h1>ストップウォッチ</h1>
+    <div id="display">00:00:00</div>
+    <div class="buttons">
+      <button id="start">スタート</button>
+      <button id="stop" disabled>ストップ</button>
+      <button id="reset">リセット</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.querySelector('#display');
+    const startBtn = document.querySelector('#start');
+    const stopBtn = document.querySelector('#stop');
+    const resetBtn = document.querySelector('#reset');
+
+    let startTime = 0;       // スタート時刻
+    let elapsedTime = 0;     // 経過時間
+    let intervalId = null;   // タイマーID
+
+    // 時間を表示用にフォーマット
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    // 表示を更新
+    function updateDisplay() {
+      const currentTime = Date.now();
+      elapsedTime = currentTime - startTime;
+      display.textContent = formatTime(elapsedTime);
+    }
+
+    // スタートボタン
+    startBtn.addEventListener('click', () => {
+      startTime = Date.now() - elapsedTime;  // 前回の経過時間を考慮
+      intervalId = setInterval(updateDisplay, 10);  // 10msごとに更新
+
+      // ボタンの状態を変更
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    });
+
+    // ストップボタン
+    stopBtn.addEventListener('click', () => {
+      clearInterval(intervalId);
+      intervalId = null;
+
+      // ボタンの状態を変更
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+
+    // リセットボタン
+    resetBtn.addEventListener('click', () => {
+      clearInterval(intervalId);
+      intervalId = null;
+      startTime = 0;
+      elapsedTime = 0;
+      display.textContent = '00:00:00';
+
+      // ボタンの状態を変更
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
+```
+
+このストップウォッチの実装では、以下のポイントを学べます：
+
+1. **`Date.now()`で正確な時間を測定**
+   - `setInterval`だけだと誤差が出るため、現在時刻を使って計算
+
+2. **ボタンの有効/無効の切り替え**
+   - `disabled`属性で二重クリックを防ぐ
+
+3. **`padStart()`で桁数を揃える**
+   - `'5'.padStart(2, '0')` → `'05'`
+
+4. **経過時間の計算**
+   - 現在時刻 - 開始時刻 = 経過時間
+
+---
+
 ## 実践練習
 
 ここまでの知識を使って、実際に動くWebページを作ってみましょう！各練習には詳しい解説を付けています。
