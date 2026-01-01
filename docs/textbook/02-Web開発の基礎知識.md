@@ -7306,17 +7306,20 @@ const paragraphs = document.getElementsByTagName('p');
 > |---------|------|--------|
 > | `querySelector()` | **1つ取得（推奨）** | 要素 or null |
 > | `querySelectorAll()` | **複数取得（推奨）** | NodeList |
-> | `getElementById()` | IDで1つ | 要素 or null |
-> | `getElementsByClassName()` | クラスで複数（非推奨） | HTMLCollection |
+> | `getElementById()` | IDで1つ（古い方法） | 要素 or null |
+> | `getElementsByClassName()` | クラスで複数（古い方法） | HTMLCollection |
 > 
-> **基本は `querySelector()` と `querySelectorAll()` を使いましょう！**
+> **理由：**
+> - `querySelector()` は **CSSセレクタ** が使える（`.class`、`#id`、`div > p` など）
+> - `getElementById()` より **柔軟** で統一された書き方ができる
+> - 新しいプロジェクトでは `querySelector()` を使うのが主流
 > 
 > ```javascript
-> // ✅ 推奨
+> // ✅ 推奨（querySelector を使う）
 > const btn = document.querySelector('#submitBtn');
 > const items = document.querySelectorAll('.item');
 > 
-> // ❌ 古い方法
+> // ⚠️ 古い方法（動くが推奨されない）
 > const btn = document.getElementById('submitBtn');
 > const items = document.getElementsByClassName('item');
 > ```
@@ -8819,11 +8822,11 @@ clearInterval(intervalId);  // 停止
     // 変数の初期化
     let count = 0;
     
-    // 要素の取得
-    const countElement = document.getElementById('count');
-    const decreaseButton = document.getElementById('decrease');
-    const resetButton = document.getElementById('reset');
-    const increaseButton = document.getElementById('increase');
+    // 要素の取得（推奨: querySelector を使用）
+    const countElement = document.querySelector('#count');
+    const decreaseButton = document.querySelector('#decrease');
+    const resetButton = document.querySelector('#reset');
+    const increaseButton = document.querySelector('#increase');
 
     // 表示を更新する関数
     function updateDisplay() {
@@ -8930,7 +8933,7 @@ clearInterval(intervalId);  // 停止
    <button id="decrease5">−5</button>
    
    // JavaScript に追加
-   const increase5Button = document.getElementById('increase5');
+   const increase5Button = document.querySelector('#increase5');
    increase5Button.addEventListener('click', () => {
      count += 5;
      updateDisplay();
@@ -8940,6 +8943,7 @@ clearInterval(intervalId);  // 停止
 2. **10の倍数でアラート**
    ```javascript
    function updateDisplay() {
+     const countElement = document.querySelector('#count');
      countElement.textContent = count;
      
      // 10の倍数チェック
@@ -9116,11 +9120,11 @@ clearInterval(intervalId);  // 停止
   </div>
 
   <script>
-    // 要素の取得
-    const todoInput = document.getElementById('todoInput');
-    const addButton = document.getElementById('addButton');
-    const todoList = document.getElementById('todoList');
-    const statsElement = document.getElementById('stats');
+    // 要素の取得（推奨: querySelector を使用）
+    const todoInput = document.querySelector('#todoInput');
+    const addButton = document.querySelector('#addButton');
+    const todoList = document.querySelector('#todoList');
+    const statsElement = document.querySelector('#stats');
     
     // ToDoリストの配列
     let todos = [];
@@ -9529,12 +9533,12 @@ clearInterval(intervalId);  // 停止
   </div>
 
   <script>
-    // 要素の取得
-    const openButton = document.getElementById('openModal');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const closeButton = document.getElementById('closeButton');
-    const cancelButton = document.getElementById('cancelButton');
-    const confirmButton = document.getElementById('confirmButton');
+    // 要素の取得（推奨: querySelector を使用）
+    const openButton = document.querySelector('#openModal');
+    const modalOverlay = document.querySelector('#modalOverlay');
+    const closeButton = document.querySelector('#closeButton');
+    const cancelButton = document.querySelector('#cancelButton');
+    const confirmButton = document.querySelector('#confirmButton');
     
     // モーダルを開く
     function openModal() {
