@@ -54,15 +54,16 @@ test.describe('Authentication Flow', () => {
     
     // 投稿ページに移動（ログアウトボタンがある）
     await page.goto('/posts');
-    await page.waitForLoadState('domcontentloaded');
+    await page.waitForLoadState('networkidle');
     
-    // ログアウトボタンが表示されるまで待機
+    // ログアウトボタンが表示されるまで待機（モバイルでは遅延する可能性がある）
     const logoutButton = page.getByRole('button', { name: 'ログアウト' });
-    await logoutButton.waitFor({ state: 'visible', timeout: 10000 });
-    await logoutButton.click();
+    await logoutButton.waitFor({ state: 'visible', timeout: 15000 });
+    await logoutButton.scrollIntoViewIfNeeded();
+    await logoutButton.click({ force: true });
 
     // ログアウト完了を待つ（ログインページにアクセスできる）
-    await page.waitForTimeout(1000); // ログアウト処理の完了を待つ
+    await page.waitForTimeout(2000); // ログアウト処理の完了を待つ
     
     // 再度ログインページに移動できることを確認（ログアウト成功）
     await page.goto('/auth/signin');

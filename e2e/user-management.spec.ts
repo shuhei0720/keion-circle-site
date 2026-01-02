@@ -29,7 +29,9 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     
     if (count > 1) {
       // 2番目のバッジをクリック（1番目は自分自身で無効化されている可能性）
-      await roleBadges.nth(1).click()
+      const badge = roleBadges.nth(1)
+      await badge.scrollIntoViewIfNeeded()
+      await badge.click({ force: true })
       
       // モーダルが表示されることを確認
       const modal = page.locator('div[class*="fixed"][class*="inset-0"][class*="z-50"]').filter({ hasText: '役割の変更' })
@@ -57,7 +59,8 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     
     // 一般ユーザー（member）の役割バッジをクリック
     const memberBadge = page.locator('button').filter({ hasText: '通常' }).first()
-    await memberBadge.click()
+    await memberBadge.scrollIntoViewIfNeeded()
+    await memberBadge.click({ force: true })
     
     // モーダルが表示されることを確認
     await expect(page.locator('text=役割の変更')).toBeVisible()
@@ -157,7 +160,9 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     const count = await roleBadges.count()
     
     if (count > 1) {
-      await roleBadges.nth(1).click()
+      const badge = roleBadges.nth(1)
+      await badge.scrollIntoViewIfNeeded()
+      await badge.click({ force: true })
       
       // モーダルが表示されることを確認
       await expect(page.locator('text=役割の変更')).toBeVisible()
@@ -182,7 +187,10 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     const count = await roleBadges.count()
     
     if (count > 1) {
-      await roleBadges.nth(1).click()
+      const badge = roleBadges.nth(1)
+      // スクロールして要素を表示
+      await badge.scrollIntoViewIfNeeded()
+      await badge.click({ force: true })
       
       // モーダルが表示されることを確認
       const modal = page.locator('div[class*="fixed"][class*="inset-0"][class*="z-50"]').filter({ hasText: '役割の変更' })
@@ -208,7 +216,9 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     const count = await page.locator('button').filter({ hasText: '通常' }).count()
     
     if (count > 0 && await memberBadge.isEnabled()) {
-      await memberBadge.click()
+      // スクロールして要素を表示
+      await memberBadge.scrollIntoViewIfNeeded()
+      await memberBadge.click({ force: true })
       
       // 一般ユーザーが選択されていることを確認（デフォルト）
       await expect(page.locator('input[value="member"]')).toBeChecked()

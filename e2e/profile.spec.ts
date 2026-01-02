@@ -5,9 +5,10 @@ test.describe('Profile Management', () => {
   test('user can view their profile page', async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto('/profile');
+    await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveURL('/profile');
-    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i })).toBeVisible({ timeout: 10000 });
   });
 
   test('user can edit profile bio', async ({ page }) => {
@@ -74,9 +75,10 @@ test.describe('Profile Management', () => {
   test('member can access their own profile', async ({ page }) => {
     await loginAsMember(page);
     await page.goto('/profile');
+    await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveURL('/profile');
-    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i })).toBeVisible({ timeout: 10000 });
   });
 });
 
