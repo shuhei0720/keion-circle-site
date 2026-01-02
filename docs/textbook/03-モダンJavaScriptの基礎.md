@@ -3968,6 +3968,85 @@ const step3 = step2.map(user => user.name);
 └────────────────────────────┘
 ```
 
+### sort（ソート）- 並び替え
+
+**配列を並び替える**
+
+```javascript
+const numbers = [3, 1, 4, 1, 5, 9, 2, 6];
+
+// 昇順（小さい順）
+const sorted = [...numbers].sort((a, b) => a - b);
+console.log(sorted);  // [1, 1, 2, 3, 4, 5, 6, 9]
+
+// 降順（大きい順）
+const desc = [...numbers].sort((a, b) => b - a);
+console.log(desc);  // [9, 6, 5, 4, 3, 2, 1, 1]
+
+// オブジェクトの配列
+const users = [
+  { name: '田中', age: 25 },
+  { name: '佐藤', age: 30 },
+  { name: '鈴木', age: 20 }
+];
+
+// 年齢順に並び替え
+const sortedByAge = [...users].sort((a, b) => a.age - b.age);
+console.log(sortedByAge);
+// [
+//   { name: '鈴木', age: 20 },
+//   { name: '田中', age: 25 },
+//   { name: '佐藤', age: 30 }
+// ]
+
+// 名前順に並び替え
+const sortedByName = [...users].sort((a, b) => {
+  return a.name.localeCompare(b.name);
+});
+console.log(sortedByName);
+```
+
+**このコードの詳しい説明：**
+
+```javascript
+// sortの比較関数の仕組み
+
+// a - b の結果で決まる：
+// 負の数 → aをbより前に
+// 0     → 順序を変えない
+// 正の数 → aをbより後に
+
+// 例：[3, 1, 2]を昇順ソート
+(3, 1) → 3 - 1 = 2（正）→ [1, 3, 2]
+(3, 2) → 3 - 2 = 1（正）→ [1, 2, 3]
+(2, 3) → 2 - 3 = -1（負）→ 順序変えず
+// 結果：[1, 2, 3]
+```
+
+**図解：sortの動作**
+
+```
+昇順（a - b）
+[3, 1, 2]
+  ↓
+3と1を比較：3-1=2（正）→ 入れ替え
+[1, 3, 2]
+  ↓
+3と2を比較：3-2=1（正）→ 入れ替え
+[1, 2, 3]
+
+降順（b - a）
+[3, 1, 2]
+  ↓
+1と3を比較：1-3=-2（負）→ 入れ替え
+[3, 1, 2]
+  ↓
+2と3を比較：2-3=-1（負）→ 入れ替え
+[3, 2, 1]
+```
+
+> ⚠️ **注意**: `sort()`は元の配列を変更するので、`[...array]`でコピーしてから使うのがおすすめです。
+
 **初心者への補足：**
 > 💡 **配列メソッドのまとめ：**
 > 
@@ -4026,121 +4105,6 @@ const step3 = step2.map(user => user.name);
 > // 合計を計算
 > products.reduce((sum, p) => sum + p.price, 0)
 > ```
-
----
-
-### filter
-
-条件に一致する要素のみを抽出：
-
-```javascript
-// オブジェクトの配列
-const users = [
-  { id: 1, name: '田中', age: 25 },
-  { id: 2, name: '佐藤', age: 30 },
-  { id: 3, name: '鈴木', age: 20 }
-];
-
-const adults = users.filter(user => user.age >= 25);
-console.log(adults);  // [{ id: 1, ... }, { id: 2, ... }]
-```
-
-### reduce
-
-配列を1つの値にまとめる：
-
-```javascript
-const numbers = [1, 2, 3, 4, 5];
-
-// 合計
-const sum = numbers.reduce((acc, n) => acc + n, 0);
-console.log(sum);  // 15
-
-// 最大値
-const max = numbers.reduce((acc, n) => (n > acc ? n : acc), numbers[0]);
-console.log(max);  // 5
-
-// オブジェクトの作成
-const users = [
-  { id: 1, name: '田中' },
-  { id: 2, name: '佐藤' }
-];
-
-const userMap = users.reduce((acc, user) => {
-  acc[user.id] = user;
-  return acc;
-}, {});
-
-console.log(userMap);
-// { 1: { id: 1, name: '田中' }, 2: { id: 2, name: '佐藤' } }
-```
-
-### find と findIndex
-
-```javascript
-const numbers = [1, 2, 3, 4, 5];
-
-// 条件に合う最初の要素
-const found = numbers.find(n => n > 3);
-console.log(found);  // 4
-
-// そのインデックス
-const index = numbers.findIndex(n => n > 3);
-console.log(index);  // 3
-
-// オブジェクトの配列
-const users = [
-  { id: 1, name: '田中' },
-  { id: 2, name: '佐藤' }
-];
-
-const user = users.find(u => u.id === 2);
-console.log(user);  // { id: 2, name: '佐藤' }
-```
-
-### some と every
-
-```javascript
-const numbers = [1, 2, 3, 4, 5];
-
-// どれか1つでも条件に合うか
-const hasEven = numbers.some(n => n % 2 === 0);
-console.log(hasEven);  // true
-
-// すべて条件に合うか
-const allPositive = numbers.every(n => n > 0);
-console.log(allPositive);  // true
-
-const allEven = numbers.every(n => n % 2 === 0);
-console.log(allEven);  // false
-```
-
-### sort
-
-```javascript
-const numbers = [3, 1, 4, 1, 5, 9, 2, 6];
-
-// 昇順
-const sorted = [...numbers].sort((a, b) => a - b);
-console.log(sorted);  // [1, 1, 2, 3, 4, 5, 6, 9]
-
-// 降順
-const desc = [...numbers].sort((a, b) => b - a);
-console.log(desc);  // [9, 6, 5, 4, 3, 2, 1, 1]
-
-// オブジェクトの配列
-const users = [
-  { name: '田中', age: 25 },
-  { name: '佐藤', age: 30 },
-  { name: '鈴木', age: 20 }
-];
-
-const sortedByAge = [...users].sort((a, b) => a.age - b.age);
-console.log(sortedByAge);
-// [{ name: '鈴木', age: 20 }, { name: '田中', age: 25 }, ...]
-```
-
-> ⚠️ **注意**: `sort()`は元の配列を変更するので、`[...array]`でコピーしてから使うのがおすすめです。
 
 ---
 
@@ -4802,6 +4766,7 @@ return <ul>{users.map(...)}</ul>;
 ```
 
 **初心者への補足：**
+
 > 💡 **非同期処理のまとめ：**
 > 
 > **基本概念：**
@@ -4859,101 +4824,6 @@ return <ul>{users.map(...)}</ul>;
 > - 並列実行には `Promise.all()`
 
 ---
-  } catch (error) {
-    console.error('エラー:', error);
-    throw error;
-  }
-}
-```
-
-**async/awaitのルール:**
-
-1. `await`は`async`関数の中でしか使えない
-2. `async`関数は常にPromiseを返す
-3. エラー処理は`try-catch`を使う
-
-### fetch API
-
-`fetch`は、サーバーからデータを取得する関数です：
-
-```javascript
-// GETリクエスト
-async function getPosts() {
-  try {
-    const response = await fetch('/api/posts');
-    
-    if (!response.ok) {
-      throw new Error('エラー');
-    }
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('取得失敗:', error);
-    throw error;
-  }
-}
-
-// POSTリクエスト
-async function createPost(post) {
-  try {
-    const response = await fetch('/api/posts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(post),
-    });
-    
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('作成失敗:', error);
-    throw error;
-  }
-}
-
-// 使用例
-const posts = await getPosts();
-console.log(posts);
-
-const newPost = await createPost({ title: 'テスト', content: '内容' });
-console.log(newPost);
-```
-
-### Promise.all（並列処理）
-
-複数のPromiseを並列で実行：
-
-```javascript
-// 順次実行（遅い）
-async function sequential() {
-  const user = await fetchUser();      // 1秒待つ
-  const posts = await fetchPosts();    // さらに1秒待つ
-  const events = await fetchEvents();  // さらに1秒待つ
-  // 合計3秒
-}
-
-// 並列実行（速い）
-async function parallel() {
-  const [user, posts, events] = await Promise.all([
-    fetchUser(),
-    fetchPosts(),
-    fetchEvents()
-  ]);
-  // すべて同時に実行されるので約1秒
-}
-
-// 1つでも成功すれば良い場合
-async function race() {
-  const result = await Promise.race([
-    fetchFromServer1(),
-    fetchFromServer2(),
-    fetchFromServer3()
-  ]);
-  // 最初に完了したものが返される
-}
-```
 
 ### エラーハンドリング（try-catch）
 
@@ -4978,7 +4848,7 @@ try {
 **図解：try-catchの流れ**
 
 ```mermaid
-flowchart TD
+graph TD
     A[try ブロック開始] --> B{エラー発生?}
     B -->|なし| C[正常に実行]
     B -->|あり| D[catch ブロックへ]
@@ -5485,13 +5355,42 @@ console.log(updated.theme);  // 'dark'
 
 ## 3.10 モジュール
 
-大きなプログラムは、複数のファイルに分割して管理します。
+モジュールは、コードを**複数のファイルに分割して管理**する仕組みです。大規模なアプリケーション開発では必須の機能です。
+
+### なぜモジュールが必要なのか？
+
+**問題：1つのファイルにすべて書くと...**
+
+```javascript
+// ❌ app.js（1000行）
+const PI = 3.14;
+
+function add(a, b) { return a + b; }
+function subtract(a, b) { return a - b; }
+function multiply(a, b) { return a * b; }
+// ... さらに続く（読みにくい、管理しにくい）
+
+function UserComponent() { /* ... */ }
+function PostComponent() { /* ... */ }
+// すべてが1つのファイルに混在
+```
+
+**解決：モジュールで分割**
+
+```
+プロジェクト/
+├── math.js        ← 計算関連
+├── user.js        ← ユーザー関連
+└── post.js        ← 投稿関連
+```
 
 ### export（エクスポート）
 
+ファイルから関数や変数を「公開」します。
+
 **utils.js:**
 ```javascript
-// 名前付きエクスポート
+// 1. 名前付きエクスポート（推奨）
 export const PI = 3.14;
 
 export function add(a, b) {
@@ -5502,45 +5401,258 @@ export function multiply(a, b) {
   return a * b;
 }
 
-// まとめてエクスポート
+// 2. まとめてエクスポート
 const subtract = (a, b) => a - b;
 const divide = (a, b) => a / b;
 
 export { subtract, divide };
 
-// デフォルトエクスポート（1ファイルに1つだけ）
+// 3. デフォルトエクスポート（1ファイルに1つだけ）
 export default function greet(name) {
   return `こんにちは、${name}さん`;
 }
 ```
 
+**このコードの詳しい説明：**
+
+```javascript
+// 名前付きエクスポートの3つの書き方
+
+// ① 定義と同時にエクスポート
+export const PI = 3.14;
+export function add(a, b) { return a + b; }
+
+// ② 先に定義してから後でエクスポート
+const subtract = (a, b) => a - b;
+export { subtract };
+
+// ③ 別名でエクスポート
+const divide = (a, b) => a / b;
+export { divide as div };  // 「div」という名前でエクスポート
+```
+
+**図解：exportの種類**
+
+```
+名前付きエクスポート
+┌────────────────────┐
+│ export const PI    │← 複数可能
+│ export function add│
+└────────────────────┘
+
+デフォルトエクスポート
+┌────────────────────┐
+│ export default fn  │← 1ファイルに1つだけ
+└────────────────────┘
+```
+
 ### import（インポート）
+
+エクスポートされたものを「読み込み」ます。
 
 **main.js:**
 ```javascript
-// デフォルトエクスポートのインポート
+// 1. デフォルトエクスポートのインポート
 import greet from './utils.js';
 
-// 名前付きエクスポートのインポート
+// 2. 名前付きエクスポートのインポート
 import { PI, add, multiply } from './utils.js';
 
-// 別名をつける
+// 3. 別名をつけてインポート
 import { subtract as sub } from './utils.js';
 
-// すべてをインポート
+// 4. すべてをまとめてインポート
 import * as utils from './utils.js';
 
-console.log(greet('田中'));     // 'こんにちは、田中さん'
-console.log(PI);                // 3.14
-console.log(add(2, 3));         // 5
-console.log(utils.multiply(2, 3)); // 6
+// 使用
+console.log(greet('田中'));         // 'こんにちは、田中さん'
+console.log(PI);                    // 3.14
+console.log(add(2, 3));             // 5
+console.log(sub(5, 2));             // 3
+console.log(utils.multiply(2, 3));  // 6
 ```
+
+**このコードの詳しい説明：**
+
+```javascript
+// インポートのパターン
+
+// ① デフォルトエクスポートは任意の名前で
+import greet from './utils.js';       // OK
+import sayHello from './utils.js';    // OK（同じものを別名で）
+
+// ② 名前付きエクスポートは{}で囲む
+import { add, multiply } from './utils.js';  // OK
+
+// ③ 別名をつける（as を使う）
+import { add as plus } from './utils.js';
+console.log(plus(1, 2));  // 3
+
+// ④ まとめてインポート
+import * as math from './utils.js';
+console.log(math.add(1, 2));      // 3
+console.log(math.multiply(2, 3)); // 6
+```
+
+**実用例：Reactコンポーネント**
+
+```javascript
+// Button.jsx
+export default function Button({ children, onClick }) {
+  return (
+    <button onClick={onClick}>
+      {children}
+    </button>
+  );
+}
+
+// App.jsx
+import Button from './Button';  // デフォルトエクスポートをインポート
+
+function App() {
+  return (
+    <div>
+      <Button onClick={() => alert('clicked')}>
+        クリック
+      </Button>
+    </div>
+  );
+}
+```
+
+**複数ファイルでの整理例：**
+
+```javascript
+// math/add.js
+export function add(a, b) {
+  return a + b;
+}
+
+// math/subtract.js
+export function subtract(a, b) {
+  return a - b;
+}
+
+// math/index.js（まとめファイル）
+export { add } from './add';
+export { subtract } from './subtract';
+
+// main.js（使う側）
+import { add, subtract } from './math';  // index.jsから読み込まれる
+
+console.log(add(5, 3));      // 8
+console.log(subtract(5, 3)); // 2
+```
+
+**初心者への補足：**
+
+> 💡 **モジュールのまとめ：**
+> 
+> **export（公開）：**
+> ```javascript
+> // 名前付き（複数可能）
+> export const value = 10;
+> export function func() {}
+> 
+> // デフォルト（1つだけ）
+> export default function() {}
+> ```
+> 
+> **import（読み込み）：**
+> ```javascript
+> // デフォルトをインポート
+> import MyFunction from './file';
+> 
+> // 名前付きをインポート
+> import { value, func } from './file';
+> 
+> // すべてをインポート
+> import * as all from './file';
+> ```
+> 
+> **Reactでの使い方：**
+> ```javascript
+> // コンポーネントをエクスポート
+> export default function Button() { /* ... */ }
+> 
+> // 別ファイルでインポート
+> import Button from './Button';
+> ```
+> 
+> **ファイル分割のメリット：**
+> - コードが読みやすくなる
+> - 再利用しやすくなる
+> - チームで分担しやすくなる
+> - テストしやすくなる
 
 ---
 
 ## 3.11 クラス
 
-クラスは、オブジェクトの設計図です。
+クラスは、**オブジェクトの設計図**です。同じ構造のオブジェクトを量産するときに使います。
+
+### なぜクラスが必要なのか？
+
+**問題：オブジェクトリテラルでは管理が大変**
+
+```javascript
+// ❌ 毎回手動で作成（大変）
+const user1 = {
+  name: '田中',
+  age: 25,
+  greet: function() {
+    return `こんにちは、${this.name}です`;
+  }
+};
+
+const user2 = {
+  name: '佐藤',
+  age: 30,
+  greet: function() {
+    return `こんにちは、${this.name}です`;
+  }
+};  // 同じ構造を繰り返す必要がある
+```
+
+**解決：クラスで設計図を作る**
+
+```javascript
+// ✅ クラスで設計図を定義
+class User {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+  
+  greet() {
+    return `こんにちは、${this.name}です`;
+  }
+}
+
+// 簡単に量産できる
+const user1 = new User('田中', 25);
+const user2 = new User('佐藤', 30);
+```
+
+**図解：クラスとインスタンス**
+
+```
+クラス（設計図）
+┌──────────────────┐
+│ User             │
+│ - name           │
+│ - age            │
+│ - greet()        │
+└──────────────────┘
+         ↓ new
+    ┌────────┴────────┐
+    ↓                 ↓
+インスタンス      インスタンス
+┌──────────┐     ┌──────────┐
+│ user1    │     │ user2    │
+│田中, 25  │     │佐藤, 30  │
+└──────────┘     └──────────┘
+```
 
 ### 基本的なクラス
 
@@ -5548,7 +5660,7 @@ console.log(utils.multiply(2, 3)); // 6
 class Person {
   // コンストラクタ（初期化）
   constructor(name, age) {
-    this.name = name;
+    this.name = name;  // プロパティ
     this.age = age;
   }
   
@@ -5572,6 +5684,42 @@ console.log(person2.greet());  // 'こんにちは、佐藤です（30歳）'
 
 person1.haveBirthday();
 console.log(person1.age);      // 26
+```
+
+**このコードの詳しい説明：**
+
+```javascript
+// クラスの構造
+
+class Person {
+  // ① constructor：インスタンス作成時に実行される
+  constructor(name, age) {
+    this.name = name;  // ← thisは作成されるインスタンス自身
+    this.age = age;
+  }
+  
+  // ② メソッド：インスタンスが使える関数
+  greet() {
+    return `こんにちは、${this.name}です`;
+  }
+}
+
+// new で新しいインスタンスを作成
+const person = new Person('田中', 25);
+
+// 実行の流れ：
+// 1. 空のオブジェクト {} が作られる
+// 2. constructor が実行される
+// 3. this.name = '田中' → オブジェクトにnameプロパティが追加
+// 4. this.age = 25 → オブジェクトにageプロパティが追加
+// 5. 完成したオブジェクトが返される
+
+// 結果：
+// person = {
+//   name: '田中',
+//   age: 25,
+//   greet: [Function]
+// }
 ```
 
 ### 継承
@@ -5668,30 +5816,116 @@ console.log(account.getBalance());  // 1500
 
 ### オプショナルチェーン（?.）
 
-ネストしたプロパティに安全にアクセス：
+ネストしたプロパティに**安全にアクセス**できます。エラーを防ぐ重要な機能です。
+
+**問題：従来の書き方**
+
+```javascript
+// ❌ エラーが起きる可能性
+const user = null;
+const city = user.address.city;  // TypeError: Cannot read property 'address' of null
+
+// ❌ エラーチェックが冗長
+const city = user && user.address && user.address.city;
+```
+
+**解決：オプショナルチェーン**
+
+```javascript
+// ✅ 安全にアクセス
+const city = user?.address?.city;  // undefined（エラーにならない）
+```
+
+**基本的な使い方：**
 
 ```javascript
 const user = {
   name: '田中',
   address: {
-    city: '東京'
+    city: '東京',
+    zipCode: '100-0001'
   }
 };
 
-// 従来の書き方（エラーチェック）
-const city = user && user.address && user.address.city;
-
-// オプショナルチェーン
+// オブジェクトのプロパティ
 const city = user?.address?.city;  // '東京'
+const country = user?.address?.country;  // undefined
 
-// 存在しないプロパティ
-const country = user?.address?.country;  // undefined（エラーにならない）
+// 配列の要素
+const posts = user?.posts;  // undefined
+const firstPost = user?.posts?.[0];  // undefined
 
-// 配列
-const firstPost = user?.posts?.[0];
+// 関数の呼び出し
+const result = user?.greet?.();  // undefined
+```
 
-// 関数
-const result = user?.greet?.();
+**このコードの詳しい説明：**
+
+```javascript
+// オプショナルチェーンの動作
+
+// 例1：存在するプロパティ
+const user = { name: '田中', age: 25 };
+const name = user?.name;  // '田中'
+
+// 例2：存在しないプロパティ
+const address = user?.address;  // undefined
+
+// 例3：深いネスト
+const city = user?.address?.city;  // undefined
+// user が存在 → user.address を確認 → undefined
+// undefined?.city → undefined（エラーにならない）
+
+// 例4：nullやundefinedの場合
+const user2 = null;
+const name2 = user2?.name;  // undefined（エラーにならない）
+
+// 従来の書き方との比較
+const city1 = user && user.address && user.address.city;  // 冗長
+const city2 = user?.address?.city;  // シンプル
+```
+
+**図解：オプショナルチェーンの動作**
+
+```
+user?.address?.city
+ ↓
+userは存在する？
+ ├─ YES → user.address を確認
+ │          ↓
+ │      addressは存在する？
+ │       ├─ YES → address.city を返す
+ │       └─ NO  → undefined を返す
+ └─ NO  → undefined を返す
+```
+
+**実用例：API レスポンスの処理**
+
+```javascript
+// APIからのレスポンス（データが不完全な可能性）
+const response = {
+  data: {
+    user: {
+      profile: {
+        name: '田中',
+        // email がない場合がある
+      }
+    }
+  }
+};
+
+// 安全にアクセス
+const email = response?.data?.user?.profile?.email ?? 'メールアドレス未設定';
+console.log(email);  // 'メールアドレス未設定'
+
+// 従来の書き方（長い）
+const email2 = 
+  response && 
+  response.data && 
+  response.data.user && 
+  response.data.user.profile && 
+  response.data.user.profile.email || 
+  'メールアドレス未設定';
 ```
 
 ### Null合体演算子（??）
