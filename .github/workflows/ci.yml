@@ -185,11 +185,11 @@ jobs:
       - name: Build application
         run: npm run build
       
-      - name: Run E2E tests
+      - name: Run E2E tests (Chromium, Firefox, Mobile Chrome)
         run: npm run test:e2e
         env:
           CI: true
-          # FULL_E2E_TEST: true # 全ブラウザテストが必要な場合はコメント解除
+          CI_EXTENDED_BROWSERS: true # Chromium + Firefox + Mobile Chrome
       
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
