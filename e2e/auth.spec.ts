@@ -38,9 +38,9 @@ test.describe('Authentication Flow', () => {
   });
 
   // Chromium/Firefoxのみで実行（WebKit/Mobile Chromeは不安定）
-  test('allows user to sign out', async ({ page, browserName }) => {
+  test('allows user to sign out', async ({ page, browserName }, testInfo) => {
     test.skip(browserName === 'webkit', 'WebKit/Safari でのログアウトテストは不安定なためスキップ');
-    test.skip(browserName === 'Mobile Chrome', 'Mobile Chrome でのログアウトテストは不安定なためスキップ');
+    test.skip(testInfo.project.name === 'Mobile Chrome', 'Mobile Chrome でのログアウトテストは不安定なためスキップ');
     
     // ログイン
     await page.getByRole('textbox', { name: 'メールアドレス' }).fill('admin@example.com');
