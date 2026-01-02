@@ -8,7 +8,7 @@ test.describe('Profile Management', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveURL('/profile');
-    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i }).first()).toBeVisible({ timeout: 10000 });
   });
 
   test('user can edit profile bio', async ({ page }) => {
@@ -78,7 +78,7 @@ test.describe('Profile Management', () => {
     await page.waitForLoadState('networkidle');
 
     await expect(page).toHaveURL('/profile');
-    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: /プロフィール|Profile/i }).first()).toBeVisible({ timeout: 10000 });
   });
 });
 

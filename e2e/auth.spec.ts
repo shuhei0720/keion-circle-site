@@ -59,8 +59,7 @@ test.describe('Authentication Flow', () => {
     // ログアウトボタンが表示されるまで待機（モバイルでは遅延する可能性がある）
     const logoutButton = page.getByRole('button', { name: 'ログアウト' });
     await logoutButton.waitFor({ state: 'visible', timeout: 15000 });
-    await logoutButton.scrollIntoViewIfNeeded();
-    await logoutButton.click({ force: true });
+    await logoutButton.click({ force: true, timeout: 5000 });
 
     // ログアウト完了を待つ（ログインページにアクセスできる）
     await page.waitForTimeout(2000); // ログアウト処理の完了を待つ

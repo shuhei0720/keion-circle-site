@@ -30,8 +30,8 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     if (count > 1) {
       // 2番目のバッジをクリック（1番目は自分自身で無効化されている可能性）
       const badge = roleBadges.nth(1)
-      await badge.scrollIntoViewIfNeeded()
-      await badge.click({ force: true })
+      await badge.waitFor({ state: 'attached', timeout: 5000 })
+      await badge.click({ force: true, timeout: 5000 })
       
       // モーダルが表示されることを確認
       const modal = page.locator('div[class*="fixed"][class*="inset-0"][class*="z-50"]').filter({ hasText: '役割の変更' })
@@ -59,8 +59,8 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     
     // 一般ユーザー（member）の役割バッジをクリック
     const memberBadge = page.locator('button').filter({ hasText: '通常' }).first()
-    await memberBadge.scrollIntoViewIfNeeded()
-    await memberBadge.click({ force: true })
+    await memberBadge.waitFor({ state: 'attached', timeout: 5000 })
+    await memberBadge.click({ force: true, timeout: 5000 })
     
     // モーダルが表示されることを確認
     await expect(page.locator('text=役割の変更')).toBeVisible()
@@ -161,8 +161,8 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     
     if (count > 1) {
       const badge = roleBadges.nth(1)
-      await badge.scrollIntoViewIfNeeded()
-      await badge.click({ force: true })
+      await badge.waitFor({ state: 'attached', timeout: 5000 })
+      await badge.click({ force: true, timeout: 5000 })
       
       // モーダルが表示されることを確認
       await expect(page.locator('text=役割の変更')).toBeVisible()
@@ -188,9 +188,8 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     
     if (count > 1) {
       const badge = roleBadges.nth(1)
-      // スクロールして要素を表示
-      await badge.scrollIntoViewIfNeeded()
-      await badge.click({ force: true })
+      await badge.waitFor({ state: 'attached', timeout: 5000 })
+      await badge.click({ force: true, timeout: 5000 })
       
       // モーダルが表示されることを確認
       const modal = page.locator('div[class*="fixed"][class*="inset-0"][class*="z-50"]').filter({ hasText: '役割の変更' })
@@ -216,9 +215,8 @@ test.describe('ユーザー管理機能 - サイト管理者', () => {
     const count = await page.locator('button').filter({ hasText: '通常' }).count()
     
     if (count > 0 && await memberBadge.isEnabled()) {
-      // スクロールして要素を表示
-      await memberBadge.scrollIntoViewIfNeeded()
-      await memberBadge.click({ force: true })
+      await memberBadge.waitFor({ state: 'attached', timeout: 5000 })
+      await memberBadge.click({ force: true, timeout: 5000 })
       
       // 一般ユーザーが選択されていることを確認（デフォルト）
       await expect(page.locator('input[value="member"]')).toBeChecked()
