@@ -1641,12 +1641,15 @@ npx playwright test --debug
 
 | カテゴリ | ファイル | テスト数 | 内容 |
 |---------|---------|---------|------|
-| 🔐 **認証** | `e2e/auth.spec.ts` | 4件 | ログイン画面表示、成功ログイン、エラーハンドリング、ログアウト |
-| � **メール検証** | `e2e/email-verification.spec.ts` | 1件 | 新規登録後の検証メッセージ表示 |
-| 📝 **投稿** | `e2e/posts.spec.ts` | 5件 | 投稿作成、一覧表示、いいね、コメント、削除 |
+| 🔐 **認証** | `e2e/auth.spec.ts` | 5件 | ログイン画面表示、成功ログイン、エラーハンドリング、ログアウト |
+| ✉️ **メール検証** | `e2e/email-verification.spec.ts` | 5件 | 新規登録後の検証メッセージ表示、パスワードリセット |
+| 📝 **投稿** | `e2e/posts.spec.ts` | 13件 | 投稿作成・編集・削除、いいね、コメント、複数YouTube、画像、参加状況 |
 | 🎪 **イベント** | `e2e/events.spec.ts` | 4件 | イベント作成、参加登録、課題曲追加、活動報告変換 |
+| 📅 **スケジュール** | `e2e/activity-schedules.spec.ts` | 10件 | スケジュール作成・編集・削除、参加登録、コメント、報告書作成、場所情報 |
+| 👤 **プロフィール** | `e2e/profile.spec.ts` | 8件 | プロフィール編集、自己紹介・担当楽器、アバター画像、他ユーザー閲覧 |
 | 👥 **ユーザー管理** | `e2e/user-management.spec.ts` | 12件 | サイト管理者のユーザー管理、役割変更、アクセス制限 |
-| **合計** | | **26件** | |
+| 🔒 **アクセス制御** | `e2e/access-control.spec.ts` | 20件 | 公開ページアクセス、権限制御、管理者機能、メンバー制限 |
+| **合計** | **8ファイル** | **77件** | **全主要機能をカバー** |
 
 **テストフロー例:**
 
@@ -1713,7 +1716,7 @@ npm start
 | **データベース** | SQLite（`dev.db`） |
 | **認証** | テストユーザー（`admin@example.com`） |
 | **ポート** | `3000` |
-| **ブラウザ** | Chromium、Firefox、Webkit |
+| **ブラウザ** | Chromium、Firefox、Mobile Chrome（CI拡張モード） |
 
 ### CI/CDでのテスト
 
@@ -1721,10 +1724,17 @@ GitHub Actionsで自動実行されるテスト：
 
 ```yaml
 # .github/workflows/ci.yml
-- Lint & Type Check
-- Build Test
-- E2E Tests (Chromium)
+jobs:
+  - Lint & Type Check
+  - Build Test
+  - E2E Tests (Chromium + Firefox + Mobile Chrome)
 ```
+
+**テストブラウザ:**
+- ✅ **Chromium**: 常時実行（高速）
+- ✅ **Firefox**: CI拡張モード（CI_EXTENDED_BROWSERS=true）
+- ✅ **Mobile Chrome**: CI拡張モード（モバイル対応確認）
+- ❌ **WebKit/Safari**: 除外（Safari対応不要のため）
 
 ---
 
