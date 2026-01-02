@@ -1,16 +1,16 @@
 # 第31章：API Routesの詳細解説
 
-> **この章では、プロジェクト内の全API Routesコードを1行1行完璧に解説します**
+> **この章では、プロジェクト内の全API Routesの実装パターンと設計思想を詳細に解説します**
 
 ## 📚 この章の目的
 
-この章は、**BOLD軽音メンバーサイトプロジェクトの既存コードを完全に理解する**ためのものです。
-教科書で新しく実装するのではなく、既にプロジェクトに存在する34個のAPIファイルすべてを詳細に解説します。
+この章は、**BOLD軽音メンバーサイトプロジェクトのAPI実装を完全に理解する**ためのリファレンスです。
+プロジェクトに実装されている34個のAPI Routeファイルについて、実装の背景と主要なコードパターンを解説します。
 
 ### この章で学べること
 
-- ✅ プロジェクトの各API Routeの完全なソースコード
-- ✅ すべてのコード行の詳細な解説（なぜそのコードが必要か）
+- ✅ プロジェクトの各API Routeの実装コード
+- ✅ 主要な処理の解説（なぜそのコードが必要か）
 - ✅ Next.js 16 App Routerの実践的なAPI実装パターン
 - ✅ Prismaによるデータベース操作の実例
 - ✅ NextAuth.js v5を使った認証・権限管理の実装
@@ -156,7 +156,7 @@ export async function METHOD(request: NextRequest) {
 
 ### 31.1.1 投稿一覧取得と新規作成（src/app/api/posts/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
@@ -326,7 +326,7 @@ youtubeUrls: (youtubeUrls || [])
 
 ### 31.1.2 投稿の詳細・更新・削除（src/app/api/posts/[id]/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
@@ -516,7 +516,7 @@ await prisma.post.update({ where: { id }, data: {...} })
 
 いいね機能のトグルAPI実装です。
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -695,7 +695,7 @@ export async function DELETE(
 
 コメント投稿のAPI実装です。
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -777,7 +777,7 @@ export async function POST(
 
 参加登録のトグルAPI実装です。
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
@@ -1214,7 +1214,7 @@ const handleLike = async (postId: string) => {
 
 ### 31.1.3 投稿詳細取得（src/app/api/posts/[id]/details/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -2953,7 +2953,7 @@ src/app/api/activity-schedules/
 
 ### 31.3.1 活動スケジュール一覧取得・作成（src/app/api/activity-schedules/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -3164,7 +3164,7 @@ export async function POST(request: Request) {
 
 ### 31.3.2 活動スケジュール更新・削除（src/app/api/activity-schedules/[id]/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -3323,7 +3323,7 @@ export async function DELETE(
 
 ### 31.3.3 活動スケジュール参加トグル（src/app/api/activity-schedules/[id]/participate/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -3421,7 +3421,7 @@ export async function POST(
 
 ### 31.3.4 活動スケジュールコメント投稿（src/app/api/activity-schedules/[id]/comments/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -3481,7 +3481,7 @@ export async function POST(
 
 ### 31.3.5 活動スケジュール詳細取得（src/app/api/activity-schedules/[id]/details/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -3561,7 +3561,7 @@ export async function GET(
 
 ### 31.3.6 報告書作成（src/app/api/activity-schedules/[id]/report/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -3708,7 +3708,7 @@ src/app/api/
 
 ### 31.4.1 ユーザー一覧取得（src/app/api/users/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextResponse } from 'next/server'
@@ -3806,7 +3806,7 @@ export async function GET() {
 
 ### 31.4.2 ユーザーの削除と役割変更（src/app/api/users/[id]/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
@@ -3963,7 +3963,7 @@ export async function PATCH(
 
 ### 31.4.3 プロフィール更新（src/app/api/profile/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
@@ -4029,7 +4029,7 @@ export async function PATCH(req: NextRequest) {
 
 ### 31.4.4 アバター画像アップロード（src/app/api/profile/avatar/route.ts）
 
-**完全なソースコード:**
+**実装コード:**
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server'
