@@ -6908,17 +6908,16 @@ export default async function Page() {
 
 ### 学んだこと
 
-**1. Next.js の基礎（5.1-5.3）**
+**1. Next.js の基礎（5.1-5.2）**
 ```
 ✅ Next.js とは: React フレームワーク
 ✅ App Router: ファイルベースルーティング
-✅ ページ作成: page.tsx でページを定義
-✅ URL マッピング: ディレクトリ構造 = URL 構造
 ```
 
-**2. ルーティング（5.4-5.6）**
+**2. ルーティング（5.3-5.6）**
 ```
 ✅ 動的ルート: [id], [...slug], [[...slug]]
+✅ ページ作成: page.tsx でページを定義
 ✅ レイアウト: 共通 UI の再利用
 ✅ リンク: <Link> コンポーネントで高速ナビゲーション
 ✅ useRouter: プログラムからの遷移
@@ -6950,11 +6949,19 @@ export default async function Page() {
    - エラーハンドリング
 ```
 
-**5. 最適化（5.10-5.12）**
+**5. Server Actions と最適化（5.10-5.12）**
 ```
+✅ Server Actions: フォーム処理の新しい方法
 ✅ メタデータ: SEO 対策
 ✅ Image: 画像の自動最適化
+```
+
+**6. 実践と応用（5.13-5.16）**
+```
 ✅ 環境変数: 秘密情報の管理
+✅ ブログアプリ: 実践例
+✅ ミドルウェア: 認証・リダイレクト
+✅ Next.js 16 + React 19: 最新機能
 ```
 
 ---
@@ -7014,23 +7021,18 @@ await fetch('/api/posts', { next: { revalidate: 60 } });
 
 ---
 
-### Next.js の学習ロードマップ
+### Next.js の学習内容
 
 ```
-Chapter 5 で学んだこと（基礎）:
+この章で学んだこと:
 ✅ App Router の基本
-✅ ページとレイアウト
+✅ 動的ルートとページ作成
 ✅ サーバー/クライアントコンポーネント
-✅ データ取得
-✅ API ルート
-
-さらに学ぶべきこと（発展）:
-📚 Server Actions（フォーム処理の新しい方法）
-📚 Streaming（段階的なレンダリング）
-📚 Parallel Routes（並行ルーティング）
-📚 Intercepting Routes（モーダル実装）
-📚 Middleware（認証・リダイレクト）
-📚 Edge Runtime（エッジコンピューティング）
+✅ データ取得と API ルート
+✅ Server Actions とフォーム処理
+✅ 画像最適化とメタデータ
+✅ ミドルウェアと環境変数
+✅ Next.js 16 + React 19 の新機能
 ```
 
 ---
