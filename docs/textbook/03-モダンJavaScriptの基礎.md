@@ -5022,7 +5022,7 @@ graph LR
     A[JavaScriptオブジェクト] -->|stringify| B[JSON文字列]
     B -->|parse| A
     
-    C["{ name: '田中' }"] -->|stringify| D['{"name":"田中"}']
+    C["{ name: '田中' }"] -->|stringify| D["&quot;{&quot;name&quot;:&quot;田中&quot;}&quot;"]
     D -->|parse| C
     
     style A fill:#e1f5ff
