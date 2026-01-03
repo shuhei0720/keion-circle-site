@@ -4885,7 +4885,29 @@ function SearchComponent() {
 
 Next.jsプロジェクト内に練習用のページを作成します。
 
-**1. プロジェクトの開発サーバーを起動：**
+**プロジェクトがまだない場合：**
+
+```bash
+# Next.jsプロジェクトを新規作成
+npx create-next-app@latest my-react-practice
+
+# プロンプトが表示されたら以下を選択：
+# ✔ Would you like to use TypeScript? … Yes
+# ✔ Would you like to use ESLint? … Yes
+# ✔ Would you like to use Tailwind CSS? … No
+# ✔ Would you like your code inside a `src/` directory? … Yes
+# ✔ Would you like to use App Router? … Yes
+# ✔ Would you like to use Turbopack for next dev? … Yes
+# ✔ Would you like to customize the import alias? … No
+
+# プロジェクトフォルダに移動
+cd my-react-practice
+
+# 開発サーバーを起動
+npm run dev
+```
+
+**既存のプロジェクトがある場合：**
 
 ```bash
 # プロジェクトフォルダに移動
@@ -4897,7 +4919,7 @@ npm run dev
 
 ブラウザで `http://localhost:3000` を開いて、サイトが表示されることを確認してください。
 
-**2. 練習用ページファイルを作成：**
+**練習用ページファイルを作成：**
 
 以下のファイルを新規作成します：
 
@@ -4909,7 +4931,7 @@ your-nextjs-project/
               └── page.tsx  ← 新規作成
 ```
 
-**3. 初期コードを記述：**
+**初期コードを記述：**
 
 `src/app/practice/page.tsx` に以下を記述：
 
@@ -4928,7 +4950,7 @@ export default function PracticePage() {
 }
 ```
 
-**4. 確認：**
+**確認：**
 
 ブラウザで `http://localhost:3000/practice` を開いてください。
 - 「準備OK！」と表示されればセットアップ完了です
