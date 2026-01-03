@@ -6995,12 +6995,54 @@ function MyComponent({ userId }) {
 
 フォームは Web アプリケーションで**最も重要**な要素の一つです。ここでは実践的なフォーム処理を学びます。
 
+---
+
+### 準備：練習用ページの作成
+
+**1. 新しい練習用ページを作成：**
+
+以下のファイルを新規作成します：
+
+```
+your-nextjs-project/
+  └── src/
+      └── app/
+          └── practice-form/
+              └── page.tsx  ← 新規作成
+```
+
+**2. 初期コードを記述：**
+
+`src/app/practice-form/page.tsx` に以下を記述：
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+
+export default function PracticeFormPage() {
+  return (
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+      <h1>フォーム練習</h1>
+      <p>ここからフォームを作っていきます</p>
+    </div>
+  );
+}
+```
+
+**3. 確認：**
+
+開発サーバーが起動していることを確認して、ブラウザで `http://localhost:3000/practice-form` を開いてください。
+
+---
+
 ### 複数入力フォームの管理
 
 複数の入力項目を効率的に管理する方法です。
 
-```typescript
-// src/components/UserRegistrationForm.tsx
+**`src/app/practice-form/page.tsx` を以下のように編集してください：**
+
+```tsx
 'use client';
 
 import { useState } from 'react';
@@ -7024,7 +7066,7 @@ interface FormErrors {
   terms?: string;
 }
 
-export default function UserRegistrationForm() {
+export default function PracticeFormPage() {
   // 1つのStateで全フォームデータを管理
   const [formData, setFormData] = useState<FormData>({
     name: '',
@@ -7324,15 +7366,15 @@ export default function UserRegistrationForm() {
 
 長いフォームを複数のステップに分割します。
 
-```typescript
-// src/components/MultiStepForm.tsx
-'use client';
+**同じ `src/app/practice-form/page.tsx` に、別のコンポーネントとして実装できます。**
 
-import { useState } from 'react';
+以下を**ファイルの下部に追加**してください：
 
+```tsx
+// 複数ステップフォーム用の型定義
 type Step = 1 | 2 | 3;
 
-interface FormData {
+interface MultiStepFormData {
   // ステップ1
   name: string;
   email: string;
@@ -7346,9 +7388,10 @@ interface FormData {
   cvv: string;
 }
 
-export default function MultiStepForm() {
+// 複数ステップフォームコンポーネント
+function MultiStepForm() {
   const [currentStep, setCurrentStep] = useState<Step>(1);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<MultiStepFormData>({
     name: '',
     email: '',
     address: '',
@@ -7684,6 +7727,37 @@ stateDiagram-v2
 >   }
 > };
 > ```
+
+---
+
+**両方のフォームを表示する方法：**
+
+`src/app/practice-form/page.tsx` のメインコンポーネントで、両方のフォームを表示できます：
+
+```tsx
+export default function PracticeFormPage() {
+  return (
+    <div style={{ padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
+      <h1>フォーム練習</h1>
+      
+      <section style={{ marginBottom: '60px' }}>
+        <h2>1. 登録フォーム（バリデーション付き）</h2>
+        {/* 最初に作成したフォームをここに配置 */}
+      </section>
+      
+      <section>
+        <h2>2. 複数ステップフォーム</h2>
+        <MultiStepForm />
+      </section>
+    </div>
+  );
+}
+```
+
+**ポイント：**
+- 1つのページファイル内に複数のコンポーネントを定義できます
+- `export default` は1つだけなので、メインコンポーネントに付けます
+- 他のコンポーネント（`MultiStepForm` など）は通常の `function` として定義します
 
 ---
 
