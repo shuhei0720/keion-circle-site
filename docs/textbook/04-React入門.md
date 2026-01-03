@@ -4879,9 +4879,72 @@ function SearchComponent() {
 
 ここまで学んだ知識を使って、完全なTODOアプリを**段階的に**作っていきましょう。
 
+---
+
+### 準備：練習用ページの作成
+
+Next.jsプロジェクト内に練習用のページを作成します。
+
+**1. プロジェクトの開発サーバーを起動：**
+
+```bash
+# プロジェクトフォルダに移動
+cd your-nextjs-project
+
+# 開発サーバーを起動
+npm run dev
+```
+
+ブラウザで `http://localhost:3000` を開いて、サイトが表示されることを確認してください。
+
+**2. 練習用ページファイルを作成：**
+
+以下のファイルを新規作成します：
+
+```
+your-nextjs-project/
+  └── src/
+      └── app/
+          └── practice/
+              └── page.tsx  ← 新規作成
+```
+
+**3. 初期コードを記述：**
+
+`src/app/practice/page.tsx` に以下を記述：
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+
+export default function PracticePage() {
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>準備OK！</h1>
+      <p>ここからTODOアプリを作っていきます</p>
+    </div>
+  );
+}
+```
+
+**4. 確認：**
+
+ブラウザで `http://localhost:3000/practice` を開いてください。
+- 「準備OK！」と表示されればセットアップ完了です
+- ファイルを編集すると自動的にブラウザが更新されます（ホットリロード）
+
+**ポイント：**
+- `'use client';` は必須です（Reactのフックはクライアントコンポーネントでのみ使用可能）
+- この `page.tsx` ファイルを編集していきます
+
+---
+
 ### ステップ1：最小限のTODOアプリ
 
 まずは、TODOを追加・表示するだけのシンプルなアプリから始めます。
+
+**`src/app/practice/page.tsx` の内容を以下に置き換えてください：**
 
 ```jsx
 import { useState } from 'react';
@@ -4978,6 +5041,12 @@ todos 配列に追加される
 
 TODOを削除できるようにします。
 
+**変更箇所：**
+1. `removeTodo` 関数を追加
+2. リストの各アイテムに削除ボタンを追加
+
+**ファイル全体を以下のように編集してください：**
+
 ```jsx
 function TodoApp() {
   const [todos, setTodos] = useState([]);
@@ -5063,6 +5132,13 @@ id が 2 じゃないものだけを残す
 ### ステップ3：完了機能を追加
 
 チェックボックスで完了状態を切り替えられるようにします。
+
+**変更箇所：**
+1. `toggleTodo` 関数を追加
+2. リストの各アイテムにチェックボックスを追加
+3. 完了したTODOに取り消し線を表示
+
+**ファイル全体を以下のように編集してください：**
 
 ```jsx
 function TodoApp() {
@@ -5176,6 +5252,13 @@ id === 1 のTODOを見つけた
 ### ステップ4：フィルター機能を追加
 
 「すべて」「未完了」「完了済み」でTODOを絞り込めるようにします。
+
+**変更箇所：**
+1. `filter` Stateを追加
+2. `filteredTodos` でフィルタリング処理
+3. フィルターボタンを追加
+
+**ファイル全体を以下のように編集してください：**
 
 ```jsx
 function TodoApp() {
@@ -5304,6 +5387,13 @@ filter = 'completed'（完了済み）
 ### ステップ5：統計情報とEnterキー対応を追加
 
 最後の仕上げとして、統計情報の表示とEnterキーでの追加機能を実装します。
+
+**変更箇所：**
+1. 統計情報の計算（総数、完了数、未完了数）
+2. 入力欄でEnterキーを押したときの処理を追加
+3. 完了済みTODOを一括削除するボタンを追加
+
+**ファイル全体を以下のように編集してください：**
 
 ```jsx
 function TodoApp() {
@@ -5544,6 +5634,12 @@ onKeyPress={(e) => e.key === 'Enter' && addTodo()}
 ### LocalStorageに保存する（発展）
 
 ページをリロードしてもTODOが残るように、LocalStorageに保存します。
+
+**変更箇所：**
+1. `useState` の初期値をLocalStorageから読み込むように変更
+2. `useEffect` を使ってtodosの変更時に自動保存
+
+**ファイルの先頭部分を以下のように編集してください：**
 
 ```jsx
 import { useState, useEffect } from 'react';
