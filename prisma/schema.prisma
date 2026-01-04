@@ -78,6 +78,8 @@ model Post {
   youtubeUrls String[] // YouTube URL配列
   images      String[] // Supabase Storageの画像URL配列
   userId      String
+  type        String?  // 投稿タイプ（本番DBに存在）
+  sourceId    String?  // ソースID（本番DBに存在）
   eventId     String?  // 報告元のイベントID
   activityScheduleId String?  // 報告元の活動スケジュールID
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -150,6 +152,7 @@ model Comment {
 model ActivitySchedule {
   id          String   @id @default(cuid())
   title       String
+  description String?  // 説明（本番DBに存在）
   content     String?  // マークダウン形式
   date        DateTime?
   location    String?  // 開催場所名
@@ -177,6 +180,7 @@ model ActivityParticipant {
 model Event {
   id            String   @id @default(cuid())
   title         String
+  description   String?  // 説明（本番DBに存在）
   content       String?  // マークダウン形式
   date          DateTime?
   locationName  String?  // 開催場所名

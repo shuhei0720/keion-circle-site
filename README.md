@@ -1795,6 +1795,42 @@ jobs:
 
 ## 🔄 CI/CD
 
+### 自動データベースバックアップ 🔐
+
+本プロジェクトでは、**GitHub Actionsによる自動データベースバックアップシステム**を実装しています。
+
+#### 📦 バックアップの特徴
+
+- **自動実行**: 毎日午前3時（UTC）に自動バックアップ
+- **暗号化**: AES-256-CBC（PBKDF2鍵導出）で個人情報を保護
+- **保存期間**: GitHub Artifactsに30日間保存
+- **手動実行**: GitHub Actionsから手動トリガーも可能
+- **自動クリーンアップ**: 30日以上古いバックアップを毎週自動削除
+
+#### 🔄 バックアップワークフロー
+
+**ワークフロー:** `.github/workflows/backup-database.yml`
+
+```mermaid
+graph LR
+    A[毎日3:00 UTC] --> B[PostgreSQL 17<br/>クライアント準備]
+    B --> C[pg_dump<br/>データベース抽出]
+    C --> D[OpenSSL<br/>AES-256 暗号化]
+    D --> E[gzip 圧縮]
+    E --> F[GitHub Artifacts<br/>30日保存]
+```
+
+#### 📖 復元手順
+
+バックアップからの復元方法については、詳細なドキュメントを用意しています：
+
+👉 **[データベース復元手順](./docs/dbrestore/README.md)**
+
+- 本番環境への復元方法
+- 開発環境への復元方法
+- トラブルシューティング
+- セキュリティ注意事項
+
 ### GitHub Actions
 
 **ワークフロー:** `.github/workflows/ci.yml`
