@@ -58,29 +58,6 @@ jobs:
           path: db_backup_*.sql.gz
           retention-days: 30  # 30日間保存
       
-      - name: Create Release with backup
-        uses: softprops/action-gh-release@v1
-        if: github.event_name == 'workflow_dispatch'  # 手動実行時のみ
-        with:
-          tag_name: backup-${{ github.run_number }}
-          name: Database Backup ${{ github.run_number }}
-          body: |
-            🗄️ データベースバックアップ
-            
-            作成日時: ${{ github.event.head_commit.timestamp }}
-            
-            ## 復元方法
-            ```bash
-            # バックアップファイルをダウンロード
-            gunzip db_backup_*.sql.gz
-            
-            # 復元
-            psql "$DATABASE_URL" < db_backup_*.sql
-            ```
-          files: db_backup_*.sql.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
       - name: Notify on failure
         if: failure()
         run: |
