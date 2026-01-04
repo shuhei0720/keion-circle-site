@@ -40,8 +40,8 @@ jobs:
           BACKUP_URL=$(echo $DATABASE_URL | sed 's/?pgbouncer=true&connection_limit=1//')
           BACKUP_URL=$(echo $BACKUP_URL | sed 's/?pgbouncer=true//')
           
-          # pg_dumpを実行
-          pg_dump "$BACKUP_URL" > "$BACKUP_FILE"
+          # pg_dump 17を明示的に使用
+          /usr/lib/postgresql/17/bin/pg_dump "$BACKUP_URL" > "$BACKUP_FILE"
           
           # ファイルサイズを確認
           SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
