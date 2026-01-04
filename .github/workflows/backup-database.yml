@@ -28,6 +28,7 @@ jobs:
       - name: Create backup
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
         run: |
           # タイムスタンプ
           TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
@@ -47,15 +48,25 @@ jobs:
           SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
           echo "✅ バックアップ完了！サイズ: $SIZE"
           
-          # 圧縮
-          gzip "$BACKUP_FILE"
-          echo "backup_file=${BACKUP_FILE}.gz" >> $GITHUB_OUTPUT
+          # 暗号化してから圧縮（AES-256-CBC）
+          if [ -n "$BACKUP_ENCRYPTION_KEY" ]; then
+            echo "🔐 バックアップを暗号化中..."
+            openssl enc -aes-256-cbc -salt -pbkdf2 -in "$BACKUP_FILE" -out "${BACKUP_FILE}.enc" -k "$BACKUP_ENCRYPTION_KEY"
+            rm "$BACKUP_FILE"  # 元ファイルを削除
+            gzip "${BACKUP_FILE}.enc"
+            echo "✅ 暗号化完了: ${BACKUP_FILE}.enc.gz"
+            echo "backup_file=${BACKUP_FILE}.enc.gz" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ BACKUP_ENCRYPTION_KEY が設定されていません。暗号化をスキップします。"
+            gzip "$BACKUP_FILE"
+            echo "backup_file=${BACKUP_FILE}.gz" >> $GITHUB_OUTPUT
+          fi
       
       - name: Upload backup as artifact
         uses: actions/upload-artifact@v4
         with:
           name: database-backup-${{ github.run_number }}
-          path: db_backup_*.sql.gz
+          path: db_backup_*.enc.gz
           retention-days: 30  # 30日間保存
       
       - name: Notify on failure
