@@ -2,10 +2,6 @@
 
 この章では、**Next.js**の基本を学びます。Next.jsは、Reactをベースにした強力なフレームワークで、本プロジェクトでも使用しています。
 
-# 第5章：Next.js入門
-
-この章では、**Next.js**の基本を学びます。Next.jsは、Reactをベースにした強力なフレームワークで、本プロジェクトでも使用しています。
-
 ## 5.1 Next.jsとは
 
 ### Next.jsの特徴
@@ -5647,30 +5643,180 @@ console.log(env.DATABASE_URL);  // 型安全
 
 ## 5.14 実践例：ブログアプリ
 
-ここまでの知識を使って、簡単なブログアプリを作ってみましょう。
+ここまでの知識を使って、簡単なブログアプリを**段階的に**作っていきましょう。
 
-### ディレクトリ構造
+---
 
+### 準備：プロジェクトのセットアップ
+
+**1. 新しいNext.jsプロジェクトを作成：**
+
+```bash
+# プロジェクトを作成
+npx create-next-app@latest blog-practice
+
+# プロンプトが表示されたら以下を選択：
+# ✔ Would you like to use TypeScript? … Yes
+# ✔ Would you like to use ESLint? … Yes
+# ✔ Would you like to use Tailwind CSS? … No  (シンプルなCSSを使用)
+# ✔ Would you like your code inside a `src/` directory? … Yes
+# ✔ Would you like to use App Router? … Yes
+# ✔ Would you like to use Turbopack for next dev? … Yes
+# ✔ Would you like to customize the import alias? … No
+
+# プロジェクトフォルダに移動
+cd blog-practice
+
+# 開発サーバーを起動
+npm run dev
 ```
-src/app/
-├── layout.tsx              # ルートレイアウト
-├── page.tsx                # トップページ
-├── blog/
-│   ├── page.tsx            # /blog（記事一覧）
-│   ├── [slug]/
-│   │   └── page.tsx        # /blog/my-post（記事詳細）
-│   └── new/
-│       └── page.tsx        # /blog/new（新規作成）
-└── api/
-    └── posts/
-        ├── route.ts        # GET, POST /api/posts
-        └── [id]/
-            └── route.ts    # GET, PUT, DELETE /api/posts/[id]
+
+ブラウザで `http://localhost:3000` を開いて、Next.jsのデフォルトページが表示されることを確認してください。
+
+**2. 基本的なCSSファイルを準備：**
+
+`src/app/globals.css` を以下の内容に置き換えてください：
+
+```css
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  color: #333;
+}
+
+.header {
+  background: #2563eb;
+  color: white;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+}
+
+.header nav {
+  display: flex;
+  gap: 2rem;
+}
+
+.header a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.header a:hover {
+  text-decoration: underline;
+}
+
+.main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+}
+
+.footer {
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+  border-top: 1px solid #e5e5e5;
+  color: #666;
+}
+
+.posts-grid {
+  display: grid;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.post-card {
+  border: 1px solid #e5e5e5;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.post-card h2 {
+  margin-bottom: 0.5rem;
+}
+
+.post-card a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.post-card a:hover {
+  text-decoration: underline;
+}
+
+.post-card p {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.post-card time {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 600px;
+}
+
+form div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+label {
+  font-weight: 500;
+}
+
+input, textarea {
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+button {
+  padding: 0.75rem 1.5rem;
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
 ```
 
-### 1. ルートレイアウト
+---
 
-**src/app/layout.tsx：**
+### ステップ1：レイアウトとトップページを作成
+
+まず、共通のレイアウトとトップページを作成します。
+
+**`src/app/layout.tsx` を以下のように編集：**
 
 ```tsx
 import Link from 'next/link';
@@ -5704,9 +5850,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-### 2. トップページ
-
-**src/app/page.tsx：**
+**`src/app/page.tsx` を以下のように編集：**
 
 ```tsx
 import Link from 'next/link';
@@ -5722,9 +5866,141 @@ export default function Home() {
 }
 ```
 
-### 3. 記事一覧
+**動作確認：**
+- ブラウザで `http://localhost:3000` を開く
+- ヘッダーに「ホーム」「ブログ」「新規作成」のリンクが表示されることを確認
+- 「My Blogへようこそ」が表示されることを確認
 
-**src/app/blog/page.tsx：**
+---
+
+### ステップ2：APIルートを作成（データの保存と取得）
+
+次に、ブログ記事のデータを管理するAPIを作成します。
+
+**`src/app/api/posts/route.ts` を新規作成：**
+
+```ts
+import { NextResponse } from 'next/server';
+
+// 記事の型定義
+interface Post {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  createdAt: Date;
+}
+
+// 仮のデータストア（実際はデータベースを使用）
+let posts: Post[] = [
+  {
+    id: 1,
+    slug: 'first-post',
+    title: '最初の投稿',
+    excerpt: 'これは最初の投稿です。',
+    content: '<p>これは最初の投稿の内容です。Next.jsは素晴らしいフレームワークです！</p>',
+    createdAt: new Date('2025-01-01'),
+  },
+  {
+    id: 2,
+    slug: 'second-post',
+    title: '2つ目の投稿',
+    excerpt: 'これは2つ目の投稿です。',
+    content: '<p>2つ目の投稿です。Server ComponentsとClient Componentsを使い分けましょう。</p>',
+    createdAt: new Date('2025-01-02'),
+  },
+];
+
+// GET /api/posts - 記事一覧を取得
+export async function GET() {
+  return NextResponse.json(posts);
+}
+
+// POST /api/posts - 新しい記事を作成
+export async function POST(request: Request) {
+  const body = await request.json();
+  const { title, content } = body;
+  
+  const newPost: Post = {
+    id: posts.length + 1,
+    slug: title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+    title,
+    excerpt: content.replace(/<[^>]+>/g, '').substring(0, 100) + '...',
+    content,
+    createdAt: new Date(),
+  };
+  
+  posts.push(newPost);
+  
+  return NextResponse.json(newPost, { status: 201 });
+}
+```
+
+**`src/app/api/posts/[slug]/route.ts` を新規作成：**
+
+```ts
+import { NextResponse } from 'next/server';
+
+// 記事の型定義（上と同じ）
+interface Post {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  createdAt: Date;
+}
+
+// 同じデータストア（実際はDBから取得）
+let posts: Post[] = [
+  {
+    id: 1,
+    slug: 'first-post',
+    title: '最初の投稿',
+    excerpt: 'これは最初の投稿です。',
+    content: '<p>これは最初の投稿の内容です。Next.jsは素晴らしいフレームワークです！</p>',
+    createdAt: new Date('2025-01-01'),
+  },
+  {
+    id: 2,
+    slug: 'second-post',
+    title: '2つ目の投稿',
+    excerpt: 'これは2つ目の投稿です。',
+    content: '<p>2つ目の投稿です。Server ComponentsとClient Componentsを使い分けましょう。</p>',
+    createdAt: new Date('2025-01-02'),
+  },
+];
+
+// GET /api/posts/[slug] - 特定の記事を取得
+export async function GET(
+  request: Request,
+  { params }: { params: { slug: string } }
+) {
+  const post = posts.find(p => p.slug === params.slug);
+  
+  if (!post) {
+    return NextResponse.json(
+      { error: '記事が見つかりません' },
+      { status: 404 }
+    );
+  }
+  
+  return NextResponse.json(post);
+}
+```
+
+**動作確認：**
+- ブラウザで `http://localhost:3000/api/posts` を開く
+- JSON形式で記事一覧が表示されることを確認
+- `http://localhost:3000/api/posts/first-post` を開く
+- 特定の記事が表示されることを確認
+
+---
+
+### ステップ3：記事一覧ページを作成
+
+**`src/app/blog/page.tsx` を新規作成：**
 
 ```tsx
 import Link from 'next/link';
@@ -5732,7 +6008,7 @@ import Link from 'next/link';
 // サーバーコンポーネント（データ取得）
 export default async function BlogList() {
   const response = await fetch('http://localhost:3000/api/posts', {
-    cache: 'no-store'  // 常に最新データ
+    cache: 'no-store'  // 常に最新データを取得
   });
   const posts = await response.json();
   
@@ -5740,7 +6016,7 @@ export default async function BlogList() {
     <div>
       <h1>記事一覧</h1>
       <div className="posts-grid">
-        {posts.map(post => (
+        {posts.map((post: any) => (
           <article key={post.id} className="post-card">
             <h2>
               <Link href={`/blog/${post.slug}`}>
@@ -5757,11 +6033,19 @@ export default async function BlogList() {
 }
 ```
 
-### 4. 記事詳細
+**動作確認：**
+- ブラウザで `http://localhost:3000/blog` を開く
+- 2つの記事（「最初の投稿」「2つ目の投稿」）が表示されることを確認
+- 記事タイトルをクリックできることを確認（まだ詳細ページは作成していないのでエラーになります）
 
-**src/app/blog/[slug]/page.tsx：**
+---
+
+### ステップ4：記事詳細ページを作成
+
+**`src/app/blog/[slug]/page.tsx` を新規作成：**
 
 ```tsx
+// メタデータの生成
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const response = await fetch(`http://localhost:3000/api/posts/${params.slug}`);
   const post = await response.json();
@@ -5772,6 +6056,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
+// 記事詳細ページ
 export default async function BlogPost({ params }: { params: { slug: string } }) {
   const response = await fetch(`http://localhost:3000/api/posts/${params.slug}`);
   const post = await response.json();
@@ -5786,9 +6071,16 @@ export default async function BlogPost({ params }: { params: { slug: string } })
 }
 ```
 
-### 5. 新規作成
+**動作確認：**
+- ブラウザで `http://localhost:3000/blog/first-post` を開く
+- 記事の詳細が表示されることを確認
+- ブラウザのタブに「最初の投稿 | My Blog」と表示されることを確認
 
-**src/app/blog/new/page.tsx：**
+---
+
+### ステップ5：新規作成ページを作成
+
+**`src/app/blog/new/page.tsx` を新規作成：**
 
 ```tsx
 'use client';
@@ -5813,6 +6105,10 @@ export default function NewPost() {
         body: JSON.stringify({ title, content }),
       });
       
+      if (!response.ok) {
+        throw new Error('投稿に失敗しました');
+      }
+      
       const post = await response.json();
       router.push(`/blog/${post.slug}`);
     } catch (error) {
@@ -5834,6 +6130,7 @@ export default function NewPost() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
+            placeholder="記事のタイトルを入力"
             required
           />
         </div>
@@ -5845,6 +6142,7 @@ export default function NewPost() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={10}
+            placeholder="記事の内容を入力（HTMLタグも使えます）"
             required
           />
         </div>
@@ -5858,48 +6156,44 @@ export default function NewPost() {
 }
 ```
 
-### 6. APIルート
+**動作確認：**
+- ブラウザで `http://localhost:3000/blog/new` を開く
+- タイトルと内容を入力して「投稿」ボタンをクリック
+- 新しい記事が作成され、記事詳細ページにリダイレクトされることを確認
+- 記事一覧ページで新しい記事が表示されることを確認
 
-**src/app/api/posts/route.ts：**
+---
 
-```ts
-import { NextResponse } from 'next/server';
+### 完成！
 
-// 仮のデータストア（実際はデータベースを使用）
-let posts = [
-  {
-    id: 1,
-    slug: 'first-post',
-    title: '最初の投稿',
-    excerpt: 'これは最初の投稿です。',
-    content: '<p>これは最初の投稿の内容です。</p>',
-    createdAt: new Date('2025-01-01'),
-  },
-];
+これで簡単なブログアプリが完成しました。以下の機能が実装されています：
 
-// GET /api/posts
-export async function GET() {
-  return NextResponse.json(posts);
-}
+✅ **記事一覧表示** - Server Componentでデータを取得
+✅ **記事詳細表示** - 動的ルートを使用
+✅ **記事作成** - Client ComponentとAPIルートで実装
+✅ **メタデータ** - SEO対策
+✅ **レイアウト** - 共通のヘッダーとフッター
 
-// POST /api/posts
-export async function POST(request: Request) {
-  const body = await request.json();
-  const { title, content } = body;
-  
-  const newPost = {
-    id: posts.length + 1,
-    slug: title.toLowerCase().replace(/\s+/g, '-'),
-    title,
-    excerpt: content.substring(0, 100),
-    content,
-    createdAt: new Date(),
-  };
-  
-  posts.push(newPost);
-  
-  return NextResponse.json(newPost, { status: 201 });
-}
+**ディレクトリ構造（最終形）：**
+
+```
+blog-practice/
+└── src/
+    └── app/
+        ├── layout.tsx          # ルートレイアウト
+        ├── page.tsx            # トップページ
+        ├── globals.css         # スタイル
+        ├── blog/
+        │   ├── page.tsx        # 記事一覧
+        │   ├── [slug]/
+        │   │   └── page.tsx    # 記事詳細
+        │   └── new/
+        │       └── page.tsx    # 新規作成
+        └── api/
+            └── posts/
+                ├── route.ts      # 記事一覧・作成API
+                └── [slug]/
+                    └── route.ts  # 記事詳細API
 ```
 
 ---
@@ -7169,27 +7463,6 @@ Next.js プロジェクトの多くが TypeScript を使っています：
 ```
 
 ---
-
-### 第5章の総まとめ
-
-```
-Next.js = React フレームワーク
-├─ App Router: ファイルベースルーティング
-├─ Server Components: デフォルト、高速、SEO に強い
-├─ Client Components: 'use client'、インタラクティブ
-├─ Data Fetching: サーバーで async/await
-├─ API Routes: route.ts でバックエンド API
-├─ Optimization: Image, Metadata, Caching
-└─ Next.js 16 + React 19: 最新の機能と改善
-
-覚えておくこと:
-1. サーバーコンポーネントが基本
-2. 必要な部分だけクライアントコンポーネント
-3. データはサーバーで取得
-4. 適切なキャッシュ戦略
-5. Next.js 16: Async Request APIs を使用
-6. React 19: useOptimistic で楽観的UI
-```
 
 **🎉 お疲れ様でした！**
 
