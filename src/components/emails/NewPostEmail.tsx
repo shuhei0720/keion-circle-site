@@ -43,7 +43,7 @@ export default function NewPostEmail({
 
           <Section style={postBox}>
             <Heading style={postTitleStyle}>{postTitle}</Heading>
-            <Text style={postExcerpt}>
+            <Text style={postExcerptStyle}>
               {postExcerpt}
             </Text>
           </Section>
@@ -119,7 +119,7 @@ const postTitleStyle = {
   margin: '0 0 16px',
 };
 
-const postExcerpt = {
+const postExcerptStyle = {
   color: '#4b5563',
   fontSize: '15px',
   lineHeight: '24px',
