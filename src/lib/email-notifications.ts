@@ -98,13 +98,13 @@ export async function sendNewEventNotification(event: {
     );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
-    const failedResults = results.filter((r) => r.status === 'rejected');
+    const failedResults = results.filter((r) => r.status === 'rejected') as PromiseRejectedResult[];
     
     console.log('[sendNewEventNotification] 送信完了:', {
       total: recipients.length,
       success: successCount,
       failed: failedResults.length,
-      failures: failedResults.map((r: any) => r.reason?.message || r.reason),
+      failures: failedResults.map((r) => r.reason?.message || r.reason),
     });
 
     return { success: true, sent: successCount };
