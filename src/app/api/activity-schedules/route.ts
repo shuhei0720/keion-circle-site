@@ -155,20 +155,19 @@ export async function POST(request: Request) {
     revalidatePath('/activity-schedules')
 
     // メール通知を送信（非同期・エラーハンドリング）
+    // 接続プールの占有を防ぐため、awaitせずに非同期実行
     if (schedule.date && schedule.location) {
-      try {
-        console.log('メール通知を送信します:', { id: schedule.id, title: schedule.title })
-        const result = await sendNewActivityScheduleNotification({
-          id: schedule.id,
-          title: schedule.title,
-          date: schedule.date,
-          location: schedule.location,
-        })
+      console.log('メール通知を送信します:', { id: schedule.id, title: schedule.title })
+      sendNewActivityScheduleNotification({
+        id: schedule.id,
+        title: schedule.title,
+        date: schedule.date,
+        location: schedule.location,
+      }).then((result) => {
         console.log('メール通知の送信結果:', result)
-      } catch (error) {
+      }).catch((error) => {
         console.error('メール通知の送信に失敗しました:', error)
-        // メール送信失敗でもスケジュール作成は成功
-      }
+      })
     } else {
       console.log('メール通知をスキップ:', { date: schedule.date, location: schedule.location })
     }

@@ -97,19 +97,18 @@ export async function POST(request: NextRequest) {
     revalidatePath('/')
 
     // メール通知を送信（非同期・エラーハンドリング）
+    // 接続プールの占有を防ぐため、awaitせずに非同期実行
     if (post.title && post.content) {
-      try {
-        console.log('メール通知を送信します:', { id: post.id, title: post.title })
-        const result = await sendNewPostNotification({
-          id: post.id,
-          title: post.title,
-          content: post.content,
-        })
+      console.log('メール通知を送信します:', { id: post.id, title: post.title })
+      sendNewPostNotification({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+      }).then((result) => {
         console.log('メール通知の送信結果:', result)
-      } catch (error) {
+      }).catch((error) => {
         console.error('メール通知の送信に失敗しました:', error)
-        // メール送信失敗でも投稿作成は成功
-      }
+      })
     } else {
       console.log('メール通知をスキップ:', { title: post.title, hasContent: !!post.content })
     }
