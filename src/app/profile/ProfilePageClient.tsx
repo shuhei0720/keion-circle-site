@@ -14,6 +14,7 @@ interface ProfilePageClientProps {
     avatarUrl: string | null
     bio: string | null
     instruments: string | null
+    emailNotifications: boolean
     role: string
     createdAt: Date
     postParticipants: {
