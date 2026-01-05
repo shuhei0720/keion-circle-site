@@ -98,14 +98,20 @@ export async function POST(request: NextRequest) {
 
     // メール通知を送信（非同期・エラーハンドリング）
     if (post.title && post.content) {
-      sendNewPostNotification({
-        id: post.id,
-        title: post.title,
-        content: post.content,
-      }).catch((error) => {
+      try {
+        console.log('メール通知を送信します:', { id: post.id, title: post.title })
+        const result = await sendNewPostNotification({
+          id: post.id,
+          title: post.title,
+          content: post.content,
+        })
+        console.log('メール通知の送信結果:', result)
+      } catch (error) {
         console.error('メール通知の送信に失敗しました:', error)
         // メール送信失敗でも投稿作成は成功
-      })
+      }
+    } else {
+      console.log('メール通知をスキップ:', { title: post.title, hasContent: !!post.content })
     }
 
     return NextResponse.json(post)

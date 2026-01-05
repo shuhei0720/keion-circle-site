@@ -156,15 +156,21 @@ export async function POST(request: Request) {
 
     // メール通知を送信（非同期・エラーハンドリング）
     if (schedule.date && schedule.location) {
-      sendNewActivityScheduleNotification({
-        id: schedule.id,
-        title: schedule.title,
-        date: schedule.date,
-        location: schedule.location,
-      }).catch((error) => {
+      try {
+        console.log('メール通知を送信します:', { id: schedule.id, title: schedule.title })
+        const result = await sendNewActivityScheduleNotification({
+          id: schedule.id,
+          title: schedule.title,
+          date: schedule.date,
+          location: schedule.location,
+        })
+        console.log('メール通知の送信結果:', result)
+      } catch (error) {
         console.error('メール通知の送信に失敗しました:', error)
         // メール送信失敗でもスケジュール作成は成功
-      })
+      }
+    } else {
+      console.log('メール通知をスキップ:', { date: schedule.date, location: schedule.location })
     }
 
     return NextResponse.json(schedule, { status: 201 })
