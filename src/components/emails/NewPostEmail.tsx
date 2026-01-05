@@ -42,7 +42,7 @@ export default function NewPostEmail({
           </Text>
 
           <Section style={postBox}>
-            <Heading style={postTitle}>{postTitle}</Heading>
+            <Heading style={postTitleStyle}>{postTitle}</Heading>
             <Text style={postExcerpt}>
               {postExcerpt}
             </Text>
@@ -112,7 +112,7 @@ const postBox = {
   border: '1px solid #e5e7eb',
 };
 
-const postTitle = {
+const postTitleStyle = {
   color: '#1a1a1a',
   fontSize: '22px',
   fontWeight: '600',

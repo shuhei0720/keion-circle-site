@@ -44,7 +44,7 @@ export default function NewActivityScheduleEmail({
           </Text>
 
           <Section style={scheduleBox}>
-            <Heading style={scheduleTitle}>{scheduleTitle}</Heading>
+            <Heading style={scheduleTitleStyle}>{scheduleTitle}</Heading>
             <Text style={scheduleDetail}>
               📅 <strong>日時:</strong> {scheduleDate}
             </Text>
@@ -117,7 +117,7 @@ const scheduleBox = {
   border: '1px solid #e5e7eb',
 };
 
-const scheduleTitle = {
+const scheduleTitleStyle = {
   color: '#1a1a1a',
   fontSize: '22px',
   fontWeight: '600',

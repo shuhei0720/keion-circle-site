@@ -44,7 +44,7 @@ export default function NewEventEmail({
           </Text>
 
           <Section style={eventBox}>
-            <Heading style={eventTitle}>{eventTitle}</Heading>
+            <Heading style={eventTitleStyle}>{eventTitle}</Heading>
             <Text style={eventDetail}>
               📅 <strong>日時:</strong> {eventDate}
             </Text>
@@ -117,7 +117,7 @@ const eventBox = {
   border: '1px solid #e5e7eb',
 };
 
-const eventTitle = {
+const eventTitleStyle = {
   color: '#1a1a1a',
   fontSize: '22px',
   fontWeight: '600',
