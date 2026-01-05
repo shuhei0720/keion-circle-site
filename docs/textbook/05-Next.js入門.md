@@ -5914,7 +5914,7 @@ let posts: Post[] = [
     slug: 'first-post',
     title: '最初の投稿',
     excerpt: 'これは最初の投稿です。',
-    content: '<p>これは最初の投稿の内容です。Next.jsは素晴らしいフレームワークです！</p>',
+    content: 'これは最初の投稿の内容です。Next.jsは素晴らしいフレームワークです！',
     createdAt: new Date('2025-01-01'),
   },
   {
@@ -5922,7 +5922,7 @@ let posts: Post[] = [
     slug: 'second-post',
     title: '2つ目の投稿',
     excerpt: 'これは2つ目の投稿です。',
-    content: '<p>2つ目の投稿です。Server ComponentsとClient Componentsを使い分けましょう。</p>',
+    content: '2つ目の投稿です。Server ComponentsとClient Componentsを使い分けましょう。',
     createdAt: new Date('2025-01-02'),
   },
 ];
@@ -5941,7 +5941,7 @@ export async function POST(request: Request) {
     id: posts.length + 1,
     slug: title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
     title,
-    excerpt: content.replace(/<[^>]+>/g, '').substring(0, 100) + '...',
+    excerpt: content.substring(0, 100) + '...',
     content,
     createdAt: new Date(),
   };
@@ -5974,7 +5974,7 @@ let posts: Post[] = [
     slug: 'first-post',
     title: '最初の投稿',
     excerpt: 'これは最初の投稿です。',
-    content: '<p>これは最初の投稿の内容です。Next.jsは素晴らしいフレームワークです！</p>',
+    content: 'これは最初の投稿の内容です。Next.jsは素晴らしいフレームワークです！',
     createdAt: new Date('2025-01-01'),
   },
   {
@@ -5982,7 +5982,7 @@ let posts: Post[] = [
     slug: 'second-post',
     title: '2つ目の投稿',
     excerpt: 'これは2つ目の投稿です。',
-    content: '<p>2つ目の投稿です。Server ComponentsとClient Componentsを使い分けましょう。</p>',
+    content: '2つ目の投稿です。Server ComponentsとClient Componentsを使い分けましょう。',
     createdAt: new Date('2025-01-02'),
   },
 ];
@@ -6076,14 +6076,16 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 // 記事詳細ページ
 export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const response = await fetch(`http://localhost:3000/api/posts/${slug}`);
+  const response = await fetch(`http://localhost:3000/api/posts/${slug}`, {
+    cache: 'no-store'  // 最新データを取得
+  });
   const post = await response.json();
   
   return (
     <article>
       <h1>{post.title}</h1>
       <time>{new Date(post.createdAt).toLocaleDateString('ja-JP')}</time>
-      <div dangerouslySetInnerHTML={{ __html: post.content }} />
+      <p>{post.content}</p>
     </article>
   );
 }
@@ -6160,7 +6162,7 @@ export default function NewPost() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             rows={10}
-            placeholder="記事の内容を入力（HTMLタグも使えます）"
+            placeholder="記事の内容を入力してください"
             required
           />
         </div>
