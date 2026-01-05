@@ -14,6 +14,8 @@ describe('supabase', () => {
     process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co';
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key';
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { supabase } = require('../supabase');
     
     expect(supabase).not.toBeNull();
@@ -27,6 +29,8 @@ describe('supabase', () => {
     // console.warnのモック
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { supabase } = require('../supabase');
     
     expect(supabase).toBeNull();
@@ -43,6 +47,7 @@ describe('supabase', () => {
 
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { supabase } = require('../supabase');
     
     expect(supabase).toBeNull();
@@ -57,6 +62,7 @@ describe('supabase', () => {
 
     const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { supabase } = require('../supabase');
     
     expect(supabase).toBeNull();
