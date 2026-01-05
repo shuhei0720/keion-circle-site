@@ -165,20 +165,20 @@ export async function POST(request: Request) {
 
     // メール通知を送信（非同期・エラーハンドリング）
     // 接続プールの占有を防ぐため、awaitせずに非同期実行
-    if (event.date && event.locationName) {
+    if (event.date) {
       console.log('メール通知を送信します:', { id: event.id, title: event.title })
       sendNewEventNotification({
         id: event.id,
         title: event.title,
         date: event.date,
-        location: event.locationName,
+        location: event.locationName || '未定',
       }).then((result) => {
         console.log('メール通知の送信結果:', result)
       }).catch((error) => {
         console.error('メール通知の送信に失敗しました:', error)
       })
     } else {
-      console.log('メール通知をスキップ:', { date: event.date, location: event.locationName })
+      console.log('メール通知をスキップ（日時未設定）:', { date: event.date })
     }
 
     return NextResponse.json(event, { status: 201 })
