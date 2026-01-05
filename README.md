@@ -320,6 +320,7 @@ erDiagram
         string avatarUrl "Supabase"
         string bio "自己紹介"
         string instruments "担当楽器"
+        boolean emailNotifications "メール通知有効"
         datetime createdAt
         datetime updatedAt
     }
@@ -433,6 +434,7 @@ erDiagram
 | `avatarUrl` | `string?` | アバター画像URL（Supabase Storage） |
 | `bio` | `string?` | 自己紹介 |
 | `instruments` | `string?` | 担当楽器（JSON文字列） |
+| `emailNotifications` | `boolean` | メール通知の有効/無効（デフォルト: `true`） |
 | `createdAt` | `DateTime` | 作成日時 |
 | `updatedAt` | `DateTime` | 更新日時 |
 
@@ -852,6 +854,10 @@ keion-circle-site/
 │   │   └── favicon.ico                  # ファビコン
 │   │
 │   ├── 🧩 components/                   # 再利用コンポーネント
+│   │   ├── emails/                      # メールテンプレート（React Email）
+│   │   │   ├── NewEventEmail.tsx        # 新規イベント通知メール
+│   │   │   ├── NewActivityScheduleEmail.tsx # 新規活動スケジュール通知メール
+│   │   │   └── NewPostEmail.tsx         # 新規投稿通知メール
 │   │   ├── DashboardLayout.tsx          # ダッシュボードレイアウト
 │   │   ├── Footer.tsx                   # フッター
 │   │   ├── RichTextEditor.tsx           # Markdownエディタ
@@ -869,6 +875,7 @@ keion-circle-site/
 │   │   ├── prisma.ts                    # Prismaクライアント
 │   │   ├── supabase.ts                  # Supabaseクライアント
 │   │   ├── email.ts                     # メール送信（Resend）
+│   │   ├── email-notifications.ts       # メール通知（投稿・イベント・スケジュール作成時）
 │   │   └── permissions.ts               # 権限チェック関数
 │   │
 │   ├── 📦 types/                        # 型定義
@@ -1007,6 +1014,8 @@ npm run test:e2e
 | [Prisma](https://www.prisma.io/) | 5.22 | ORM、型安全なDB操作 |
 | [PostgreSQL](https://www.postgresql.org/) | 15+ | リレーショナルデータベース |
 | [bcryptjs](https://www.npmjs.com/package/bcryptjs) | 2.4.3 | パスワードハッシュ化 |
+| [Resend](https://resend.com/) | latest | メール送信サービス |
+| [React Email](https://react.email/) | 2.0 | メールテンプレート（React）|
 
 ### インフラ
 
@@ -1087,7 +1096,42 @@ graph TB
 - ✅ 参加状況管理（参加・不参加）
 - ✅ 公開アクセス（ログイン不要で閲覧可）
 
-### 3️⃣ イベント管理
+### 3️⃣ メール通知機能
+
+```mermaid
+graph LR
+    A[コンテンツ作成] --> B{通知設定確認}
+    B -->|有効| C[メール送信]
+    B -->|無効| D[スキップ]
+    
+    C --> E[イベント作成通知]
+    C --> F[活動スケジュール作成通知]
+    C --> G[活動報告投稿通知]
+    
+    E --> H[📧 全メンバーに通知]
+    F --> H
+    G --> H
+```
+
+**機能:**
+- ✅ **自動メール通知**（Resend経由）
+  - イベント作成時に全メンバーに通知
+  - 活動スケジュール作成時に全メンバーに通知
+  - 活動報告投稿時に全メンバーに通知
+- ✅ **通知設定管理**
+  - プロフィール画面で通知ON/OFF切り替え可能
+  - 管理者はユーザー管理画面で全ユーザーの通知設定を管理可能
+  - デフォルトは通知有効
+- ✅ **React Emailテンプレート**
+  - モダンで美しいHTMLメール
+  - イベント（青グラデーション）、スケジュール（緑グラデーション）、投稿（紫グラデーション）で色分け
+  - 一覧ページへの直接リンク
+- ✅ **非同期送信**
+  - コンテンツ作成と並行処理
+  - データベース接続プールを占有しない
+  - エラー時もコンテンツ作成は成功
+
+### 4️⃣ イベント管理
 
 ```mermaid
 graph TB
@@ -1120,7 +1164,7 @@ graph TB
 - ✅ コメント機能
 - ✅ イベントから活動報告作成（テンプレート機能）
 
-### 4️⃣ 活動スケジュール
+### 5️⃣ 活動スケジュール
 
 ```mermaid
 graph TB
@@ -1138,7 +1182,7 @@ graph TB
 - ✅ コメント機能
 - ✅ スケジュールから活動報告作成
 
-### 5️⃣ ユーザープロフィール
+### 6️⃣ ユーザープロフィール
 
 **機能:**
 - ✅ アバター画像変更（Supabase Storage）
@@ -1146,14 +1190,22 @@ graph TB
 - ✅ 担当楽器登録
 - ✅ ユーザー詳細ページ
 - ✅ 活動履歴表示
+- ✅ **メール通知設定**
+  - プロフィール画面で通知ON/OFF切り替え
+  - デフォルトは通知有効
 
-### 6️⃣ ユーザー管理
+### 7️⃣ ユーザー管理
 
 **サイト管理者（site_admin）専用機能:**
 - ✅ ユーザー一覧表示
 - ✅ **役割変更（site_admin / admin / member）**
   - モーダルUIで役割を選択
   - 各役割の説明を表示
+  - 楽観的UI（即座に反映）
+- ✅ **メール通知設定管理**
+  - 全ユーザーの通知設定をON/OFF可能
+  - デスクトップ：テーブルの「通知」列にベルアイコン
+  - モバイル：カード内に通知トグルボタン
   - 楽観的UI（即座に反映）
 - ✅ ユーザー削除
   - 投稿・メッセージ・スケジュール投票も連動削除
@@ -1313,7 +1365,7 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
 | 変数名 | 説明 | 取得方法 |
 |--------|------|----------|
 | `RESEND_API_KEY` | ResendのAPIキー | [Resend Dashboard](https://resend.com/api-keys) → **Create API Key**<br/>無料プランで月100通まで送信可能 |
-| `RESEND_FROM_EMAIL` | 送信元メールアドレス（省略可） | ドメインを持っている場合のみ設定<br/>省略時は `onboarding@resend.dev` を使用 |
+| `RESEND_FROM_EMAIL` | 送信元メールアドレス（省略可） | ドメインを持っている場合のみ設定<br/>例: `noreply@bold-osaka-keion.fyi`<br/>省略時は `onboarding@resend.dev` を使用 |
 
 > **📧 メール送信について**
 > - **開発環境**: メールは送信されず、サーバーログに検証URLが出力されます
@@ -1322,8 +1374,14 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
 > - **本番環境**: Resendを使用してメールが送信されます
 >   - [Resend](https://resend.com/)でアカウント作成し、APIキーを取得
 >   - 無料プランで月100通まで送信可能
-> - メールアドレス検証（新規登録時、24時間有効）
-> - パスワードリセット（1時間有効）
+>   - 独自ドメインを設定すると信頼性向上
+> - **メール送信の種類**:
+>   - メールアドレス検証（新規登録時、24時間有効）
+>   - パスワードリセット（1時間有効）
+>   - **コンテンツ作成通知**（イベント・活動スケジュール・活動報告）
+>     - 通知設定が有効なメンバー全員に送信
+>     - プロフィール画面で通知ON/OFF可能
+>     - 管理者は全ユーザーの通知設定を管理可能
 
 #### 7. データベースの初期化
 
@@ -1372,6 +1430,7 @@ CREATE TABLE "User" (
     "bio" TEXT,
     "instruments" TEXT,
     "role" TEXT NOT NULL DEFAULT 'member',
+    "emailNotifications" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
