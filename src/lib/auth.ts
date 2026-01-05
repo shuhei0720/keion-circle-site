@@ -140,6 +140,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 name: user.name || user.email.split('@')[0],
                 role: "member",
                 emailVerified: new Date(), // Google認証済みなので検証済み
+                emailNotifications: true, // デフォルトで通知を有効化
               }
             })
             console.log('[NextAuth SignIn] New user created:', dbUser.id)

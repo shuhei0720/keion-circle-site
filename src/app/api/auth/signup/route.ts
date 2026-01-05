@@ -31,7 +31,8 @@ export async function POST(req: Request) {
         email,
         password: hashedPassword,
         role: 'member', // デフォルトは通常ユーザー
-        emailVerified: null // 未検証
+        emailVerified: null, // 未検証
+        emailNotifications: true // デフォルトで通知を有効化
       }
     })
 
