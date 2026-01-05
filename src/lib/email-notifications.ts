@@ -62,7 +62,7 @@ export async function sendNewEventNotification(event: {
 
     const results = await Promise.allSettled(
       recipients.map(async (recipient) => {
-        const emailHtml = render(
+        const emailHtml = await render(
           NewEventEmail({
             eventTitle: event.title,
             eventDate,
@@ -119,7 +119,7 @@ export async function sendNewActivityScheduleNotification(schedule: {
 
     const results = await Promise.allSettled(
       recipients.map(async (recipient) => {
-        const emailHtml = render(
+        const emailHtml = await render(
           NewActivityScheduleEmail({
             scheduleTitle: schedule.title,
             scheduleDate,
@@ -170,7 +170,7 @@ export async function sendNewPostNotification(post: {
 
     const results = await Promise.allSettled(
       recipients.map(async (recipient) => {
-        const emailHtml = render(
+        const emailHtml = await render(
           NewPostEmail({
             postTitle: post.title,
             postExcerpt,
