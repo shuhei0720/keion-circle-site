@@ -66,7 +66,7 @@ export async function sendNewEventNotification(event: {
 
     console.log('[sendNewEventNotification] メール送信開始:', { recipientsCount: recipients.length });
 
-    const eventUrl = `${baseUrl}/events/${event.id}`;
+    const eventUrl = `${baseUrl}/events`;
     const eventDate = new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
       month: 'long',
@@ -131,7 +131,7 @@ export async function sendNewActivityScheduleNotification(schedule: {
       return { success: true, sent: 0 };
     }
 
-    const scheduleUrl = `${baseUrl}/activity-schedules/${schedule.id}`;
+    const scheduleUrl = `${baseUrl}/activity-schedules`;
     const scheduleDate = new Intl.DateTimeFormat('ja-JP', {
       year: 'numeric',
       month: 'long',
@@ -187,7 +187,7 @@ export async function sendNewPostNotification(post: {
       return { success: true, sent: 0 };
     }
 
-    const postUrl = `${baseUrl}/posts/${post.id}`;
+    const postUrl = `${baseUrl}/posts`;
     // 本文から最初の150文字を抜粋
     const postExcerpt = post.content.slice(0, 150) + (post.content.length > 150 ? '...' : '');
 
