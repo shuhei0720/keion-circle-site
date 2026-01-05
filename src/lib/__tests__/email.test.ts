@@ -60,8 +60,8 @@ describe('email', () => {
   describe('generateVerificationToken', () => {
     it('トークンを生成して保存する', async () => {
       const email = 'test@example.com';
-      mockPrisma.verificationToken.deleteMany.mockResolvedValue({ count: 0 });
-      mockPrisma.verificationToken.create.mockResolvedValue({
+      (mockPrisma.verificationToken.deleteMany as jest.Mock).mockResolvedValue({ count: 0 });
+      (mockPrisma.verificationToken.create as jest.Mock).mockResolvedValue({
         identifier: email,
         token: 'generated-token',
         expires: new Date(),
@@ -80,12 +80,12 @@ describe('email', () => {
 
     it('既存のトークンを削除してから新しいトークンを作成する', async () => {
       const email = 'test@example.com';
-      mockPrisma.verificationToken.deleteMany.mockResolvedValue({ count: 1 });
-      mockPrisma.verificationToken.create.mockResolvedValue({
-        identifier: email,
-        token: 'new-token',
-        expires: new Date(),
-      } as any);
+    (mockPrisma.verificationToken.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+    (mockPrisma.verificationToken.create as jest.Mock).mockResolvedValue({
+      identifier: email,
+      token: 'new-token',
+      expires: new Date(),
+    });
 
       await generateVerificationToken(email);
 
@@ -101,7 +101,7 @@ describe('email', () => {
       const email = 'test@example.com';
       const futureDate = new Date(Date.now() + 60 * 60 * 1000);
 
-      mockPrisma.verificationToken.findUnique.mockResolvedValue({
+      (mockPrisma.verificationToken.findUnique as jest.Mock).mockResolvedValue({
         identifier: email,
         token,
         expires: futureDate,
@@ -113,7 +113,7 @@ describe('email', () => {
     });
 
     it('トークンが見つからない場合はnullを返す', async () => {
-      mockPrisma.verificationToken.findUnique.mockResolvedValue(null);
+      (mockPrisma.verificationToken.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await verifyEmailToken('invalid-token');
 
@@ -124,12 +124,12 @@ describe('email', () => {
       const token = 'expired-token';
       const pastDate = new Date(Date.now() - 60 * 60 * 1000);
 
-      mockPrisma.verificationToken.findUnique.mockResolvedValue({
+      (mockPrisma.verificationToken.findUnique as jest.Mock).mockResolvedValue({
         identifier: 'test@example.com',
         token,
         expires: pastDate,
       });
-      mockPrisma.verificationToken.delete.mockResolvedValue({
+      (mockPrisma.verificationToken.delete as jest.Mock).mockResolvedValue({
         identifier: 'test@example.com',
         token,
         expires: pastDate,
@@ -147,8 +147,8 @@ describe('email', () => {
   describe('generatePasswordResetToken', () => {
     it('パスワードリセットトークンを生成する', async () => {
       const email = 'test@example.com';
-      mockPrisma.verificationToken.deleteMany.mockResolvedValue({ count: 0 });
-      mockPrisma.verificationToken.create.mockResolvedValue({
+      (mockPrisma.verificationToken.deleteMany as jest.Mock).mockResolvedValue({ count: 0 });
+      (mockPrisma.verificationToken.create as jest.Mock).mockResolvedValue({
         identifier: `reset:${email}`,
         token: 'reset-token',
         expires: new Date(),
@@ -177,7 +177,7 @@ describe('email', () => {
       const email = 'test@example.com';
       const futureDate = new Date(Date.now() + 60 * 60 * 1000);
 
-      mockPrisma.verificationToken.findUnique.mockResolvedValue({
+      (mockPrisma.verificationToken.findUnique as jest.Mock).mockResolvedValue({
         identifier: `reset:${email}`,
         token,
         expires: futureDate,
@@ -192,12 +192,12 @@ describe('email', () => {
       const token = 'expired-reset-token';
       const pastDate = new Date(Date.now() - 60 * 60 * 1000);
 
-      mockPrisma.verificationToken.findUnique.mockResolvedValue({
+      (mockPrisma.verificationToken.findUnique as jest.Mock).mockResolvedValue({
         identifier: 'reset:test@example.com',
         token,
         expires: pastDate,
       });
-      mockPrisma.verificationToken.delete.mockResolvedValue({
+      (mockPrisma.verificationToken.delete as jest.Mock).mockResolvedValue({
         identifier: 'reset:test@example.com',
         token,
         expires: pastDate,
@@ -212,7 +212,7 @@ describe('email', () => {
 
   describe('sendVerificationEmail', () => {
     it('開発環境ではコンソールにログを出力する', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', writable: true });
       const logSpy = jest.spyOn(console, 'log').mockImplementation();
 
       await sendVerificationEmail('test@example.com', 'test-token');
@@ -224,7 +224,7 @@ describe('email', () => {
     });
 
     it('本番環境ではResendでメールを送信する', async () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
       process.env.RESEND_API_KEY = 'test-key';
       process.env.RESEND_FROM_EMAIL = 'noreply@test.com';
 
@@ -240,7 +240,7 @@ describe('email', () => {
     });
 
     it('本番環境でメール送信に失敗した場合はログを出力する', async () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
       process.env.RESEND_API_KEY = 'test-key';
       mockResendSend.mockRejectedValue(new Error('Send failed'));
 
@@ -262,7 +262,7 @@ describe('email', () => {
 
   describe('sendPasswordResetEmail', () => {
     it('開発環境ではコンソールにログを出力する', async () => {
-      process.env.NODE_ENV = 'development';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'development', writable: true });
       const logSpy = jest.spyOn(console, 'log').mockImplementation();
 
       await sendPasswordResetEmail('test@example.com', 'reset-token');
@@ -274,7 +274,7 @@ describe('email', () => {
     });
 
     it('本番環境ではResendでメールを送信する', async () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
       process.env.RESEND_API_KEY = 'test-key';
       process.env.RESEND_FROM_EMAIL = 'noreply@test.com';
 
@@ -290,7 +290,7 @@ describe('email', () => {
     });
 
     it('本番環境でメール送信に失敗した場合はログを出力する', async () => {
-      process.env.NODE_ENV = 'production';
+      Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', writable: true });
       process.env.RESEND_API_KEY = 'test-key';
       mockResendSend.mockRejectedValue(new Error('Send failed'));
 

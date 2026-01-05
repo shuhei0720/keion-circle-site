@@ -46,16 +46,16 @@ describe('AvatarUpload', () => {
     const mockFileReader = {
       readAsDataURL: jest.fn(),
       result: 'data:image/png;base64,dummy',
-      onloadend: null as any,
+      onloadend: null as ((this: FileReader, ev: ProgressEvent<FileReader>) => unknown) | null,
     };
 
-    jest.spyOn(window, 'FileReader').mockImplementation(() => mockFileReader as any);
+    jest.spyOn(window, 'FileReader').mockImplementation(() => mockFileReader as unknown as FileReader);
 
     fireEvent.change(input, { target: { files: [file] } });
 
     // FileReader.onloadendを手動でトリガー
     if (mockFileReader.onloadend) {
-      mockFileReader.onloadend({ target: mockFileReader } as any);
+      mockFileReader.onloadend.call(mockFileReader as unknown as FileReader, {} as ProgressEvent<FileReader>);
     }
 
     await waitFor(() => {

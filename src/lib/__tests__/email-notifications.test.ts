@@ -69,7 +69,7 @@ describe('email-notifications', () => {
 
     it('通知を受け取るユーザーがいない場合', async () => {
       process.env.RESEND_API_KEY = 'test_key';
-      mockPrisma.user.findMany.mockResolvedValue([]);
+      (mockPrisma.user.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await sendNewEventNotification(mockEvent);
 
@@ -97,7 +97,7 @@ describe('email-notifications', () => {
         { id: 'user2', name: 'ユーザー2', email: 'user2@example.com' },
       ];
 
-      mockPrisma.user.findMany.mockResolvedValue(mockUsers as any);
+      (mockPrisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
       const result = await sendNewEventNotification(mockEvent);
 
@@ -114,7 +114,7 @@ describe('email-notifications', () => {
         { id: 'user3', name: 'ユーザー3', email: 'user3@example.com' },
       ];
 
-      mockPrisma.user.findMany.mockResolvedValue(mockUsers as any);
+      (mockPrisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
       mockResendSend
         .mockResolvedValueOnce({ id: 'email1' })
@@ -128,7 +128,7 @@ describe('email-notifications', () => {
 
     it('エラーが発生した場合', async () => {
       process.env.RESEND_API_KEY = 'test_key';
-      mockPrisma.user.findMany.mockRejectedValue(new Error('Database error'));
+      (mockPrisma.user.findMany as jest.Mock).mockRejectedValue(new Error('Database error'));
 
       const result = await sendNewEventNotification(mockEvent);
 
@@ -159,12 +159,8 @@ describe('email-notifications', () => {
         { id: 'user1', name: 'ユーザー1', email: 'user1@example.com' },
       ];
 
-      mockPrisma.user.findMany.mockResolvedValue(mockUsers as any);
+      (mockPrisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
-
-      (Resend as jest.MockedClass<typeof Resend>).mockImplementation(
-        () => mockResend as any
-      );
 
       const result = await sendNewActivityScheduleNotification(mockSchedule);
 
@@ -195,7 +191,7 @@ describe('email-notifications', () => {
         { id: 'user1', name: 'ユーザー1', email: 'user1@example.com' },
       ];
 
-      mockPrisma.user.findMany.mockResolvedValue(mockUsers as any);
+      (mockPrisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
       const result = await sendNewPostNotification({
         ...mockPost,
@@ -216,12 +212,8 @@ describe('email-notifications', () => {
         { id: 'user2', name: 'ユーザー2', email: 'user2@example.com' },
       ];
 
-      mockPrisma.user.findMany.mockResolvedValue(mockUsers as any);
+      (mockPrisma.user.findMany as jest.Mock).mockResolvedValue(mockUsers);
 
-
-      (Resend as jest.MockedClass<typeof Resend>).mockImplementation(
-        () => mockResend as any
-      );
 
       const result = await sendNewPostNotification(mockPost);
 

@@ -13,10 +13,11 @@ jest.mock('../prisma', () => ({
 
 import { auth } from '../auth';
 import { prisma } from '../prisma';
+import type { Session } from 'next-auth';
 import { isAdmin, isSiteAdmin, requireAdmin, requireSiteAdmin } from '../permissions';
 
 // モックのエイリアスを作成
-const mockedAuth = auth as jest.MockedFunction<typeof auth>;
+const mockedAuth = auth as unknown as jest.MockedFunction<() => Promise<Session | null>>;
 const mockedFindUnique = prisma.user.findUnique as jest.MockedFunction<typeof prisma.user.findUnique>;
 
 describe('permissions', () => {
@@ -26,7 +27,7 @@ describe('permissions', () => {
 
   describe('isAdmin', () => {
     it('セッションがない場合はfalseを返す', async () => {
-      mockedAuth.mockResolvedValue(null);
+      mockedAuth.mockResolvedValue(null as any);
 
       const result = await isAdmin();
 
@@ -109,7 +110,7 @@ describe('permissions', () => {
 
   describe('isSiteAdmin', () => {
     it('セッションがない場合はfalseを返す', async () => {
-      mockedAuth.mockResolvedValue(null);
+      mockedAuth.mockResolvedValue(null as any);
 
       const result = await isSiteAdmin();
 
@@ -190,7 +191,7 @@ describe('permissions', () => {
     });
 
     it('セッションがない場合はエラーを投げる', async () => {
-      mockedAuth.mockResolvedValue(null);
+      mockedAuth.mockResolvedValue(null as any);
 
       await expect(requireAdmin()).rejects.toThrow('管理者権限が必要です');
     });
