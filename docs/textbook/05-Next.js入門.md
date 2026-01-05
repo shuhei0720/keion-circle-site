@@ -848,17 +848,18 @@ export default async function CommentDetail({
 **src/app/docs/[...slug]/page.tsx**：
 
 ```tsx
-export default function Docs({
+export default async function Docs({
   params
 }: {
-  params: { slug: string[] }  // 配列で受け取る
+  params: Promise<{ slug: string[] }>  // Promise型に変更
 }) {
+  const { slug } = await params;  // await で展開
   return (
     <div>
       <h1>ドキュメント</h1>
-      <p>パス: {params.slug.join('/')}</p>
+      <p>パス: {slug.join('/')}</p>
       <ul>
-        {params.slug.map((segment, index) => (
+        {slug.map((segment, index) => (
           <li key={index}>{segment}</li>
         ))}
       </ul>
@@ -900,15 +901,16 @@ const docs = {
   },
 };
 
-export default function Docs({
+export default async function Docs({
   params
 }: {
-  params: { slug: string[] }
+  params: Promise<{ slug: string[] }>
 }) {
+  const { slug } = await params;
   // slug 配列からドキュメントを探す
   let content = docs;
   
-  for (const segment of params.slug) {
+  for (const segment of slug) {
     content = content[segment];
     if (!content) {
       return <div>ドキュメントが見つかりません</div>;
@@ -918,7 +920,7 @@ export default function Docs({
   return (
     <article>
       <h1>{content}</h1>
-      <p>パス: {params.slug.join(' > ')}</p>
+      <p>パス: {slug.join(' > ')}</p>
     </article>
   );
 }
@@ -927,18 +929,19 @@ export default function Docs({
 **パンくずリストの作成例：**
 
 ```tsx
-export default function Docs({
+export default async function Docs({
   params
 }: {
-  params: { slug: string[] }
+  params: Promise<{ slug: string[] }>
 }) {
+  const { slug } = await params;
   return (
     <div>
       {/* パンくずリスト */}
       <nav>
         <a href="/docs">ドキュメント</a>
-        {params.slug.map((segment, index) => {
-          const path = `/docs/${params.slug.slice(0, index + 1).join('/')}`;
+        {slug.map((segment, index) => {
+          const path = `/docs/${slug.slice(0, index + 1).join('/')}`;
           return (
             <span key={index}>
               {' > '}
@@ -1102,10 +1105,11 @@ export default function Shop({
 export default async function PostDetail({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params;
   // APIからデータ取得
-  const post = await fetch(`/api/posts/${params.id}`)
+  const post = await fetch(`/api/posts/${id}`)
     .then(res => res.json());
   
   return <div>{post.title}</div>;
@@ -1120,11 +1124,12 @@ import { prisma } from '@/lib/prisma';
 export default async function PostDetail({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params;
   // サーバーコンポーネントなのでDBに直接アクセス可能
   const post = await prisma.post.findUnique({
-    where: { id: parseInt(params.id) }
+    where: { id: parseInt(id) }
   });
   
   if (!post) {
@@ -1141,12 +1146,13 @@ export default async function PostDetail({
 export default async function PostDetail({
   params
 }: {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }) {
+  const { id } = await params;
   // Promise.all で並列取得（速い！）
   const [post, comments, author] = await Promise.all([
-    fetch(`/api/posts/${params.id}`).then(r => r.json()),
-    fetch(`/api/posts/${params.id}/comments`).then(r => r.json()),
+    fetch(`/api/posts/${id}`).then(r => r.json()),
+    fetch(`/api/posts/${id}/comments`).then(r => r.json()),
     fetch(`/api/users/${params.authorId}`).then(r => r.json()),
   ]);
   
@@ -2908,9 +2914,10 @@ handleLike が実行
 import PostContent from '@/components/PostContent';
 import InteractiveWrapper from '@/components/InteractiveWrapper';
 
-export default async function PostDetailPage({ params }: { params: { id: string } }) {
+export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // サーバーでデータ取得
-  const post = await fetch(`http://localhost:3000/api/posts/${params.id}`)
+  const post = await fetch(`http://localhost:3000/api/posts/${id}`)
     .then(res => res.json());
   
   return (
@@ -3076,11 +3083,12 @@ import CommentForm from '@/components/CommentForm';
 import CommentList from '@/components/CommentList';
 import LikeButton from '@/components/LikeButton';
 
-export default async function PostDetailPage({ params }: { params: { id: string } }) {
+export default async function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // サーバーでデータ取得
   const [post, comments] = await Promise.all([
-    fetch(`http://localhost:3000/api/posts/${params.id}`).then(res => res.json()),
-    fetch(`http://localhost:3000/api/posts/${params.id}/comments`).then(res => res.json()),
+    fetch(`http://localhost:3000/api/posts/${id}`).then(res => res.json()),
+    fetch(`http://localhost:3000/api/posts/${id}/comments`).then(res => res.json()),
   ]);
   
   return (
@@ -3203,9 +3211,10 @@ export default async function PostDetailPage({ params }: { params: { id: string 
 ```tsx
 // src/app/posts/[id]/page.tsx
 
-export default async function PostDetail({ params }: { params: { id: string } }) {
+export default async function PostDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // サーバーで直接データ取得
-  const response = await fetch(`http://localhost:3000/api/posts/${params.id}`);
+  const response = await fetch(`http://localhost:3000/api/posts/${id}`);
   const post = await response.json();
   
   return (
@@ -3260,19 +3269,20 @@ HTML を即座に表示
 ### 複数のデータを並列取得
 
 ```tsx
-export default async function PostDetail({ params }: { params: { id: string } }) {
+export default async function PostDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // ❌ 遅い（直列実行）
-  const post = await fetch(`/api/posts/${params.id}`).then(r => r.json());
-  const comments = await fetch(`/api/posts/${params.id}/comments`).then(r => r.json());
-  const likes = await fetch(`/api/posts/${params.id}/likes`).then(r => r.json());
+  const post = await fetch(`/api/posts/${id}`).then(r => r.json());
+  const comments = await fetch(`/api/posts/${id}/comments`).then(r => r.json());
+  const likes = await fetch(`/api/posts/${id}/likes`).then(r => r.json());
   
   // 合計時間 = fetch1 + fetch2 + fetch3
   
   // ✅ 速い（並列実行）
   const [post, comments, likes] = await Promise.all([
-    fetch(`/api/posts/${params.id}`).then(r => r.json()),
-    fetch(`/api/posts/${params.id}/comments`).then(r => r.json()),
-    fetch(`/api/posts/${params.id}/likes`).then(r => r.json()),
+    fetch(`/api/posts/${id}`).then(r => r.json()),
+    fetch(`/api/posts/${id}/comments`).then(r => r.json()),
+    fetch(`/api/posts/${id}/likes`).then(r => r.json()),
   ]);
   
   // 合計時間 = max(fetch1, fetch2, fetch3)
@@ -3528,9 +3538,10 @@ export default function Posts() {
 ```tsx
 import { notFound } from 'next/navigation';
 
-export default async function PostDetail({ params }: { params: { id: string } }) {
+export default async function PostDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   try {
-    const response = await fetch(`/api/posts/${params.id}`);
+    const response = await fetch(`/api/posts/${id}`);
     
     if (response.status === 404) {
       notFound();  // 404 ページを表示
@@ -3838,9 +3849,9 @@ import { NextResponse } from 'next/server';
 // GET /api/posts/123
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;  // URL から id を取得
+  const { id } = await params;  // URL から id を取得
   
   // データベースから投稿を取得（仮の処理）
   const post = {
@@ -3866,9 +3877,9 @@ export async function GET(
 // PUT /api/posts/123
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   const body = await request.json();
   const { title, content } = body;
   
@@ -3900,9 +3911,9 @@ export async function PUT(
 // DELETE /api/posts/123
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   
   // 削除処理（仮）
   // TODO: 実際はデータベースから削除
@@ -3933,11 +3944,12 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id: idStr } = await params;
   try {
     // ID のバリデーション
-    const id = parseInt(params.id);
+    const id = parseInt(idStr);
     if (isNaN(id)) {
       return NextResponse.json(
         { error: 'IDが不正です' },
@@ -4730,9 +4742,10 @@ export default function PostsList() {
 ```tsx
 // src/app/posts/[id]/page.tsx
 
-export async function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   // データを取得
-  const post = await fetch(`http://localhost:3000/api/posts/${params.id}`)
+  const post = await fetch(`http://localhost:3000/api/posts/${id}`)
     .then(res => res.json());
   
   return {
@@ -4741,8 +4754,9 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   };
 }
 
-export default async function PostDetail({ params }: { params: { id: string } }) {
-  const post = await fetch(`http://localhost:3000/api/posts/${params.id}`)
+export default async function PostDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const post = await fetch(`http://localhost:3000/api/posts/${id}`)
     .then(res => res.json());
   
   return (
@@ -4825,11 +4839,12 @@ export const metadata = {
 import { Metadata } from 'next';
 
 interface Props {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const post = await fetch(`http://localhost:3000/api/posts/${params.id}`)
+  const { id } = await params;
+  const post = await fetch(`http://localhost:3000/api/posts/${id}`)
     .then(res => res.json());
   
   return {
@@ -5975,9 +5990,10 @@ let posts: Post[] = [
 // GET /api/posts/[slug] - 特定の記事を取得
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
-  const post = posts.find(p => p.slug === params.slug);
+  const { slug } = await params;
+  const post = posts.find(p => p.slug === slug);
   
   if (!post) {
     return NextResponse.json(
@@ -6046,8 +6062,9 @@ export default async function BlogList() {
 
 ```tsx
 // メタデータの生成
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const response = await fetch(`http://localhost:3000/api/posts/${params.slug}`);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const response = await fetch(`http://localhost:3000/api/posts/${slug}`);
   const post = await response.json();
   
   return {
@@ -6057,8 +6074,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 }
 
 // 記事詳細ページ
-export default async function BlogPost({ params }: { params: { slug: string } }) {
-  const response = await fetch(`http://localhost:3000/api/posts/${params.slug}`);
+export default async function BlogPost({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const response = await fetch(`http://localhost:3000/api/posts/${slug}`);
   const post = await response.json();
   
   return (
