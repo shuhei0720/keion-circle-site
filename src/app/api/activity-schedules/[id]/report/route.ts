@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { isAdmin } from '@/lib/permissions'
+import { sendNewPostNotification } from '@/lib/email-notifications'
 
 // 活動報告作成
 export async function POST(
@@ -70,6 +72,26 @@ export async function POST(
 
       return post
     })
+
+    // 投稿一覧ページのキャッシュを即座に無効化
+    revalidatePath('/posts')
+
+    // メール通知を送信（非同期・エラーハンドリング）
+    // 接続プールの占有を防ぐため、awaitせずに非同期実行
+    if (result.title && result.content) {
+      console.log('メール通知を送信します:', { id: result.id, title: result.title })
+      sendNewPostNotification({
+        id: result.id,
+        title: result.title,
+        content: result.content,
+      }).then((notificationResult) => {
+        console.log('メール通知の送信結果:', notificationResult)
+      }).catch((error) => {
+        console.error('メール通知の送信に失敗しました:', error)
+      })
+    } else {
+      console.log('メール通知をスキップ:', { title: result.title, hasContent: !!result.content })
+    }
 
     return NextResponse.json(result, { status: 201 })
   } catch (error: unknown) {

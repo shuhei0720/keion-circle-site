@@ -93,8 +93,8 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // ホームページのキャッシュを即座に無効化
-    revalidatePath('/')
+    // 投稿一覧ページのキャッシュを即座に無効化
+    revalidatePath('/posts')
 
     // メール通知を送信（非同期・エラーハンドリング）
     // 接続プールの占有を防ぐため、awaitせずに非同期実行
