@@ -5890,15 +5890,13 @@ export default function Home() {
 
 ### ステップ2：APIルートを作成（データの保存と取得）
 
-次に、ブログ記事のデータを管理するAPIを作成します。
+次に、ブログ記事のデータを管理するAPIを作成します。まず、データを別ファイルに分離します。
 
-**`src/app/api/posts/route.ts` を新規作成：**
+**`src/app/api/posts/postsData.ts` を新規作成：**
 
 ```ts
-import { NextResponse } from 'next/server';
-
 // 記事の型定義
-interface Post {
+export interface Post {
   id: number;
   slug: string;
   title: string;
@@ -5907,8 +5905,13 @@ interface Post {
   createdAt: Date;
 }
 
-// 仮のデータストア（実際はデータベースを使用）
-let posts: Post[] = [
+// グローバルにデータストアを保持（開発中のホットリロードに対応）
+const globalForPosts = globalThis as unknown as {
+  posts: Post[] | undefined;
+};
+
+// 初期データ
+const initialPosts: Post[] = [
   {
     id: 1,
     slug: 'first-post',
@@ -5927,9 +5930,26 @@ let posts: Post[] = [
   },
 ];
 
+// グローバルに保存されたデータを使用、なければ初期データを設定
+export const posts = globalForPosts.posts ?? initialPosts;
+globalForPosts.posts = posts;
+```
+
+**`src/app/api/posts/route.ts` を新規作成：**
+
+```ts
+import { NextResponse } from 'next/server';
+import { posts, Post } from './postsData';
+
 // GET /api/posts - 記事一覧を取得
 export async function GET() {
-  return NextResponse.json(posts);
+  // DateオブジェクトをISO文字列に変換してレスポンス
+  return NextResponse.json(
+    posts.map((post) => ({
+      ...post,
+      createdAt: post.createdAt.toISOString(),
+    }))
+  );
 }
 
 // POST /api/posts - 新しい記事を作成
@@ -5948,7 +5968,14 @@ export async function POST(request: Request) {
   
   posts.push(newPost);
   
-  return NextResponse.json(newPost, { status: 201 });
+  // DateオブジェクトをISO文字列に変換してレスポンス
+  return NextResponse.json(
+    {
+      ...newPost,
+      createdAt: newPost.createdAt.toISOString(),
+    },
+    { status: 201 }
+  );
 }
 ```
 
@@ -5956,36 +5983,7 @@ export async function POST(request: Request) {
 
 ```ts
 import { NextResponse } from 'next/server';
-
-// 記事の型定義（上と同じ）
-interface Post {
-  id: number;
-  slug: string;
-  title: string;
-  excerpt: string;
-  content: string;
-  createdAt: Date;
-}
-
-// 同じデータストア（実際はDBから取得）
-let posts: Post[] = [
-  {
-    id: 1,
-    slug: 'first-post',
-    title: '最初の投稿',
-    excerpt: 'これは最初の投稿です。',
-    content: 'これは最初の投稿の内容です。Next.jsは素晴らしいフレームワークです！',
-    createdAt: new Date('2025-01-01'),
-  },
-  {
-    id: 2,
-    slug: 'second-post',
-    title: '2つ目の投稿',
-    excerpt: 'これは2つ目の投稿です。',
-    content: '2つ目の投稿です。Server ComponentsとClient Componentsを使い分けましょう。',
-    createdAt: new Date('2025-01-02'),
-  },
-];
+import { posts } from '../postsData';
 
 // GET /api/posts/[slug] - 特定の記事を取得
 export async function GET(
@@ -5993,7 +5991,7 @@ export async function GET(
   { params }: { params: Promise<{ slug: string }> }
 ) {
   const { slug } = await params;
-  const post = posts.find(p => p.slug === slug);
+  const post = posts.find((p) => p.slug === slug);
   
   if (!post) {
     return NextResponse.json(
@@ -6002,7 +6000,11 @@ export async function GET(
     );
   }
   
-  return NextResponse.json(post);
+  // DateオブジェクトをISO文字列に変換してレスポンス
+  return NextResponse.json({
+    ...post,
+    createdAt: post.createdAt.toISOString(),
+  });
 }
 ```
 
@@ -6021,12 +6023,21 @@ export async function GET(
 ```tsx
 import Link from 'next/link';
 
-// サーバーコンポーネント（データ取得）
+// サーバーコンポーネント
 export default async function BlogList() {
   const response = await fetch('http://localhost:3000/api/posts', {
     cache: 'no-store'  // 常に最新データを取得
   });
   const posts = await response.json();
+  
+  // 日付を安全に変換
+  const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('ja-JP');
+    } catch {
+      return '日付不明';
+    }
+  };
   
   return (
     <div>
@@ -6040,7 +6051,7 @@ export default async function BlogList() {
               </Link>
             </h2>
             <p>{post.excerpt}</p>
-            <time>{new Date(post.createdAt).toLocaleDateString('ja-JP')}</time>
+            <time>{formatDate(post.createdAt)}</time>
           </article>
         ))}
       </div>
@@ -6081,10 +6092,31 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   });
   const post = await response.json();
   
+  // 記事が見つからない場合
+  if (!response.ok || post.error) {
+    return (
+      <article>
+        <h1>記事が見つかりません</h1>
+        <p>お探しの記事は存在しないか、削除された可能性があります。</p>
+      </article>
+    );
+  }
+  
+  // 日付を安全に変換
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '日付不明';
+    const date = new Date(dateString);
+    // Invalid Dateの場合
+    if (isNaN(date.getTime())) {
+      return '日付不明';
+    }
+    return date.toLocaleDateString('ja-JP');
+  };
+  
   return (
     <article>
       <h1>{post.title}</h1>
-      <time>{new Date(post.createdAt).toLocaleDateString('ja-JP')}</time>
+      <time>{formatDate(post.createdAt)}</time>
       <p>{post.content}</p>
     </article>
   );
