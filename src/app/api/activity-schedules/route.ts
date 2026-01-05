@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { isAdmin } from '@/lib/permissions'
+import { sendNewActivityScheduleNotification } from '@/lib/email-notifications'
 
 // 活動スケジュール一覧取得
 export async function GET() {
@@ -152,6 +153,19 @@ export async function POST(request: Request) {
 
     // 活動スケジュール一覧ページのキャッシュを即座に無効化
     revalidatePath('/activity-schedules')
+
+    // メール通知を送信（非同期・エラーハンドリング）
+    if (schedule.date && schedule.location) {
+      sendNewActivityScheduleNotification({
+        id: schedule.id,
+        title: schedule.title,
+        date: schedule.date,
+        location: schedule.location,
+      }).catch((error) => {
+        console.error('メール通知の送信に失敗しました:', error)
+        // メール送信失敗でもスケジュール作成は成功
+      })
+    }
 
     return NextResponse.json(schedule, { status: 201 })
   } catch (error) {

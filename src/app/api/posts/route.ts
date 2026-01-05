@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
+import { sendNewPostNotification } from '@/lib/email-notifications'
 
 export const runtime = 'nodejs'
 
@@ -94,6 +95,16 @@ export async function POST(request: NextRequest) {
 
     // ホームページのキャッシュを即座に無効化
     revalidatePath('/')
+
+    // メール通知を送信（非同期・エラーハンドリング）
+    sendNewPostNotification({
+      id: post.id,
+      title: post.title,
+      content: post.content,
+    }).catch((error) => {
+      console.error('メール通知の送信に失敗しました:', error)
+      // メール送信失敗でも投稿作成は成功
+    })
 
     return NextResponse.json(post)
   } catch (error) {

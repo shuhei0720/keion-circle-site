@@ -3,6 +3,7 @@ import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { isAdmin } from '@/lib/permissions'
+import { sendNewEventNotification } from '@/lib/email-notifications'
 
 // イベント一覧取得
 export async function GET() {
@@ -161,6 +162,19 @@ export async function POST(request: Request) {
 
     // イベント一覧ページのキャッシュを即座に無効化
     revalidatePath('/events')
+
+    // メール通知を送信（非同期・エラーハンドリング）
+    if (event.date && event.locationName) {
+      sendNewEventNotification({
+        id: event.id,
+        title: event.title,
+        date: event.date,
+        location: event.locationName,
+      }).catch((error) => {
+        console.error('メール通知の送信に失敗しました:', error)
+        // メール送信失敗でもイベント作成は成功
+      })
+    }
 
     return NextResponse.json(event, { status: 201 })
   } catch (error) {

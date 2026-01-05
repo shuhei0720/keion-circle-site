@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { User, Mail, Calendar, Edit2, Save, X, Music } from 'lucide-react'
+import { User, Mail, Calendar, Edit2, Save, X, Music, Bell, BellOff } from 'lucide-react'
 import AvatarUpload from '@/components/AvatarUpload'
 
 // 選択可能な楽器リスト
@@ -32,6 +32,7 @@ interface ProfileEditClientProps {
     avatarUrl: string | null
     bio: string | null
     instruments: string | null
+    emailNotifications: boolean
     role: string
     createdAt: Date
   }
@@ -44,6 +45,7 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
   const [instruments, setInstruments] = useState<string[]>(
     user.instruments ? JSON.parse(user.instruments) : []
   )
+  const [emailNotifications, setEmailNotifications] = useState(user.emailNotifications)
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl)
   const [saving, setSaving] = useState(false)
 
@@ -81,7 +83,8 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
         body: JSON.stringify({ 
           name,
           bio,
-          instruments: JSON.stringify(instruments)
+          instruments: JSON.stringify(instruments),
+          emailNotifications
         }),
       })
 
@@ -175,6 +178,32 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">メール通知設定</label>
+                <button
+                  type="button"
+                  onClick={() => setEmailNotifications(!emailNotifications)}
+                  disabled={saving}
+                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg transition-all ${
+                    emailNotifications
+                      ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
+                      : 'bg-white/10 text-white/70 hover:bg-white/20 border border-white/20'
+                  } disabled:opacity-50`}
+                >
+                  {emailNotifications ? <Bell size={20} /> : <BellOff size={20} />}
+                  <div className="flex-1 text-left">
+                    <div className="font-medium">
+                      {emailNotifications ? 'メール通知 ON' : 'メール通知 OFF'}
+                    </div>
+                    <div className="text-xs opacity-80">
+                      {emailNotifications 
+                        ? '新しいイベント・スケジュール・活動報告の通知を受け取ります'
+                        : 'メール通知を受け取りません'}
+                    </div>
+                  </div>
+                </button>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleSave}
@@ -189,6 +218,7 @@ export default function ProfileEditClient({ user }: ProfileEditClientProps) {
                     setName(user.name || '')
                     setBio(user.bio || '')
                     setInstruments(user.instruments ? JSON.parse(user.instruments) : [])
+                    setEmailNotifications(user.emailNotifications)
                     setAvatarUrl(user.avatarUrl)
                   }}
                   disabled={saving}

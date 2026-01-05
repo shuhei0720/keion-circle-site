@@ -38,26 +38,27 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? // メールアドレス検証日時
-  password      String?
-  avatarUrl     String?
-  bio           String?   // 自己紹介
-  instruments   String?   // 演奏できる楽器リスト（JSON文字列形式）
-  role          String    @default("member") // site_admin, admin, member
-  accounts      Account[]
-  sessions      Session[]
-  posts         Post[]
-  messages      Message[]
-  postParticipants PostParticipant[]
-  postLikes     PostLike[]
-  activitySchedules ActivitySchedule[]
-  events        Event[]
+  id                 String    @id @default(cuid())
+  name               String?
+  email              String?   @unique
+  emailVerified      DateTime? // メールアドレス検証日時
+  password           String?
+  avatarUrl          String?
+  bio                String?   // 自己紹介
+  instruments        String?   // 演奏できる楽器リスト（JSON文字列形式）
+  role               String    @default("member") // site_admin, admin, member
+  emailNotifications Boolean   @default(true) // メール通知の有効/無効
+  accounts           Account[]
+  sessions           Session[]
+  posts              Post[]
+  messages           Message[]
+  postParticipants   PostParticipant[]
+  postLikes          PostLike[]
+  activitySchedules  ActivitySchedule[]
+  events             Event[]
   activityParticipants ActivityParticipant[]
-  eventParticipants EventParticipant[]
-  comments      Comment[]
+  eventParticipants  EventParticipant[]
+  comments           Comment[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
