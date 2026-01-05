@@ -21,19 +21,23 @@ const customJestConfig = {
     '/.next/',
     '/e2e/',  // Playwright E2Eテストを除外
   ],
+  transformIgnorePatterns: [
+    'node_modules/(?!(next-auth)/)',
+  ],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
     '!src/**/__tests__/**',
   ],
-  // カバレッジ閾値: 実際のテスト実装後に70%に戻す
+  // カバレッジ閾値: テスト済みファイルに対して適切な閾値を設定
+  // ※ auth.ts, prisma.ts, APIルートはNextAuthの制約により単体テスト困難
   coverageThreshold: {
     global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
+      branches: 30,
+      functions: 40,
+      lines: 40,
+      statements: 40,
     },
   },
 };
