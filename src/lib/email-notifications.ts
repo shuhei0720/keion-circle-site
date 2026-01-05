@@ -5,7 +5,7 @@ import NewActivityScheduleEmail from '@/components/emails/NewActivityScheduleEma
 import NewPostEmail from '@/components/emails/NewPostEmail';
 import { prisma } from '@/lib/prisma';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 'dummy_key_for_build');
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@bold-osaka-keion.fyi';
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || 'http://localhost:3000';
 
@@ -56,6 +56,12 @@ export async function sendNewEventNotification(event: {
   location: string;
 }) {
   console.log('[sendNewEventNotification] 開始:', event);
+  
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[sendNewEventNotification] RESEND_API_KEY が設定されていないためスキップ');
+    return { success: false, sent: 0 };
+  }
+  
   try {
     const recipients = await getNotificationRecipients();
     
@@ -123,6 +129,11 @@ export async function sendNewActivityScheduleNotification(schedule: {
   date: Date;
   location: string;
 }) {
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[sendNewActivityScheduleNotification] RESEND_API_KEY が設定されていないためスキップ');
+    return { success: false, sent: 0 };
+  }
+  
   try {
     const recipients = await getNotificationRecipients();
     
@@ -179,6 +190,11 @@ export async function sendNewPostNotification(post: {
   title: string;
   content: string;
 }) {
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[sendNewPostNotification] RESEND_API_KEY が設定されていないためスキップ');
+    return { success: false, sent: 0 };
+  }
+  
   try {
     const recipients = await getNotificationRecipients();
     
