@@ -97,14 +97,16 @@ export async function POST(request: NextRequest) {
     revalidatePath('/')
 
     // メール通知を送信（非同期・エラーハンドリング）
-    sendNewPostNotification({
-      id: post.id,
-      title: post.title,
-      content: post.content,
-    }).catch((error) => {
-      console.error('メール通知の送信に失敗しました:', error)
-      // メール送信失敗でも投稿作成は成功
-    })
+    if (post.title && post.content) {
+      sendNewPostNotification({
+        id: post.id,
+        title: post.title,
+        content: post.content,
+      }).catch((error) => {
+        console.error('メール通知の送信に失敗しました:', error)
+        // メール送信失敗でも投稿作成は成功
+      })
+    }
 
     return NextResponse.json(post)
   } catch (error) {
