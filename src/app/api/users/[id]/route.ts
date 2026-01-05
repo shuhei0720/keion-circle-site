@@ -72,25 +72,42 @@ export async function PATCH(
       return NextResponse.json({ error: 'リクエストボディが不正です' }, { status: 400 })
     }
     
-    const { role } = body
+    const { role, emailNotifications } = body
 
-    if (!role || !['site_admin', 'admin', 'member'].includes(role)) {
+    // roleがemailNotificationsのいずれかが必要
+    if (role === undefined && emailNotifications === undefined) {
+      return NextResponse.json({ error: '更新するフィールドが指定されていません' }, { status: 400 })
+    }
+
+    // roleのバリデーション
+    if (role !== undefined && !['site_admin', 'admin', 'member'].includes(role)) {
       return NextResponse.json({ error: '無効な役割です' }, { status: 400 })
     }
 
+    // emailNotificationsのバリデーション
+    if (emailNotifications !== undefined && typeof emailNotifications !== 'boolean') {
+      return NextResponse.json({ error: '通知設定はtrueまたはfalseでなければなりません' }, { status: 400 })
+    }
+
     // 自分自身の役割を変更しようとしていないかチェック
-    if (id === session.user.id) {
+    if (role !== undefined && id === session.user.id) {
       return NextResponse.json({ error: '自分自身の役割を変更することはできません' }, { status: 400 })
     }
 
+    // 更新データを構築
+    const updateData: { role?: string; emailNotifications?: boolean } = {}
+    if (role !== undefined) updateData.role = role
+    if (emailNotifications !== undefined) updateData.emailNotifications = emailNotifications
+
     const user = await prisma.user.update({
       where: { id },
-      data: { role },
+      data: updateData,
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
+        emailNotifications: true,
         createdAt: true
       }
     })

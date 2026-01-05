@@ -23,6 +23,7 @@ export async function GET() {
         email: true,
         avatarUrl: true,
         role: true,
+        emailNotifications: true,
         createdAt: true,
         _count: {
           select: {

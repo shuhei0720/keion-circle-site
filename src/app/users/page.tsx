@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import DashboardLayout from '@/components/DashboardLayout'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { useSession } from 'next-auth/react'
-import { Users, Trash2, Shield, User, Mail, Calendar, X } from 'lucide-react'
+import { Users, Trash2, Shield, User, Mail, Calendar, X, Bell, BellOff } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface UserData {
@@ -13,6 +13,7 @@ interface UserData {
   email: string | null
   avatarUrl: string | null
   role: string
+  emailNotifications: boolean
   createdAt: string
   _count: {
     posts: number
@@ -141,6 +142,35 @@ export default function UsersPage() {
     }
   }
 
+  const handleNotificationToggle = async (userId: string, currentValue: boolean) => {
+    const newValue = !currentValue
+
+    // 楽観的UI更新: 即座に通知設定を変更
+    setUsers(prevUsers => prevUsers.map(u => 
+      u.id === userId ? { ...u, emailNotifications: newValue } : u
+    ))
+
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emailNotifications: newValue })
+      })
+
+      if (!res.ok) {
+        // エラー時は元に戻す
+        fetchUsers()
+        const error = await res.json()
+        alert(error.error || '通知設定の変更に失敗しました')
+      }
+    } catch (error) {
+      // エラー時は元に戻す
+      fetchUsers()
+      console.error('Failed to update notification setting:', error)
+      alert('通知設定の変更に失敗しました')
+    }
+  }
+
   if (status === 'loading' || loading) {
     return (
       <DashboardLayout>
@@ -178,6 +208,9 @@ export default function UsersPage() {
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
                         役割
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-white/70 uppercase tracking-wider">
+                        通知
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-white/70 uppercase tracking-wider">
                         登録日
@@ -246,6 +279,25 @@ export default function UsersPage() {
                               </>
                             )}
                           </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex justify-center">
+                            <button
+                              onClick={() => handleNotificationToggle(user.id, user.emailNotifications)}
+                              className={`p-2 rounded-lg transition-colors ${
+                                user.emailNotifications
+                                  ? 'bg-green-500/20 text-green-300 hover:bg-green-500/30'
+                                  : 'bg-gray-500/20 text-gray-400 hover:bg-gray-500/30'
+                              }`}
+                              title={user.emailNotifications ? '通知有効' : '通知無効'}
+                            >
+                              {user.emailNotifications ? (
+                                <Bell className="h-4 w-4" />
+                              ) : (
+                                <BellOff className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-white/70">
                           <div className="flex items-center gap-1">
@@ -367,6 +419,28 @@ export default function UsersPage() {
                         <div className="text-lg font-semibold text-white">{user._count.messages}</div>
                       </div>
                     </div>
+
+                    {/* 通知設定トグル */}
+                    <button
+                      onClick={() => handleNotificationToggle(user.id, user.emailNotifications)}
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-semibold mb-3 touch-manipulation transition-colors ${
+                        user.emailNotifications
+                          ? 'bg-green-500/20 text-green-300 border border-green-400/30 hover:bg-green-500/30'
+                          : 'bg-gray-500/20 text-gray-400 border border-gray-400/30 hover:bg-gray-500/30'
+                      }`}
+                    >
+                      {user.emailNotifications ? (
+                        <>
+                          <Bell size={18} />
+                          メール通知: 有効
+                        </>
+                      ) : (
+                        <>
+                          <BellOff size={18} />
+                          メール通知: 無効
+                        </>
+                      )}
+                    </button>
 
                     {/* 削除ボタン */}
                     <button
