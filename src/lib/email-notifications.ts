@@ -9,10 +9,17 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const fromEmail = process.env.RESEND_FROM_EMAIL || 'noreply@bold-osaka-keion.fyi';
 const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.AUTH_URL || 'http://localhost:3000';
 
+console.log('[email-notifications] 初期化:', {
+  hasResendKey: !!process.env.RESEND_API_KEY,
+  fromEmail,
+  baseUrl,
+});
+
 /**
  * 通知設定が有効なメンバーのメールアドレスを取得
  */
 async function getNotificationRecipients() {
+  console.log('[getNotificationRecipients] ユーザーを検索中...');
   const users = await prisma.user.findMany({
     where: {
       emailNotifications: true,
@@ -25,6 +32,11 @@ async function getNotificationRecipients() {
       name: true,
       email: true,
     },
+  });
+  
+  console.log('[getNotificationRecipients] 検索結果:', {
+    count: users.length,
+    users: users.map(u => ({ name: u.name, email: u.email })),
   });
   
   return users.filter((user) => user.email) as Array<{
@@ -43,13 +55,16 @@ export async function sendNewEventNotification(event: {
   date: Date;
   location: string;
 }) {
+  console.log('[sendNewEventNotification] 開始:', event);
   try {
     const recipients = await getNotificationRecipients();
     
     if (recipients.length === 0) {
-      console.log('通知を受け取るメンバーがいません');
+      console.log('[sendNewEventNotification] 通知を受け取るメンバーがいません');
       return { success: true, sent: 0 };
     }
+
+    console.log('[sendNewEventNotification] メール送信開始:', { recipientsCount: recipients.length });
 
     const eventUrl = `${baseUrl}/events/${event.id}`;
     const eventDate = new Intl.DateTimeFormat('ja-JP', {
@@ -62,6 +77,7 @@ export async function sendNewEventNotification(event: {
 
     const results = await Promise.allSettled(
       recipients.map(async (recipient) => {
+        console.log('[sendNewEventNotification] メール送信中:', recipient.email);
         const emailHtml = await render(
           NewEventEmail({
             eventTitle: event.title,
@@ -82,11 +98,18 @@ export async function sendNewEventNotification(event: {
     );
 
     const successCount = results.filter((r) => r.status === 'fulfilled').length;
-    console.log(`イベント通知メールを ${successCount}/${recipients.length} 件送信しました`);
+    const failedResults = results.filter((r) => r.status === 'rejected');
+    
+    console.log('[sendNewEventNotification] 送信完了:', {
+      total: recipients.length,
+      success: successCount,
+      failed: failedResults.length,
+      failures: failedResults.map((r: any) => r.reason?.message || r.reason),
+    });
 
     return { success: true, sent: successCount };
   } catch (error) {
-    console.error('イベント通知メールの送信に失敗しました:', error);
+    console.error('[sendNewEventNotification] エラー:', error);
     return { success: false, sent: 0 };
   }
 }
