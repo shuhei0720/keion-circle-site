@@ -1717,18 +1717,88 @@ npm run test:e2e
 
 ```mermaid
 graph TB
-    A[テスト戦略] --> B[E2Eテスト]
-    A --> C[型チェック]
-    A --> D[Lintチェック]
-    A --> E[ビルドテスト]
+    A[テスト戦略] --> B[ユニットテスト]
+    A --> C[E2Eテスト]
+    A --> D[型チェック]
+    A --> E[Lintチェック]
+    A --> F[ビルドテスト]
     
-    B --> B1[Playwright]
-    C --> C1[TypeScript]
-    D --> D1[ESLint]
-    E --> E1[Next.js Build]
+    B --> B1[Jest]
+    C --> C1[Playwright]
+    D --> D1[TypeScript]
+    E --> E1[ESLint]
+    F --> F1[Next.js Build]
 ```
 
-### 1️⃣ E2Eテスト（Playwright）
+### 1️⃣ ユニットテスト（Jest）
+
+**実行方法:**
+
+```bash
+# 全テスト実行
+npm run test:unit
+
+# Watchモード
+npm run test:unit -- --watch
+
+# カバレッジレポート生成
+npm run test:unit -- --coverage
+```
+
+**テストカバレッジ:**
+
+| カテゴリ | ファイル | テスト数 | カバレッジ |
+|---------|---------|---------|----------|
+| 📚 **ライブラリ** | `src/lib/__tests__/permissions.test.ts` | 16件 | 100% |
+| 📚 **ライブラリ** | `src/lib/__tests__/email.test.ts` | 14件 | 97.4% |
+| 📚 **ライブラリ** | `src/lib/__tests__/email-notifications.test.ts` | 10件 | 90.24% |
+| 📚 **ライブラリ** | `src/lib/__tests__/supabase.test.ts` | 3件 | 100% |
+| 🧩 **コンポーネント** | `src/components/__tests__/Footer.test.tsx` | 3件 | 100% |
+| 🧩 **コンポーネント** | `src/components/__tests__/LoadingSpinner.test.tsx` | 3件 | 100% |
+| 🧩 **コンポーネント** | `src/components/__tests__/NavigationLink.test.tsx` | 4件 | 100% |
+| 🧩 **コンポーネント** | `src/components/__tests__/DashboardLayout.test.tsx` | 6件 | 65.21% |
+| 🧩 **コンポーネント** | `src/components/__tests__/AvatarUpload.test.tsx` | 5件 | 70.83% |
+| 📧 **メールテンプレート** | `src/components/emails/*.tsx` | - | 100% |
+| **合計** | **10ファイル** | **64件** | **91.63%** |
+
+**カバレッジ結果（テスト対象ファイルのみ）:**
+- ✅ Statements: 91.63%（閾値: 80%）
+- ✅ Branches: 74.3%（閾値: 60%）
+- ✅ Functions: 82.97%（閾値: 80%）
+- ✅ Lines: 91.69%（閾値: 80%）
+
+**カバレッジ設定:**
+```javascript
+// jest.config.js
+collectCoverageFrom: [
+  'src/lib/permissions.ts',
+  'src/lib/email.ts',
+  'src/lib/email-notifications.ts',
+  'src/lib/supabase.ts',
+  'src/components/Footer.tsx',
+  'src/components/LoadingSpinner.tsx',
+  'src/components/DashboardLayout.tsx',
+  'src/components/AvatarUpload.tsx',
+  'src/components/NavigationLink.tsx',
+  'src/components/emails/*.tsx',
+],
+coverageThreshold: {
+  global: {
+    branches: 60,
+    functions: 80,
+    lines: 80,
+    statements: 80
+  }
+}
+```
+
+**テスト技術:**
+- `@testing-library/react`: React コンポーネントテスト
+- `@testing-library/jest-dom`: カスタムマッチャー
+- `jest`: テストフレームワーク、モック、カバレッジ
+- TypeScript: 型安全なテストコード
+
+### 2️⃣ E2Eテスト（Playwright）
 
 **実行方法:**
 
@@ -1778,7 +1848,7 @@ graph LR
     G --> H[テスト終了]
 ```
 
-### 2️⃣ 型チェック（TypeScript）
+### 3️⃣ 型チェック（TypeScript）
 
 ```bash
 # 型チェック実行
@@ -1793,7 +1863,7 @@ npx tsc --noEmit --watch
 - 未使用変数の検出
 - 型推論の検証
 
-### 3️⃣ Lintチェック（ESLint）
+### 4️⃣ Lintチェック（ESLint）
 
 ```bash
 # Lint実行
@@ -1808,7 +1878,7 @@ npm run lint -- --fix
 - 潜在的なバグ
 - ベストプラクティス違反
 
-### 4️⃣ ビルドテスト
+### 5️⃣ ビルドテスト
 
 ```bash
 # 本番ビルド
@@ -1839,9 +1909,29 @@ GitHub Actionsで自動実行されるテスト：
 ```yaml
 # .github/workflows/ci.yml
 jobs:
-  - Lint & Type Check
-  - Build Test
-  - E2E Tests (Chromium + Firefox + Mobile Chrome)
+  lint:
+    name: Lint & Type Check
+    steps:
+      - ESLint コード品質チェック
+      - TypeScript 型チェック
+  
+  unit-tests:
+    name: Unit Tests
+    steps:
+      - Jest ユニットテスト（66テスト）
+      - カバレッジレポート（91.63%達成）
+  
+  build:
+    name: Build Test
+    steps:
+      - Next.js 本番ビルド
+      - バンドルサイズ確認
+  
+  e2e-tests:
+    name: E2E Tests
+    steps:
+      - Playwright E2Eテスト（77テスト）
+      - Chromium + Firefox + Mobile Chrome
 ```
 
 **テストブラウザ:**
@@ -1849,6 +1939,13 @@ jobs:
 - ✅ **Firefox**: CI拡張モード（CI_EXTENDED_BROWSERS=true）
 - ✅ **Mobile Chrome**: CI拡張モード（モバイル対応確認）
 - ❌ **WebKit/Safari**: 除外（Safari対応不要のため）
+
+**CI/CD結果（最新）:**
+- ✅ Lint & Type Check: 26秒
+- ✅ Unit Tests: 33秒（66テスト、91.63%カバレッジ）
+- ✅ Integration Tests: 44秒
+- ✅ E2E Tests: 8分48秒（77テスト）
+- ✅ Build: 41秒
 
 ---
 
