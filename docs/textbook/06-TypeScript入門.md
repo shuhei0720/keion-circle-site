@@ -1601,32 +1601,6 @@ const user: User = {
 > - extends: インターフェースの拡張
 
 ---
-  email: 'sato@example.com',
-  age: 30,
-  bio: 'エンジニアです'
-};
-```
-
-### 読み取り専用プロパティ
-
-`readonly`を付けると、値を変更できなくなります：
-
-```typescript
-interface User {
-  readonly id: number;
-  name: string;
-}
-
-const user: User = {
-  id: 1,
-  name: '田中'
-};
-
-user.name = '佐藤';  // OK
-user.id = 2;         // エラー！readonlyは変更できない
-```
-
----
 
 ## 6.4 ユニオン型とリテラル型
 
