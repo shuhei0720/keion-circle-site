@@ -20,7 +20,7 @@ export async function PUT(
       return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
     }
 
-    const { title, content, date } = await request.json()
+    const { title, content, date, location, locationUrl } = await request.json()
     const { id } = await params
 
     const schedule = await prisma.activitySchedule.update({
@@ -28,7 +28,9 @@ export async function PUT(
       data: {
         title,
         content,
-        date: date ? new Date(date) : null
+        date: date ? new Date(date) : null,
+        location: location || null,
+        locationUrl: locationUrl || null
       },
       include: {
         user: {
