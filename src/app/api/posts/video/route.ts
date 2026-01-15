@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PutObjectCommand } from '@aws-sdk/client-s3'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
 import { r2Client, R2_BUCKET_NAME, R2_PUBLIC_URL } from '@/lib/r2'
 
 export const runtime = 'nodejs'
 
-// 動画アップロード（管理者のみ）
+// Presigned URL生成（管理者のみ）
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
@@ -20,53 +21,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '動画のアップロードは管理者のみ可能です' }, { status: 403 })
     }
 
-    const formData = await request.formData()
-    const file = formData.get('video') as File
+    const body = await request.json()
+    const { fileName, fileType } = body
 
-    if (!file) {
-      return NextResponse.json({ error: 'ファイルが選択されていません' }, { status: 400 })
-    }
-
-    // ファイルサイズチェック（500MB上限）
-    const maxSize = 500 * 1024 * 1024 // 500MB
-    if (file.size > maxSize) {
-      return NextResponse.json({ error: 'ファイルサイズが大きすぎます（上限: 500MB）' }, { status: 400 })
+    if (!fileName || !fileType) {
+      return NextResponse.json({ error: 'ファイル名とタイプが必要です' }, { status: 400 })
     }
 
     // ファイルタイプチェック
-    if (!file.type.startsWith('video/')) {
+    if (!fileType.startsWith('video/')) {
       return NextResponse.json({ error: '動画ファイルのみアップロード可能です' }, { status: 400 })
     }
 
     // ファイル名生成（タイムスタンプ + ランダム文字列）
     const timestamp = Date.now()
     const randomString = Math.random().toString(36).substring(7)
-    const extension = file.name.split('.').pop()
-    const fileName = `videos/${timestamp}-${randomString}.${extension}`
+    const extension = fileName.split('.').pop()
+    const key = `videos/${timestamp}-${randomString}.${extension}`
 
-    // ファイルをバイト配列に変換
-    const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
+    // Presigned URL生成（15分有効）
+    const command = new PutObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key,
+      ContentType: fileType
+    })
 
-    // R2にアップロード
-    await r2Client.send(
-      new PutObjectCommand({
-        Bucket: R2_BUCKET_NAME,
-        Key: fileName,
-        Body: buffer,
-        ContentType: file.type,
-        ContentLength: file.size,
-      })
-    )
+    const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 900 })
+    const publicUrl = `${R2_PUBLIC_URL}/${key}`
 
-    // 公開URLを生成
-    const videoUrl = `${R2_PUBLIC_URL}/${fileName}`
-
-    return NextResponse.json({ url: videoUrl })
+    return NextResponse.json({ uploadUrl, publicUrl })
   } catch (error) {
-    console.error('Failed to upload video:', error)
+    console.error('Failed to generate presigned URL:', error)
     return NextResponse.json(
-      { error: '動画のアップロードに失敗しました', details: error instanceof Error ? error.message : String(error) },
+      { error: 'Presigned URLの生成に失敗しました', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

@@ -160,9 +160,23 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     setVideoUploadProgress(0)
 
     try {
-      const formData = new FormData()
-      formData.append('video', file)
+      // 1. Presigned URLを取得
+      const presignResponse = await fetch('/api/posts/video', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type
+        })
+      })
 
+      if (!presignResponse.ok) {
+        throw new Error('Presigned URL取得失敗')
+      }
+
+      const { uploadUrl, publicUrl } = await presignResponse.json()
+
+      // 2. 直接R2にアップロード
       const xhr = new XMLHttpRequest()
 
       xhr.upload.addEventListener('progress', (e) => {
@@ -174,10 +188,9 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
       xhr.addEventListener('load', () => {
         if (xhr.status === 200) {
-          const response = JSON.parse(xhr.responseText)
           setFormData(prev => ({
             ...prev,
-            videoUrls: [...prev.videoUrls, response.url]
+            videoUrls: [...prev.videoUrls, publicUrl]
           }))
           alert('動画をアップロードしました')
           setVideoUploadProgress(0)
@@ -193,8 +206,9 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
         setVideoUploadProgress(0)
       })
 
-      xhr.open('POST', '/api/posts/video')
-      xhr.send(formData)
+      xhr.open('PUT', uploadUrl)
+      xhr.setRequestHeader('Content-Type', file.type)
+      xhr.send(file)
     } catch (error) {
       console.error('Video upload error:', error)
       alert('動画のアップロードに失敗しました')
