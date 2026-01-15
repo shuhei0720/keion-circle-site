@@ -12,7 +12,9 @@ export default function VideoPlayer({ src, className = '' }: VideoPlayerProps) {
         src={src}
         controls
         className="w-full rounded-lg"
-        preload="metadata"
+        preload="auto"
+        playsInline
+        poster={src + '#t=0.1'}
       >
         お使いのブラウザは動画タグをサポートしていません。
       </video>
