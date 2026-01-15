@@ -57,7 +57,6 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
         setFormData({
           title: data.title,
           content: data.content || '',
-          youtubeUrls: data.youtubeUrls || [],
           videoUrls: data.videoUrls || [],
           images: data.images || []
         })
