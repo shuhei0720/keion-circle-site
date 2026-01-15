@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
+import { Play } from 'lucide-react'
 
 interface VideoPlayerProps {
   src: string
@@ -9,27 +10,16 @@ interface VideoPlayerProps {
 
 export default function VideoPlayer({ src, className = '' }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [thumbnail, setThumbnail] = useState<string | null>(null)
-  const [showThumbnail, setShowThumbnail] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
 
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    const generateThumbnail = () => {
-      const canvas = document.createElement('canvas')
-      canvas.width = video.videoWidth
-      canvas.height = video.videoHeight
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-        setThumbnail(canvas.toDataURL())
-      }
+  const handlePlay = async () => {
+    if (videoRef.current) {
+      const video = videoRef.current
+      video.load()
+      await video.play()
+      setIsPlaying(true)
     }
-
-    video.addEventListener('loadeddata', generateThumbnail)
-    return () => video.removeEventListener('loadeddata', generateThumbnail)
-  }, [])
+  }
 
   return (
     <div className={`relative w-full ${className}`}>
@@ -38,18 +28,22 @@ export default function VideoPlayer({ src, className = '' }: VideoPlayerProps) {
         src={src}
         controls
         className="w-full rounded-lg"
-        preload="metadata"
+        preload="none"
         playsInline
-        onPlay={() => setShowThumbnail(false)}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
       >
         お使いのブラウザは動画タグをサポートしていません。
       </video>
-      {thumbnail && showThumbnail && (
-        <img
-          src={thumbnail}
-          alt="Video thumbnail"
-          className="absolute inset-0 w-full h-full rounded-lg object-cover pointer-events-none"
-        />
+      {!isPlaying && (
+        <div
+          onClick={handlePlay}
+          className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg cursor-pointer"
+        >
+          <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center hover:bg-white transition-colors">
+            <Play className="w-10 h-10 text-gray-900 ml-1" fill="currentColor" />
+          </div>
+        </div>
       )}
     </div>
   )
