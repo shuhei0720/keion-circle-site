@@ -12,7 +12,7 @@ export default function VideoPlayer({ src, className = '' }: VideoPlayerProps) {
         src={src}
         controls
         className="w-full rounded-lg"
-        preload="auto"
+        preload="metadata"
         playsInline
         poster={src + '#t=0.1'}
       >
