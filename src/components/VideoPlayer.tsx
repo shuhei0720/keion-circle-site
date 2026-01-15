@@ -19,6 +19,9 @@ export default function VideoPlayer({ src, className = '' }: VideoPlayerProps) {
     const canvas = canvasRef.current
     if (!video || !canvas) return
 
+    // スマホでも強制的に読み込み
+    video.load()
+
     const generateThumbnail = () => {
       if (video.videoWidth > 0 && video.videoHeight > 0) {
         canvas.width = video.videoWidth
