@@ -83,6 +83,11 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
     setUploadingImages(true)
 
+    if (!supabase) {
+      alert('Supabaseクライアントの初期化に失敗しました')
+      return
+    }
+
     try {
       const uploadedUrls: string[] = []
 

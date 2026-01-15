@@ -115,6 +115,11 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
         const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`
         const filePath = `posts/${fileName}`
 
+        if (!supabase) {
+          alert('Supabaseクライアントの初期化に失敗しました')
+          continue
+        }
+
         const { error } = await supabase.storage
           .from('avatars')
           .upload(filePath, file)

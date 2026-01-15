@@ -123,9 +123,14 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
         // ファイル名を一意にする
         const fileExt = file.name.split('.').pop()
         const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-        const filePath = `event-reports/${fileName}`
+        const filePath = `posts/${fileName}`
 
-        const { data, error } = await supabase.storage
+        if (!supabase) {
+          alert('Supabaseクライアントの初期化に失敗しました')
+          continue
+        }
+
+        const { error } = await supabase.storage
           .from('avatars')
           .upload(filePath, file)
 
