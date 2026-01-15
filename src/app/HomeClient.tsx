@@ -5,12 +5,14 @@ import Image from 'next/image'
 import { User, MessageCircle, FileText } from 'lucide-react'
 import YouTube from 'react-youtube'
 import ScrollAnimation from '@/components/ScrollAnimation'
+import VideoPlayer from '@/components/VideoPlayer'
 
 interface Post {
   id: string
   title: string
   content: string
   youtubeUrls: string[]
+  videoUrls: string[]
   images?: string[]
   userId: string
   createdAt: string
@@ -120,6 +122,15 @@ export default function HomeClient({ posts, popularPosts }: HomeClientProps) {
                           </div>
                         )
                       })}
+                    </div>
+                  )}
+                  {post.videoUrls && post.videoUrls.length > 0 && (
+                    <div className="space-y-4 mb-4">
+                      {post.videoUrls.map((url, index) => (
+                        <div key={index} className="rounded-xl overflow-hidden shadow-2xl">
+                          <VideoPlayer src={url} />
+                        </div>
+                      ))}
                     </div>
                   )}
                   {post.images && post.images.length > 0 && (

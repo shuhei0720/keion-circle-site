@@ -13,6 +13,7 @@ interface Post {
   title: string
   content: string
   youtubeUrls: string[]
+  videoUrls: string[]
   images?: string[]
   userId: string
   createdAt: string
