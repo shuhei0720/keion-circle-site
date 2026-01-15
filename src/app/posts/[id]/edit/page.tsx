@@ -21,6 +21,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
   const [uploadingImages, setUploadingImages] = useState(false)
   const [uploadingVideo, setUploadingVideo] = useState(false)
   const [videoUploadProgress, setVideoUploadProgress] = useState(0)
+  const [deletingVideoIndex, setDeletingVideoIndex] = useState<number | null>(null)
   const [postId, setPostId] = useState<string>('')
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
   const supabase = getSupabaseClient()
@@ -256,6 +257,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
       return
     }
 
+    setDeletingVideoIndex(index)
     try {
       // R2から削除
       const response = await fetch('/api/posts/video', {
@@ -278,6 +280,8 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     } catch (error) {
       console.error('Video delete error:', error)
       alert('動画の削除に失敗しました')
+    } finally {
+      setDeletingVideoIndex(null)
     }
   }
 
@@ -428,9 +432,14 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                         <button
                           type="button"
                           onClick={() => handleRemoveVideo(index)}
-                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
+                          disabled={deletingVideoIndex === index}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <X className="w-4 h-4" />
+                          {deletingVideoIndex === index ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <X className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     ))}
