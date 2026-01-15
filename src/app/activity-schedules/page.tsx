@@ -50,6 +50,7 @@ export default function ActivitySchedulesPage() {
   const router = useRouter()
   const [schedules, setSchedules] = useState<ActivitySchedule[]>([])
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
@@ -172,6 +173,8 @@ export default function ActivitySchedulesPage() {
       return
     }
 
+    setSubmitting(true)
+
     try {
       const url = editingId 
         ? `/api/activity-schedules/${editingId}`
@@ -196,6 +199,8 @@ export default function ActivitySchedulesPage() {
     } catch (error) {
       console.error('保存エラー:', error)
       alert('保存に失敗しました')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -524,9 +529,11 @@ ${schedule.content}
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:scale-105 transition-all shadow-lg"
+                  disabled={submitting}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg hover:scale-105 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {editingId ? '更新' : '作成'}
+                  {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{submitting ? (editingId ? '更新中...' : '作成中...') : (editingId ? '更新' : '作成')}</span>
                 </button>
                 <button
                   type="button"
