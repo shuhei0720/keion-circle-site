@@ -96,6 +96,7 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/test
       NEXTAUTH_SECRET: test-secret
       NEXTAUTH_URL: http://localhost:3000
       NEXT_PUBLIC_SUPABASE_URL: https://test.supabase.co
@@ -144,6 +145,7 @@ jobs:
           --health-retries 5
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/test
       NEXTAUTH_SECRET: test-secret
       NEXTAUTH_URL: http://localhost:3000
       AUTH_SECRET: test-secret
