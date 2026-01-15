@@ -426,7 +426,9 @@ ${schedule.content}
 
   const canCreateReport = (schedule: ActivitySchedule) => {
     const scheduleDate = new Date(schedule.date)
+    scheduleDate.setHours(0, 0, 0, 0)
     const now = new Date()
+    now.setHours(0, 0, 0, 0)
     const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'site_admin'
     return isAdmin && scheduleDate <= now
   }
