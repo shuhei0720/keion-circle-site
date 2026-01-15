@@ -68,6 +68,7 @@ export default function PostsPage() {
   const [submittingComment, setSubmittingComment] = useState<string | null>(null)
   const [expandedComments, setExpandedComments] = useState<{ [postId: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [postId: string]: boolean }>({})
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
 
@@ -167,6 +168,8 @@ export default function PostsPage() {
   const handleDelete = async (postId: string) => {
     if (!confirm('この投稿を削除しますか？')) return
 
+    setDeletingPostId(postId)
+
     try {
       const res = await fetch(`/api/posts/${postId}`, {
         method: 'DELETE'
@@ -180,6 +183,8 @@ export default function PostsPage() {
     } catch (error) {
       console.error('削除エラー:', error)
       alert('削除に失敗しました')
+    } finally {
+      setDeletingPostId(null)
     }
   }
 
@@ -396,10 +401,15 @@ export default function PostsPage() {
                             </button>
                             <button
                               onClick={() => handleDelete(post.id)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
+                              disabled={deletingPostId === post.id}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
                               aria-label="削除"
                             >
-                              <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                              {deletingPostId === post.id ? (
+                                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                              )}
                             </button>
                           </div>
                         )}

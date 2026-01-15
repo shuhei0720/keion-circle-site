@@ -80,6 +80,7 @@ export default function EventsPage() {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
+  const [deletingEventId, setDeletingEventId] = useState<string | null>(null)
   const [copiedEventId, setCopiedEventId] = useState<string | null>(null)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -953,9 +954,14 @@ ${event.content}
                           </button>
                           <button
                             onClick={() => handleDelete(event.id)}
-                            className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
+                            disabled={deletingEventId === event.id}
+                            className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            <Trash2 className="w-5 h-5" />
+                            {deletingEventId === event.id ? (
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-5 h-5" />
+                            )}
                           </button>
                         </>
                       )}

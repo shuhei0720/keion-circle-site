@@ -56,6 +56,7 @@ export default function ActivitySchedulesPage() {
   const [newComment, setNewComment] = useState<{ [key: string]: string }>({})
   const [expandedComments, setExpandedComments] = useState<{ [key: string]: boolean }>({})
   const [loadingComments, setLoadingComments] = useState<{ [key: string]: boolean }>({})
+  const [deletingScheduleId, setDeletingScheduleId] = useState<string | null>(null)
   const [copiedScheduleId, setCopiedScheduleId] = useState<string | null>(null)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -607,9 +608,14 @@ ${schedule.content}
                         </button>
                         <button
                           onClick={() => handleDelete(schedule.id)}
-                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg border border-red-400/30 transition"
+                          disabled={deletingScheduleId === schedule.id}
+                          className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg border border-red-400/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          {deletingScheduleId === schedule.id ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-5 h-5" />
+                          )}
                         </button>
                       </>
                     )}
