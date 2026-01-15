@@ -397,22 +397,25 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                 {formData.videoUrls.length > 0 && (
                   <div className="space-y-3">
                     {formData.videoUrls.map((url, index) => (
-                      <div key={index} className="relative group border rounded-lg p-3 flex items-center gap-3">
+                      <div key={index} className="relative group border rounded-lg p-3">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="flex-1 text-sm font-medium text-gray-700">
+                            動画 {index + 1}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVideo(index)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
                         <video
                           src={url}
-                          className="w-32 h-20 object-cover rounded"
-                          controls={false}
+                          className="w-full max-h-64 rounded-lg"
+                          controls
+                          preload="metadata"
                         />
-                        <div className="flex-1 text-sm text-gray-600 truncate">
-                          {url.split('/').pop()}
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveVideo(index)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <X className="w-5 h-5" />
-                        </button>
                       </div>
                     ))}
                   </div>
