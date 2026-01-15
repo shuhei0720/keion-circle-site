@@ -174,13 +174,16 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 500 * 1024 * 1024) {
-      alert('動画ファイルは500MB以下にしてください')
-      return
-    }
-
+    // 即座にモーダルを表示
     setUploadingVideo(true)
     setVideoUploadProgress(0)
+
+    // 簡単なチェックのみ
+    if (file.size > 500 * 1024 * 1024) {
+      alert('動画ファイルは500MB以下にしてください')
+      setUploadingVideo(false)
+      return
+    }
 
     try {
       // 1. Presigned URLを取得

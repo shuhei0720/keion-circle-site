@@ -145,20 +145,22 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
     const file = files[0]
 
-    // 500MBまで
-    if (file.size > 500 * 1024 * 1024) {
-      alert('動画ファイルは500MB以下にしてください')
-      return
-    }
-
-    // 動画ファイルのみ
-    if (!file.type.startsWith('video/')) {
-      alert('動画ファイルを選択してください')
-      return
-    }
-
+    // 即座にモーダルを表示
     setUploadingVideo(true)
     setVideoUploadProgress(0)
+
+    // 簡単なチェックのみ
+    if (file.size > 500 * 1024 * 1024) {
+      alert('動画ファイルは500MB以下にしてください')
+      setUploadingVideo(false)
+      return
+    }
+
+    if (!file.type.startsWith('video/')) {
+      alert('動画ファイルを選択してください')
+      setUploadingVideo(false)
+      return
+    }
 
     try {
       // 1. Presigned URLを取得
