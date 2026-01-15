@@ -173,6 +173,10 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
     const file = files[0]
 
+    // 即座にモーダルを表示
+    setUploadingVideo(true)
+    setVideoUploadProgress(0)
+
     // 簡単なチェックのみ
     if (file.size > 1 * 1024 * 1024 * 1024) {
       alert('動画ファイルは1GB以下にしてください')
