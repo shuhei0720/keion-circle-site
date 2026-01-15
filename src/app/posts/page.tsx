@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
-import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2, Copy, Check } from 'lucide-react'
+import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2, Copy, Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
