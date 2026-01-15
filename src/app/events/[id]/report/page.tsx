@@ -179,8 +179,8 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
     setVideoUploadProgress(0)
 
     // 簡単なチェックのみ
-    if (file.size > 500 * 1024 * 1024) {
-      alert('動画ファイルは500MB以下にしてください')
+    if (file.size > 1 * 1024 * 1024 * 1024) {
+      alert('動画ファイルは1GB以下にしてください')
       setUploadingVideo(false)
       return
     }
@@ -417,7 +417,7 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
                       className="hidden"
                     />
                   </label>
-                  <span className="text-sm text-gray-500">最大500MB</span>
+                  <span className="text-sm text-gray-500">最大1GB</span>
                 </div>
 
                 {formData.videoUrls.length > 0 && (

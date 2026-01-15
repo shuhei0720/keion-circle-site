@@ -139,19 +139,43 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
     }))
   }
 
+  const handleVideoInputClick = () => {
+    // ファイルピッカーが開いた
+    const input = document.activeElement as HTMLInputElement
+    
+    const checkForSelection = () => {
+      setTimeout(() => {
+        if (document.hasFocus()) {
+          // フォーカスが戻ってきた = ファイルピッカーが閉じた
+          setTimeout(() => {
+            // ファイルが選択されたかチェック
+            if (input && input.files && input.files.length > 0) {
+              // ファイルが選択された場合のみモーダル表示
+              setUploadingVideo(true)
+              setVideoUploadProgress(0)
+            }
+          }, 100)
+        } else {
+          checkForSelection()
+        }
+      }, 100)
+    }
+    
+    checkForSelection()
+  }
+
   const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
-    if (!files || files.length === 0) return
+    if (!files || files.length === 0) {
+      setUploadingVideo(false)
+      return
+    }
 
     const file = files[0]
 
-    // 即座にモーダルを表示
-    setUploadingVideo(true)
-    setVideoUploadProgress(0)
-
     // 簡単なチェックのみ
-    if (file.size > 500 * 1024 * 1024) {
-      alert('動画ファイルは500MB以下にしてください')
+    if (file.size > 1 * 1024 * 1024 * 1024) {
+      alert('動画ファイルは1GB以下にしてください')
       setUploadingVideo(false)
       return
     }
@@ -358,11 +382,12 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                       type="file"
                       accept="video/*"
                       onChange={handleVideoUpload}
+                      onClick={handleVideoInputClick}
                       disabled={uploadingVideo}
                       className="hidden"
                     />
                   </label>
-                  <span className="text-sm text-gray-500">最大500MB</span>
+                  <span className="text-sm text-gray-500">最大1GB</span>
                 </div>
 
                 {formData.videoUrls.length > 0 && (
