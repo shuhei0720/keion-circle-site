@@ -8,6 +8,7 @@ import RichTextEditor from '@/components/RichTextEditor'
 import { ArrowLeft, Loader2, Upload, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import VideoUploadModal from '@/components/VideoUploadModal'
+import VideoPlayer from '@/components/VideoPlayer'
 
 function getSupabaseClient() {
   return supabase
@@ -395,27 +396,17 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                 </div>
 
                 {formData.videoUrls.length > 0 && (
-                  <div className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {formData.videoUrls.map((url, index) => (
-                      <div key={index} className="relative group border rounded-lg p-3">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="flex-1 text-sm font-medium text-gray-700">
-                            動画 {index + 1}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveVideo(index)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                        <video
-                          src={url}
-                          className="w-full max-h-64 rounded-lg"
-                          controls
-                          preload="metadata"
-                        />
+                      <div key={index} className="relative group">
+                        <VideoPlayer src={url} />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveVideo(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
                     ))}
                   </div>
