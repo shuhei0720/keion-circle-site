@@ -7,6 +7,7 @@ import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
 import { ArrowLeft, Loader2, Upload, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import VideoUploadModal from '@/components/VideoUploadModal'
 
 function getSupabaseClient() {
   return supabase
@@ -273,6 +274,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
 
   return (
     <DashboardLayout>
+      <VideoUploadModal isOpen={uploadingVideo} progress={videoUploadProgress} />
       <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8">
         <button
           onClick={() => router.back()}
@@ -349,7 +351,7 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                       : 'border-blue-500 text-blue-600 hover:bg-blue-50'
                   }`}>
                     <Upload className="w-5 h-5" />
-                    <span>{uploadingVideo ? `アップロード中... ${videoUploadProgress}%` : '動画を選択'}</span>
+                    <span>{uploadingVideo ? 'アップロード中...' : '動画を選択'}</span>
                     <input
                       type="file"
                       accept="video/*"
@@ -360,15 +362,6 @@ export default function EditPostPage({ params }: { params: Promise<{ id: string 
                   </label>
                   <span className="text-sm text-gray-500">最大500MB</span>
                 </div>
-
-                {uploadingVideo && (
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div 
-                      className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
-                      style={{ width: `${videoUploadProgress}%` }}
-                    ></div>
-                  </div>
-                )}
 
                 {formData.videoUrls.length > 0 && (
                   <div className="space-y-3">
