@@ -119,7 +119,7 @@ UIを構築する層です。Server Components（サーバー側でレンダリ�
 データベースとの通信を抽象化する層です。Prisma Clientを使用することで、型安全なデータベース操作を実現しています。
 
 **データベース層**  
-データを永続化する層です。PostgreSQL（構造化データ）とSupabase Storage（画像ファイル）を使用しています。
+データを永続化する層です。PostgreSQL（構造化データ）、Supabase Storage（画像ファイル）、Cloudflare R2（動画ファイル）を使用しています。
 
 ```mermaid
 graph LR
@@ -509,7 +509,7 @@ NextAuth.jsで使用。メール検証・パスワードリセット用トーク
 <details>
 <summary><strong>📝 Post（投稿）</strong></summary>
 
-活動報告を投稿。YouTube動画、画像を添付可能。
+活動報告を投稿。YouTube動画、画像、動画ファイルを添付可能。
 
 | フィールド | 型 | 説明 |
 |-----------|-----|------|
@@ -517,7 +517,8 @@ NextAuth.jsで使用。メール検証・パスワードリセット用トーク
 | `title` | `string` | タイトル |
 | `content` | `string?` | Markdown本文 |
 | `youtubeUrls` | `string[]` | YouTube URL配列（複数可） |
-| `images` | `string[]` | 画像URL配列（Supabase Storage） |
+| `videoUrls` | `string[]` | 動画ファイルURL配列（Cloudflare R2、最大1GB/ファイル） |
+| `images` | `string[]` | 画像URL配列（Supabase Storage、最大5MB/ファイル） |
 | `userId` | `string` | 作成者ID（外部キー） |
 | `eventId` | `string?` | 報告元イベントID（外部キー） |
 | `activityScheduleId` | `string?` | 報告元活動スケジュールID（外部キー） |
@@ -530,6 +531,12 @@ NextAuth.jsで使用。メール検証・パスワードリセット用トーク
 - `youtube.com/live/VIDEO_ID`
 - `youtube.com/shorts/VIDEO_ID`
 - `youtube.com/embed/VIDEO_ID`
+
+**動画アップロード:**
+- Cloudflare R2（S3互換ストレージ）
+- Presigned URL経由で直接アップロード
+- 進捗表示（フルスクリーンモーダル）
+- 最大1GB/ファイル
 
 **関連:**
 - `user` - 作成者
@@ -1022,7 +1029,8 @@ npm run test:e2e
 | サービス | 用途 |
 |---------|------|
 | [Vercel](https://vercel.com/) | ホスティング、自動デプロイ |
-| [Supabase](https://supabase.com/) | PostgreSQL DB、ストレージ |
+| [Supabase](https://supabase.com/) | PostgreSQL DB、画像ストレージ |
+| [Cloudflare R2](https://www.cloudflare.com/products/r2/) | 動画ストレージ（S3互換） |
 | [GitHub Actions](https://github.com/features/actions) | CI/CD、自動テスト |
 
 ### 開発ツール
@@ -1075,22 +1083,29 @@ graph LR
 graph TB
     A[投稿作成] --> B[Markdownエディタ]
     A --> C[YouTube動画複数埋め込み]
-    A --> D[画像アップロード]
+    A --> D[画像アップロード<br/>Supabase Storage]
+    A --> E[動画アップロード<br/>Cloudflare R2]
     
-    B --> E[投稿詳細ページ]
-    C --> E
-    D --> E
+    B --> F[投稿詳細ページ]
+    C --> F
+    D --> F
+    E --> F
     
-    E --> F[いいね]
-    E --> G[コメント]
-    E --> H[参加状況]
+    F --> G[いいね]
+    F --> H[コメント]
+    F --> I[参加状況]
 ```
 
 **機能:**
 - ✅ 管理者のみ作成・編集・削除
 - ✅ テキスト形式での投稿
-- ✅ YouTube動画複数埋め込み（5形式対応）
-- ✅ 画像アップロード（Supabase Storage）
+- ✅ **YouTube動画複数埋め込み**（5形式対応）
+- ✅ **画像アップロード**（Supabase Storage、最大5MB）
+- ✅ **動画ファイルアップロード**（Cloudflare R2、最大1GB）
+  - フルスクリーンモーダルで進捗表示
+  - スマホ対応の削除UI（×ボタン常時表示）
+  - R2ストレージから完全削除
+  - プレビュー表示（VideoPlayerコンポーネント）
 - ✅ いいね機能（楽観的UI）
 - ✅ コメント機能
 - ✅ 参加状況管理（参加・不参加）
@@ -1322,6 +1337,13 @@ GOOGLE_CLIENT_SECRET=<Google Cloud Consoleで取得したクライアントシ�
 NEXT_PUBLIC_SUPABASE_URL=<SupabaseプロジェクトのURL>
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabaseのanon public キー>
 
+# Cloudflare R2設定（動画ストレージ）
+R2_ACCOUNT_ID=<CloudflareアカウントID>
+R2_ACCESS_KEY_ID=<R2アクセスキーID>
+R2_SECRET_ACCESS_KEY=<R2シークレットアクセスキー>
+R2_BUCKET_NAME=<R2バケット名>
+R2_PUBLIC_URL=https://<your-bucket>.r2.cloudflarestorage.com
+
 # Resend設定（メール送信用）
 # 開発環境ではダミー値でOK（メールはログに出力される）
 RESEND_API_KEY=re_dev_dummy_key_for_local_development
@@ -1359,6 +1381,28 @@ RESEND_FROM_EMAIL=noreply@yourdomain.com
 |--------|------|----------|
 | `NEXT_PUBLIC_SUPABASE_URL` | SupabaseプロジェクトのURL | **Supabase Dashboard** → **Project Settings** → **API** → **Project URL** |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabaseの公開API キー | **Supabase Dashboard** → **Project Settings** → **API** → **Project API keys** → **anon public** |
+
+##### Cloudflare R2設定（動画ストレージ）
+
+| 変数名 | 説明 | 取得方法 |
+|--------|------|----------|
+| `R2_ACCOUNT_ID` | Cloudflare アカウントID | **Cloudflare Dashboard** → **R2** → URLの`/accounts/`以降の文字列 |
+| `R2_ACCESS_KEY_ID` | R2アクセスキーID | **R2** → **Manage R2 API Tokens** → **Create API Token** |
+| `R2_SECRET_ACCESS_KEY` | R2シークレットアクセスキー | 同上（トークン作成時に1度のみ表示） |
+| `R2_BUCKET_NAME` | R2バケット名 | **R2** → **Create bucket** で作成したバケット名 |
+| `R2_PUBLIC_URL` | R2公開URL（オプション） | **R2** → バケット → **Settings** → **Public URL**<br/>カスタムドメイン設定時のみ必要 |
+
+> **📹 動画ストレージについて**
+> - **Cloudflare R2**: S3互換のオブジェクトストレージ（転送料金無料）
+> - **容量制限**: 無料プランで10GB/月まで
+> - **アップロード**: Presigned URL経由で直接クライアントからアップロード
+> - **最大ファイルサイズ**: 1GB/ファイル
+> - **セットアップ手順**:
+>   1. [Cloudflare Dashboard](https://dash.cloudflare.com/) でアカウント作成
+>   2. R2を有効化（クレジットカード登録必要、無料プラン内なら課金なし）
+>   3. バケット作成（例: `keion-videos`）
+>   4. API トークン作成（Read & Write権限）
+>   5. 環境変数に設定
 
 ##### Resend設定（メール送信）
 
@@ -1828,6 +1872,21 @@ npx playwright test --debug
 | 🔐 **認証** | `e2e/auth.spec.ts` | 5件 | ログイン画面表示、成功ログイン、エラーハンドリング、ログアウト |
 | ✉️ **メール検証** | `e2e/email-verification.spec.ts` | 5件 | 新規登録後の検証メッセージ表示、パスワードリセット |
 | 📝 **投稿** | `e2e/posts.spec.ts` | 13件 | 投稿作成・編集・削除、いいね、コメント、複数YouTube、画像、参加状況 |
+
+> **📹 動画アップロード機能のテストについて**
+> 
+> Cloudflare R2への動画ファイルアップロード機能は以下の理由によりE2Eテストに含めていません：
+> - **ファイルサイズ**: 実際の動画ファイル（最大1GB）をテストでアップロードするのは非現実的
+> - **外部依存性**: R2への接続と認証が必要で、テスト環境のセットアップが複雑
+> - **実行時間とコスト**: 大容量ファイルのアップロードはテスト実行時間を大幅に増加させ、ストレージコストもかかる
+> - **既存カバレッジ**: 画像アップロード機能が同様のフローでテスト済み
+> 
+> 動画アップロード機能は手動テストで検証され、以下が動作確認されています：
+> - ✅ Presigned URL生成（`POST /api/posts/video`）
+> - ✅ R2への直接アップロード（進捗表示付き）
+> - ✅ 動画プレビュー表示（VideoPlayerコンポーネント）
+> - ✅ R2からの削除（`DELETE /api/posts/video`）
+> - ✅ モバイルUI対応（×ボタン常時表示、削除中スピナー）
 | 🎪 **イベント** | `e2e/events.spec.ts` | 4件 | イベント作成、参加登録、課題曲追加、活動報告変換 |
 | 📅 **スケジュール** | `e2e/activity-schedules.spec.ts` | 10件 | スケジュール作成・編集・削除、参加登録、コメント、報告書作成、場所情報 |
 | 👤 **プロフィール** | `e2e/profile.spec.ts` | 8件 | プロフィール編集、自己紹介・担当楽器、アバター画像、他ユーザー閲覧 |
@@ -2116,6 +2175,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<Supabase Anon Key>
 | POST | `/api/posts/[id]/unlike` | いいね取消 | 認証済み |
 | POST | `/api/posts/[id]/participate` | 参加登録 | 認証済み |
 | POST | `/api/posts/[id]/comments` | コメント投稿 | 認証済み |
+| POST | `/api/posts/video` | 動画アップロード用Presigned URL生成 | 管理者 |
+| DELETE | `/api/posts/video` | 動画削除（R2から完全削除） | 管理者 |
 
 ### イベントAPI
 
