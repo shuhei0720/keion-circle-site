@@ -5,21 +5,26 @@ import { useSession } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
-import { ArrowLeft, Loader2, X } from 'lucide-react'
+import { ArrowLeft, Loader2, Upload, X } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import VideoPlayer from '@/components/VideoPlayer'
 
 export default function CreateReportPage({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
+  const [uploadingImages, setUploadingImages] = useState(false)
+  const [uploadingVideo, setUploadingVideo] = useState(false)
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0)
   const [scheduleId, setScheduleId] = useState<string>('')
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
 
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    youtubeUrls: [] as string[],
-    images: [] as string[]
+    images: [] as string[],
+    videoUrls: [] as string[]
   })
 
   useEffect(() => {
@@ -57,8 +62,8 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
         setFormData({
           title: title || '',
           content: decodedTemplate,
-          youtubeUrls: [],
-          images: []
+          images: [],
+          videoUrls: []
         })
       } else {
         // テンプレートがない場合は従来通りスケジュール情報を取得
@@ -76,8 +81,8 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
           setFormData({
             title: scheduleTitle,
             content: templateData.content || '',
-            youtubeUrls: [],
-            images: []
+            images: [],
+            videoUrls: []
           })
         } else {
           setFormData(prev => ({
@@ -89,6 +94,123 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
     } catch (error) {
       console.error('データ取得エラー:', error)
     }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setUploadingImages(true)
+
+    try {
+      const uploadedUrls: string[] = []
+
+      for (const file of Array.from(files)) {
+        if (file.size > 5 * 1024 * 1024) {
+          alert(`${file.name} は5MBを超えています`)
+          continue
+        }
+
+        const fileExt = file.name.split('.').pop()
+        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`
+        const filePath = `posts/${fileName}`
+
+        const { error } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, file)
+
+        if (error) {
+          console.error('画像アップロードエラー:', error)
+          alert(`${file.name} のアップロードに失敗しました`)
+          continue
+        }
+
+        const { data } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(filePath)
+
+        uploadedUrls.push(data.publicUrl)
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        images: [...prev.images, ...uploadedUrls]
+      }))
+    } catch (error) {
+      console.error('画像アップロードエラー:', error)
+      alert('画像のアップロードに失敗しました')
+    } finally {
+      setUploadingImages(false)
+    }
+  }
+
+  const handleRemoveImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 500 * 1024 * 1024) {
+      alert('動画ファイルは500MB以下にしてください')
+      return
+    }
+
+    setUploadingVideo(true)
+    setVideoUploadProgress(0)
+
+    try {
+      const formData = new FormData()
+      formData.append('video', file)
+
+      const xhr = new XMLHttpRequest()
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const progress = Math.round((e.loaded / e.total) * 100)
+          setVideoUploadProgress(progress)
+        }
+      })
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          const response = JSON.parse(xhr.responseText)
+          setFormData(prev => ({
+            ...prev,
+            videoUrls: [...prev.videoUrls, response.url]
+          }))
+          setUploadingVideo(false)
+          setVideoUploadProgress(0)
+        } else {
+          throw new Error('Upload failed')
+        }
+      })
+
+      xhr.addEventListener('error', () => {
+        alert('動画のアップロードに失敗しました')
+        setUploadingVideo(false)
+        setVideoUploadProgress(0)
+      })
+
+      xhr.open('POST', '/api/posts/video')
+      xhr.send(formData)
+    } catch (error) {
+      console.error('動画アップロードエラー:', error)
+      alert('動画のアップロードに失敗しました')
+      setUploadingVideo(false)
+      setVideoUploadProgress(0)
+    }
+  }
+
+  const handleRemoveVideo = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      videoUrls: prev.videoUrls.filter((_, i) => i !== index)
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,10 +229,11 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
     setLoading(true)
 
     try {
+      const { title, content, images, videoUrls } = formData
       const res = await fetch(`/api/activity-schedules/${scheduleId}/report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ title, content, images, videoUrls })
       })
 
       if (res.ok) {
@@ -201,40 +324,90 @@ export default function CreateReportPage({ params }: { params: Promise<{ id: str
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">YouTube URL（任意）</label>
-              <div className="space-y-3">
-                {formData.youtubeUrls.map((url, index) => (
-                  <div key={index} className="flex gap-2">
+              <label className="block text-sm font-medium mb-2">画像（任意）</label>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 px-4 py-2 border border-blue-500 text-blue-600 rounded-lg cursor-pointer hover:bg-blue-50 transition">
+                    <Upload className="w-5 h-5" />
+                    <span>{uploadingImages ? 'アップロード中...' : '画像を選択'}</span>
                     <input
-                      type="url"
-                      value={url}
-                      onChange={(e) => {
-                        const newUrls = [...formData.youtubeUrls]
-                        newUrls[index] = e.target.value
-                        setFormData({ ...formData, youtubeUrls: newUrls })
-                      }}
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-                      placeholder="https://www.youtube.com/watch?v=..."
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageUpload}
+                      disabled={uploadingImages}
+                      className="hidden"
                     />
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newUrls = formData.youtubeUrls.filter((_, i) => i !== index)
-                        setFormData({ ...formData, youtubeUrls: newUrls })
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
+                  </label>
+                  <span className="text-sm text-gray-500">最大5MB、複数選択可能</span>
+                </div>
+
+                {formData.images.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {formData.images.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Image ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, youtubeUrls: [...formData.youtubeUrls, ''] })}
-                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors text-gray-600 hover:text-blue-600"
-                >
-                  + YouTube URLを追加
-                </button>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">動画（任意）</label>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2 px-4 py-2 border border-purple-500 text-purple-600 rounded-lg cursor-pointer hover:bg-purple-50 transition">
+                    <Upload className="w-5 h-5" />
+                    <span>{uploadingVideo ? `アップロード中 ${videoUploadProgress}%` : '動画を選択'}</span>
+                    <input
+                      type="file"
+                      accept="video/*"
+                      onChange={handleVideoUpload}
+                      disabled={uploadingVideo}
+                      className="hidden"
+                    />
+                  </label>
+                  <span className="text-sm text-gray-500">最大500MB</span>
+                </div>
+
+                {uploadingVideo && (
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${videoUploadProgress}%` }}
+                    />
+                  </div>
+                )}
+
+                {formData.videoUrls.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {formData.videoUrls.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <VideoPlayer src={url} />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveVideo(index)}
+                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

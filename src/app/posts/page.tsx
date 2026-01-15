@@ -9,6 +9,7 @@ import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
 import RichTextEditor from '@/components/RichTextEditor'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import VideoPlayer from '@/components/VideoPlayer'
 
 interface User {
   id: string
@@ -35,6 +36,7 @@ interface Post {
   title: string
   content: string
   youtubeUrls: string[]
+  videoUrls?: string[]
   images?: string[]
   createdAt: string
   userId: string
@@ -447,6 +449,15 @@ export default function PostsPage() {
                         </div>
                       )}
 
+                      {/* アップロード動画 */}
+                      {post.videoUrls && post.videoUrls.length > 0 && (
+                        <div className="space-y-4 mb-4">
+                          {post.videoUrls.map((url, index) => (
+                            <VideoPlayer key={index} src={url} />
+                          ))}
+                        </div>
+                      )}
+
                       {/* 参加者表示（読み取り専用） */}
                       {participatingUsers.length > 0 && (
                         <div className="mt-4 pt-4 border-t">
@@ -735,6 +746,57 @@ export default function PostsPage() {
                               <Copy className="w-4 h-4" />
                             )}
                           </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* YouTube動画 */}
+                    {post.youtubeUrls && post.youtubeUrls.length > 0 && (
+                      <div className="space-y-4 mb-4">
+                        {post.youtubeUrls.map((url, index) => {
+                          const youtubeId = extractYouTubeId(url)
+                          if (!youtubeId) return null
+                          return (
+                            <div key={index} className="rounded-lg overflow-hidden aspect-video">
+                              <YouTube
+                                videoId={youtubeId}
+                                opts={{
+                                  width: '100%',
+                                  height: '100%',
+                                  playerVars: {
+                                    autoplay: 0,
+                                  },
+                                }}
+                                className="w-full h-full"
+                              />
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* アップロード動画 */}
+                    {post.videoUrls && post.videoUrls.length > 0 && (
+                      <div className="space-y-4 mb-4">
+                        {post.videoUrls.map((url, index) => (
+                          <VideoPlayer key={index} src={url} />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 画像表示 */}
+                    {post.images && post.images.length > 0 && (
+                      <div className="mb-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {post.images.map((imageUrl, index) => (
+                            <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                              <img
+                                src={imageUrl}
+                                alt={`${post.title} - Image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}

@@ -21,10 +21,10 @@ export async function POST(
       return NextResponse.json({ error: '管理者権限が必要です' }, { status: 403 })
     }
 
-    const { title, content, youtubeUrls, images } = await request.json()
+    const { title, content, youtubeUrls, images, videoUrls } = await request.json()
     const { id } = await params
 
-    console.log('Request data:', { title, content, youtubeUrls: youtubeUrls?.length || 0, images: images?.length || 0 })
+    console.log('Request data:', { title, content, youtubeUrls: youtubeUrls?.length || 0, images: images?.length || 0, videoUrls: videoUrls?.length || 0 })
 
     // イベントを取得
     const event = await prisma.event.findUnique({
@@ -63,6 +63,7 @@ export async function POST(
           content,
           youtubeUrls: (youtubeUrls || []).map((url: string) => url.trim()).filter((url: string) => url !== ''),
           images: images || [],
+          videoUrls: videoUrls || [],
           userId: session.user.id,
           eventId: id
         }
