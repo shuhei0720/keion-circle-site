@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
+import { PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { auth } from '@/lib/auth'
 import { isAdmin } from '@/lib/permissions'
@@ -54,6 +54,48 @@ export async function POST(request: NextRequest) {
     console.error('Failed to generate presigned URL:', error)
     return NextResponse.json(
       { error: 'Presigned URLの生成に失敗しました', details: error instanceof Error ? error.message : String(error) },
+      { status: 500 }
+    )
+  }
+}
+
+// 動画削除（管理者のみ）
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // 管理者チェック
+    const admin = await isAdmin()
+    if (!admin) {
+      return NextResponse.json({ error: '動画の削除は管理者のみ可能です' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { videoUrl } = body
+
+    if (!videoUrl) {
+      return NextResponse.json({ error: '動画URLが必要です' }, { status: 400 })
+    }
+
+    // URLからキーを抽出
+    const key = videoUrl.replace(`${R2_PUBLIC_URL}/`, '')
+
+    // R2から削除
+    const command = new DeleteObjectCommand({
+      Bucket: R2_BUCKET_NAME,
+      Key: key
+    })
+
+    await r2Client.send(command)
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Failed to delete video:', error)
+    return NextResponse.json(
+      { error: '動画の削除に失敗しました', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     )
   }

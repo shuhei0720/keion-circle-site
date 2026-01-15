@@ -242,11 +242,36 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
     }
   }
 
-  const handleRemoveVideo = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      videoUrls: prev.videoUrls.filter((_, i) => i !== index)
-    }))
+  const handleRemoveVideo = async (index: number) => {
+    const videoUrl = formData.videoUrls[index]
+    
+    if (!confirm('この動画を削除しますか?')) {
+      return
+    }
+
+    try {
+      // R2から削除
+      const response = await fetch('/api/posts/video', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl })
+      })
+
+      if (!response.ok) {
+        throw new Error('動画の削除に失敗しました')
+      }
+
+      // UIから削除
+      setFormData(prev => ({
+        ...prev,
+        videoUrls: prev.videoUrls.filter((_, i) => i !== index)
+      }))
+
+      alert('動画を削除しました')
+    } catch (error) {
+      console.error('Video delete error:', error)
+      alert('動画の削除に失敗しました')
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -423,12 +448,12 @@ export default function CreateEventReportPage({ params }: { params: Promise<{ id
                 {formData.videoUrls.length > 0 && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {formData.videoUrls.map((url, index) => (
-                      <div key={index} className="relative group">
+                      <div key={index} className="relative">
                         <VideoPlayer src={url} />
                         <button
                           type="button"
                           onClick={() => handleRemoveVideo(index)}
-                          className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition-colors"
                         >
                           <X className="w-4 h-4" />
                         </button>
