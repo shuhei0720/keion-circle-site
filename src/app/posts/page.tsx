@@ -71,6 +71,7 @@ export default function PostsPage() {
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const contentTextareaRef = useRef<HTMLTextAreaElement>(null)
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null)
+  const [downloadingMedia, setDownloadingMedia] = useState<{ type: 'image' | 'video', postId: string, index: number } | null>(null)
 
   const isAdmin = session?.user?.role === 'admin' || session?.user?.role === 'site_admin'
 
@@ -342,7 +343,8 @@ export default function PostsPage() {
     return match ? match[1] : null
   }
 
-  const handleDownload = async (url: string, filename: string) => {
+  const handleDownload = async (url: string, filename: string, type: 'image' | 'video', postId: string, index: number) => {
+    setDownloadingMedia({ type, postId, index })
     try {
       const response = await fetch(url)
       const blob = await response.blob()
@@ -357,6 +359,8 @@ export default function PostsPage() {
     } catch (error) {
       console.error('ダウンロードに失敗しました:', error)
       alert('ダウンロードに失敗しました')
+    } finally {
+      setDownloadingMedia(null)
     }
   }
 
@@ -480,20 +484,31 @@ export default function PostsPage() {
                       {/* アップロード動画 */}
                       {post.videoUrls && post.videoUrls.length > 0 && (
                         <div className="space-y-4 mb-4">
-                          {post.videoUrls.map((url, index) => (
-                            <div key={index} className="relative">
-                              <VideoPlayer src={url} />
-                              {isAdmin && (
-                                <button
-                                  onClick={() => handleDownload(url, `video-${post.id}-${index + 1}.mp4`)}
-                                  className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors z-10"
-                                  title="動画をダウンロード"
-                                >
-                                  <Download className="w-5 h-5" />
-                                </button>
-                              )}
-                            </div>
-                          ))}
+                          {post.videoUrls.map((url, index) => {
+                            const isDownloading = downloadingMedia?.type === 'video' && downloadingMedia.postId === post.id && downloadingMedia.index === index
+                            return (
+                              <div key={index} className="relative">
+                                <VideoPlayer src={url} />
+                                {isAdmin && (
+                                  <button
+                                    onClick={() => handleDownload(url, `video-${post.id}-${index + 1}.mp4`, 'video', post.id, index)}
+                                    disabled={isDownloading}
+                                    className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors z-10 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                    title={isDownloading ? 'ダウンロード中...' : '動画をダウンロード'}
+                                  >
+                                    {isDownloading ? (
+                                      <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span className="text-sm whitespace-nowrap">ダウンロード中...</span>
+                                      </>
+                                    ) : (
+                                      <Download className="w-5 h-5" />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          })}
                         </div>
                       )}
 
@@ -526,24 +541,37 @@ export default function PostsPage() {
                       {post.images && post.images.length > 0 && (
                         <div className="mt-4 pt-4 border-t">
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            {post.images.map((imageUrl, index) => (
-                              <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
-                                <img
-                                  src={imageUrl}
-                                  alt={`${post.title} - Image ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                />
-                                {isAdmin && (
-                                  <button
-                                    onClick={() => handleDownload(imageUrl, `image-${post.id}-${index + 1}.jpg`)}
-                                    className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                                    title="画像をダウンロード"
-                                  >
-                                    <Download className="w-4 h-4" />
-                                  </button>
-                                )}
-                              </div>
-                            ))}
+                            {post.images.map((imageUrl, index) => {
+                              const isDownloading = downloadingMedia?.type === 'image' && downloadingMedia.postId === post.id && downloadingMedia.index === index
+                              return (
+                                <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
+                                  <img
+                                    src={imageUrl}
+                                    alt={`${post.title} - Image ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                  {isAdmin && (
+                                    <button
+                                      onClick={() => handleDownload(imageUrl, `image-${post.id}-${index + 1}.jpg`, 'image', post.id, index)}
+                                      disabled={isDownloading}
+                                      className={`absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 ${
+                                        isDownloading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                                      }`}
+                                      title={isDownloading ? 'ダウンロード中...' : '画像をダウンロード'}
+                                    >
+                                      {isDownloading ? (
+                                        <>
+                                          <Loader2 className="w-4 h-4 animate-spin" />
+                                          <span className="text-xs whitespace-nowrap">DL中</span>
+                                        </>
+                                      ) : (
+                                        <Download className="w-4 h-4" />
+                                      )}
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })}
                           </div>
                         </div>
                       )}
