@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import YouTube from 'react-youtube'
 import { useSession } from 'next-auth/react'
-import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2, Copy, Check, Loader2 } from 'lucide-react'
+import { Edit, Home, LogIn, User, UserPlus, ChevronLeft, ChevronRight, Heart, MessageCircle, Send, Trash2, Copy, Check, Loader2, Download } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import DashboardLayout from '@/components/DashboardLayout'
@@ -342,6 +342,24 @@ export default function PostsPage() {
     return match ? match[1] : null
   }
 
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(blobUrl)
+    } catch (error) {
+      console.error('ダウンロードに失敗しました:', error)
+      alert('ダウンロードに失敗しました')
+    }
+  }
+
   // ページネーション計算
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE)
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE
@@ -463,7 +481,18 @@ export default function PostsPage() {
                       {post.videoUrls && post.videoUrls.length > 0 && (
                         <div className="space-y-4 mb-4">
                           {post.videoUrls.map((url, index) => (
-                            <VideoPlayer key={index} src={url} />
+                            <div key={index} className="relative">
+                              <VideoPlayer src={url} />
+                              {isAdmin && (
+                                <button
+                                  onClick={() => handleDownload(url, `video-${post.id}-${index + 1}.mp4`)}
+                                  className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors z-10"
+                                  title="動画をダウンロード"
+                                >
+                                  <Download className="w-5 h-5" />
+                                </button>
+                              )}
+                            </div>
                           ))}
                         </div>
                       )}
@@ -498,12 +527,21 @@ export default function PostsPage() {
                         <div className="mt-4 pt-4 border-t">
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                             {post.images.map((imageUrl, index) => (
-                              <div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+                              <div key={index} className="relative aspect-square rounded-lg overflow-hidden group">
                                 <img
                                   src={imageUrl}
                                   alt={`${post.title} - Image ${index + 1}`}
                                   className="w-full h-full object-cover"
                                 />
+                                {isAdmin && (
+                                  <button
+                                    onClick={() => handleDownload(imageUrl, `image-${post.id}-${index + 1}.jpg`)}
+                                    className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                                    title="画像をダウンロード"
+                                  >
+                                    <Download className="w-4 h-4" />
+                                  </button>
+                                )}
                               </div>
                             ))}
                           </div>
