@@ -554,9 +554,7 @@ export default function PostsPage() {
                                     <button
                                       onClick={() => handleDownload(imageUrl, `image-${post.id}-${index + 1}.jpg`, 'image', post.id, index)}
                                       disabled={isDownloading}
-                                      className={`absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 ${
-                                        isDownloading ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                                      }`}
+                                      className="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 z-10"
                                       title={isDownloading ? 'ダウンロード中...' : '画像をダウンロード'}
                                     >
                                       {isDownloading ? (
